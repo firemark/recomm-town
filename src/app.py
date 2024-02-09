@@ -10,17 +10,20 @@ from pyglet.graphics import Batch, Group
 class App(Window):
     batch: Batch
     town_group: Group
+    people_group: Group
 
     _zoom: float
 
-    def __init__(self):
+    def __init__(self, world):
         super().__init__(width=800, height=600)
         self.batch = Batch()
         self.town_group = Group(order=0)
+        self.people_group = Group(order=1)
         w = self.width / 2
         h = self.height / 2
         self.view = self.view.translate((w, h, 0.0))
         self.view = self.view.scale((h / 1000, h / 1000, 1.0))
+        self.world = world
 
     def run(self):
         pyglet.app.run()
@@ -47,3 +50,8 @@ class App(Window):
         self.clear()
         gl.glClearColor(0.1, 0.5, 0.1, 1.0)
         self.batch.draw()
+
+    def on_refresh(self, dt):
+        for human in self.world.people:
+            first_action = human.actions[0]
+            first_action.do_it(human)
