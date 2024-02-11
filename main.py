@@ -38,34 +38,40 @@ def make_grid_rooms(n):
 
 
 def make_world():
-    few_rooms = [
-        LocalRoom(Vec(-1.0, -1.0)),
-        LocalRoom(Vec(+1.0, -1.0)),
-        LocalRoom(Vec(+1.0, +1.0)),
-        LocalRoom(Vec(-1.0, +1.0)),
+    make_home = partial(Place, function=PF.HOME, rooms=list(make_flat_rooms(4, 2)), room_size=120.0)
+    home_center = Vec(-1000.0, -2000.0)
+    houses = [
+        make_home("Home A", home_center + Vec(-800.0, -300.0)),
+        make_home("Home B", home_center + Vec(+800.0, -300.0)),
+        make_home("Home C", home_center + Vec(+800.0, +300.0)),
+        make_home("Home D", home_center + Vec(-800.0, +300.0)),
     ]
 
-    home = Place("Home", Vec(-1000.0, -1000.0), PF.HOME, make_flat_rooms(8, 2))
     work = Place("Work", Vec(-1000.0, +1000.0), PF.WORK, make_flat_rooms(8, 4))
     shop = Place("Shop", Vec(+1000.0, -1000.0), PF.SHOP, make_flat_rooms(4, 2))
     museum = Place(
-        "Museum", Vec(+1000.0, +1000.0), PF.MUSEUM, make_grid_rooms(3), 100.0, 50.0
+        "Museum", Vec(+1000.0, +1000.0), PF.MUSEUM, make_grid_rooms(3), 100.0, 80.0
     )
 
     cross_a = Place("Apple crossway", Vec(-1000.0, 0.0), PF.CROSSROAD)
     cross_b = Place("Cherry crossway", Vec(+1000.0, 0.0), PF.CROSSROAD)
     cross_main = Place("Center", Vec(0.0, 0.0), PF.CROSSROAD)
+    cross_home = Place("Coconut crossway", home_center, PF.CROSSROAD)
 
-    cross_a.connect(home, work)
+    cross_a.connect(cross_home, work)
     cross_b.connect(shop, museum)
     cross_main.connect(cross_a, cross_b)
+    cross_home.connect(*houses)
 
-    human_a = Human(home.position, speed=3.0)
-    human_b = Human(work.position, speed=1.8)
-    human_c = Human(home.position, speed=2.2)
+    people = [
+        Human(houses[0].position, speed=3.0),
+        Human(houses[1].position, speed=1.8),
+        Human(houses[2].position, speed=2.2),
+        Human(houses[3].position, speed=2.2),
+    ]
 
-    town = Town([home, work, shop, museum, cross_a, cross_b, cross_main])
-    return World(town, [human_a, human_b, human_c])
+    town = Town(houses + [work, shop, museum, cross_home, cross_a, cross_b, cross_main])
+    return World(town, people)
 
 
 if __name__ == "__main__":

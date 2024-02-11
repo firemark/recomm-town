@@ -46,7 +46,7 @@ class Place:
         position: Vec,
         function: PlaceFunction,
         rooms: Optional[Iterable[LocalRoom]] = None,
-        room_size: float = 60.0,
+        room_size: float = 80.0,
         room_padding: float = 10.0,
     ):
         self.name = name
