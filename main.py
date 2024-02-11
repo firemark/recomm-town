@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from itertools import chain
 from functools import partial
 
 from pyglet.shapes import Line, Rectangle, Circle
@@ -6,18 +7,50 @@ from pyglet.text import Label
 
 from src.common import Vec
 from src.town.town import Town
-from src.town.place import Place, PlaceFunction as PF
-from src.actions import Move
+from src.town.place import LocalRoom, Place, PlaceFunction as PF
 from src.human import Human
 from src.world import World
 from src.app import App
 
 
+def make_flat_rooms(n, m):
+    return chain.from_iterable(
+        [
+            LocalRoom(Vec(-x, +y)),
+            LocalRoom(Vec(+x, +y)),
+        ]
+        for x in range(1, n + 1)
+        for y in range(-1, m * 2 - 1, 2)
+    )
+
+
+def make_grid_rooms(n):
+    return chain.from_iterable(
+        [
+            LocalRoom(Vec(-x, -y)),
+            LocalRoom(Vec(-x, +y)),
+            LocalRoom(Vec(+x, +y)),
+            LocalRoom(Vec(+x, -y)),
+        ]
+        for x in range(1, n + 1)
+        for y in range(1, n + 1)
+    )
+
+
 def make_world():
-    home = Place("Home", Vec(-1000.0, -1000.0), PF.HOME)
-    work = Place("Work", Vec(-1000.0, +1000.0), PF.WORK)
-    shop = Place("Shop", Vec(+1000.0, -1000.0), PF.SHOP)
-    museum = Place("Museum", Vec(+1000.0, +1000.0), PF.MUSEUM)
+    few_rooms = [
+        LocalRoom(Vec(-1.0, -1.0)),
+        LocalRoom(Vec(+1.0, -1.0)),
+        LocalRoom(Vec(+1.0, +1.0)),
+        LocalRoom(Vec(-1.0, +1.0)),
+    ]
+
+    home = Place("Home", Vec(-1000.0, -1000.0), PF.HOME, make_flat_rooms(8, 2))
+    work = Place("Work", Vec(-1000.0, +1000.0), PF.WORK, make_flat_rooms(8, 4))
+    shop = Place("Shop", Vec(+1000.0, -1000.0), PF.SHOP, make_flat_rooms(4, 2))
+    museum = Place(
+        "Museum", Vec(+1000.0, +1000.0), PF.MUSEUM, make_grid_rooms(3), 100.0, 50.0
+    )
 
     cross_a = Place("Apple crossway", Vec(-1000.0, 0.0), PF.CROSSROAD)
     cross_b = Place("Cherry crossway", Vec(+1000.0, 0.0), PF.CROSSROAD)
@@ -41,6 +74,7 @@ if __name__ == "__main__":
     GREEN = (0x00, 0xFF, 0x00)
     BLACK = (0x00, 0x00, 0x00)
     WHITE = (0xFF, 0xFF, 0xFF)
+    GREY = (0xAA, 0xAA, 0xAA)
 
     world = make_world()
     from pprint import pprint
@@ -64,14 +98,23 @@ if __name__ == "__main__":
         objs.append(Line(a.x, a.y, b.x, b.y, width=50.0, color=RED, **kw))
 
     for place in world.town.places:
-        color = GREEN if place.function == PF.CROSSROAD else BLUE
+        color = GREEN if place.function == PF.CROSSROAD else GREY
         p = place.position
-        s = 100.0 if place.function == PF.CROSSROAD else 200.0
-        objs.append(Rectangle(p.x - s / 2, p.y - s / 2, s, s, color=color, **kw))
+        start = place.box_start
+        size = place.box_end - start
+        title = place.function.name.title()
+
+        objs.append(Rectangle(start.x, start.y, size.x, size.y, color=color, **kw))
+        objs.append(Label(title, x=p.x, y=p.y, font_size=36, **kw_font))
         objs.append(
-            Label(place.function.name.title(), x=p.x, y=p.y, font_size=36, **kw_font)
+            Label(place.name, x=p.x, y=p.y + size.y - 12, font_size=48, **kw_font)
         )
-        objs.append(Label(place.name, x=p.x, y=p.y + s - 12, font_size=48, **kw_font))
+
+        s = place.room_size
+        h = s / 2
+        for room in place.rooms:
+            r = room.position - h
+            objs.append(Rectangle(r.x, r.y, s, s, color=BLUE, **kw))
 
     def update(sprite, v):
         sprite.x = v.x
