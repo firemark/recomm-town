@@ -35,6 +35,9 @@ class Vec(NamedTuple):
     def length(self) -> float:
         return (self.x**2 + self.y**2) ** (1 / 2)
 
+    def length_squared(self) -> float:
+        return self.x**2 + self.y**2
+
 
 class Trivia(NamedTuple):
     name: str

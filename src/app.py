@@ -52,6 +52,4 @@ class App(Window):
         self.batch.draw()
 
     def on_refresh(self, dt):
-        for human in self.world.people:
-            first_action = human.actions[0]
-            first_action.do_it(human)
+        self.world.do_it(dt)

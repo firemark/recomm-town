@@ -5,7 +5,8 @@ from pyglet.shapes import Line, Rectangle, Circle
 from pyglet.text import Label
 
 from src.common import Vec
-from src.town import Town, Place, PlaceFunction as PF
+from src.town.town import Town
+from src.town.place import Place, PlaceFunction as PF
 from src.actions import Move
 from src.human import Human
 from src.world import World
@@ -26,15 +27,11 @@ def make_world():
     cross_b.connect(shop, museum)
     cross_main.connect(cross_a, cross_b)
 
-    human_a = Human(home.position)
-    human_b = Human(work.position)
-    human_c = Human(home.position)
+    human_a = Human(home.position, speed=3.0)
+    human_b = Human(work.position, speed=1.8)
+    human_c = Human(home.position, speed=2.2)
 
-    human_a.actions.append(Move(work))
-    human_b.actions.append(Move(home))
-    human_c.actions.append(Move(museum))
-
-    town = Town({home, work, shop, museum, cross_a, cross_b, cross_main})
+    town = Town([home, work, shop, museum, cross_a, cross_b, cross_main])
     return World(town, [human_a, human_b, human_c])
 
 

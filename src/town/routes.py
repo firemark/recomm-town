@@ -4,7 +4,7 @@ from .place import Place
 
 class Routes:
     __data: dict[tuple[Place, Place], list[Place]]
-    
+
     def __init__(self) -> None:
         self.__data = {}
 
