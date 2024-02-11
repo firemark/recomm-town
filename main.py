@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from itertools import chain
 from functools import partial
+from random import choice, random
 
 from pyglet.shapes import Line, Rectangle, Circle
 from pyglet.text import Label
@@ -8,7 +9,7 @@ from pyglet.text import Label
 from src.common import Vec
 from src.town.town import Town
 from src.town.place import LocalRoom, Place, PlaceFunction as PF
-from src.human import Human
+from src.human import Human, HumanInfo
 from src.world import World
 from src.app import App
 
@@ -38,7 +39,9 @@ def make_grid_rooms(n):
 
 
 def make_world():
-    make_home = partial(Place, function=PF.HOME, rooms=list(make_flat_rooms(4, 2)), room_size=120.0)
+    make_home = partial(
+        Place, function=PF.HOME, rooms=list(make_flat_rooms(4, 2)), room_size=120.0
+    )
     home_center = Vec(-1000.0, -2000.0)
     houses = [
         make_home("Home A", home_center + Vec(-800.0, -300.0)),
@@ -48,9 +51,18 @@ def make_world():
     ]
 
     work = Place("Work", Vec(-1000.0, +1000.0), PF.WORK, make_flat_rooms(8, 4))
-    shop = Place("Shop", Vec(+1000.0, -1000.0), PF.SHOP, make_flat_rooms(4, 2))
+    shop_a = Place("Shop A", Vec(0, -300.0), PF.SHOP, make_flat_rooms(2, 2))
+    shop_b = Place("Shop B", Vec(+1000.0, -1500.0), PF.SHOP, make_flat_rooms(4, 2))
+    garden = Place(
+        "Garden",
+        Vec(+1000.0, +2000.0),
+        PF.ENTERTAIMENT,
+        make_grid_rooms(3),
+        100.0,
+        80.0,
+    )
     museum = Place(
-        "Museum", Vec(+1000.0, +1000.0), PF.MUSEUM, make_grid_rooms(3), 100.0, 80.0
+        "City museum", Vec(0.0, +500.0), PF.ENTERTAIMENT, make_grid_rooms(2), 50.0, 80.0
     )
 
     cross_a = Place("Apple crossway", Vec(-1000.0, 0.0), PF.CROSSROAD)
@@ -59,18 +71,49 @@ def make_world():
     cross_home = Place("Coconut crossway", home_center, PF.CROSSROAD)
 
     cross_a.connect(cross_home, work)
-    cross_b.connect(shop, museum)
-    cross_main.connect(cross_a, cross_b)
+    cross_b.connect(shop_b, garden)
+    garden.connect(work, museum)
+    cross_main.connect(cross_a, cross_b, museum, shop_a)
     cross_home.connect(*houses)
 
-    people = [
-        Human(houses[0].position, speed=3.0),
-        Human(houses[1].position, speed=1.8),
-        Human(houses[2].position, speed=2.2),
-        Human(houses[3].position, speed=2.2),
-    ]
+    people = []
+    for i in range(4):
+        home = houses[i]
+        for j in range(4):
+            while True:
+                room = choice(home.rooms)
+                if room.occupied_by:
+                    continue
+                break
+            info = HumanInfo(
+                name=f"Person {i}{chr(j + ord('A'))}",
+                liveplace=home,
+                liveroom=room,
+                workplace=work,
+                speed=5.0 + random() * 5.0,
+            )
+            human = Human(info.liveroom.position, info)
+            human.levels.money += random()
+            human.levels.tiredness += random() * 0.5
+            human.levels.fullness -= random() * 0.3
+            human.levels.fridge -= random() * 0.5
+            room.occupied_by = human
+            people.append(human)
 
-    town = Town(houses + [work, shop, museum, cross_home, cross_a, cross_b, cross_main])
+    town = Town(
+        houses
+        + [
+            work,
+            shop_a,
+            shop_b,
+            garden,
+            museum,
+            cross_home,
+            cross_a,
+            cross_b,
+            cross_main,
+        ]
+    )
     return World(town, people)
 
 
@@ -95,7 +138,7 @@ if __name__ == "__main__":
         anchor_x="center",
         anchor_y="center",
         color=(0, 0, 0, 255),
-        **kw
+        **kw,
     )
 
     for way in world.town.path:
@@ -108,13 +151,12 @@ if __name__ == "__main__":
         p = place.position
         start = place.box_start
         size = place.box_end - start
-        title = place.function.name.title()
 
         objs.append(Rectangle(start.x, start.y, size.x, size.y, color=color, **kw))
-        objs.append(Label(title, x=p.x, y=p.y, font_size=36, **kw_font))
-        objs.append(
-            Label(place.name, x=p.x, y=p.y + size.y - 12, font_size=48, **kw_font)
-        )
+        objs.append(Label(place.name, x=p.x, y=p.y, font_size=36, **kw_font))
+        # objs.append(
+        #     Label(place.name, x=p.x, y=p.y + size.y - 12, font_size=48, **kw_font)
+        # )
 
         s = place.room_size
         h = s / 2

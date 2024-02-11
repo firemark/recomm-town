@@ -14,7 +14,7 @@ class PlaceFunction(Enum):
     HOME = 1
     WORK = 2
     SHOP = 3
-    MUSEUM = 4
+    ENTERTAIMENT = 4
 
 
 @dataclass
@@ -57,7 +57,9 @@ class Place:
         self.room_padding = room_padding
 
         s = room_size + room_padding
-        self.rooms = [Room(self.position + room.local_position * s) for room in rooms or []]
+        self.rooms = [
+            Room(self.position + room.local_position * s) for room in rooms or []
+        ]
 
         if self.rooms:
             h = s / 2
