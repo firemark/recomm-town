@@ -43,15 +43,19 @@ class Wait(Action):
         return "PASS"
 
 
-class UpdateLevel(Action):
-    def __init__(self, attr: str, value: float) -> None:
-        self.attr = attr
-        self.value = value
+class UpdateLevelsInTime(Action):
+    def __init__(self, time: float, levels: dict[str, float]):
+        self.time = time
+        self.levels = levels
 
     def do_it(self, human: "Human", dt: float) -> T:
-        level = getattr(human.levels, self.attr)
-        setattr(human.levels, self.attr, level + self.value)
-        return "NEXT"
+        self.time -= dt
+        if self.time <= 0.0:
+            for attr, value in self.levels.items():
+                level = getattr(human.levels, attr)
+                setattr(human.levels, attr, level + value)
+            return "NEXT"
+        return "PASS"
 
 
 class ChangeActivity(Action):
