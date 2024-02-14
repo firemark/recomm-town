@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from itertools import chain
 from functools import partial
+from math import copysign
 from random import choice, random
 
 from pyglet.shapes import Line, Rectangle, Circle
@@ -15,26 +16,24 @@ from recomm_town.app import App
 
 
 def make_flat_rooms(n, m):
-    return chain.from_iterable(
-        [
-            LocalRoom(Vec(-x, +y)),
-            LocalRoom(Vec(+x, +y)),
-        ]
-        for x in range(1, n + 1)
-        for y in range(-1, m * 2 - 1, 2)
-    )
+    max_lvl = m * 2 - 4
+
+    for y in range(-1, m * 2 - 1, 2):
+        lvl = min(max_lvl, y + 1)
+        yield from (
+            LocalRoom(Vec(-x, +y), [Vec(0, lvl), Vec(-x, lvl)])
+            for x in chain.from_iterable((-x, x) for x in range(+1, n + 1))
+        )
 
 
 def make_grid_rooms(n):
-    return chain.from_iterable(
-        [
-            LocalRoom(Vec(-x, -y)),
-            LocalRoom(Vec(-x, +y)),
-            LocalRoom(Vec(+x, +y)),
-            LocalRoom(Vec(+x, -y)),
-        ]
-        for x in range(1, n + 1)
-        for y in range(1, n + 1)
+    return (
+        LocalRoom(Vec(x, y), [Vec(x + hall, 0), Vec(x + hall, y)])
+        for x, y, hall in chain.from_iterable(
+            [(-x, -y, +0.5), (-x, +y, +0.5), (+x, +y, -0.5), (+x, -y, -0.5)]
+            for x in range(1, n + 1)
+            for y in range(1, n + 1)
+        )
     )
 
 
@@ -72,7 +71,7 @@ def make_world():
 
     cross_a.connect(cross_home, work)
     cross_b.connect(shop_b, garden)
-    garden.connect(work, museum)
+    # garden.connect(work, museum)
     cross_main.connect(cross_a, cross_b, museum, shop_a)
     cross_home.connect(*houses)
 

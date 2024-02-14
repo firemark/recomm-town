@@ -1,7 +1,7 @@
 from enum import Enum
 from dataclasses import dataclass
 from functools import total_ordering
-from typing import Iterable, Optional, TYPE_CHECKING
+from typing import Iterable, TYPE_CHECKING
 
 from recomm_town.common import Vec
 
@@ -20,13 +20,15 @@ class PlaceFunction(Enum):
 @dataclass
 class LocalRoom:
     local_position: Vec
+    local_path: list[Vec]
 
 
 @dataclass
 class Room:
     position: Vec
-    occupied_by: Optional["Human"] = None
-    owner: Optional["Human"] = None
+    path: list[Vec]
+    occupied_by: "Human | None" = None
+    owner: "Human | None" = None
 
 
 @total_ordering
@@ -45,7 +47,7 @@ class Place:
         name: str,
         position: Vec,
         function: PlaceFunction,
-        rooms: Optional[Iterable[LocalRoom]] = None,
+        rooms: Iterable[LocalRoom] | None = None,
         room_size: float = 80.0,
         room_padding: float = 10.0,
     ):
@@ -58,7 +60,11 @@ class Place:
 
         s = room_size + room_padding
         self.rooms = [
-            Room(self.position + room.local_position * s) for room in rooms or []
+            Room(
+                position=self.position + room.local_position * s,
+                path=[self.position + vec * s for vec in room.local_path],
+            )
+            for room in rooms or []
         ]
 
         if self.rooms:

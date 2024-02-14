@@ -1,8 +1,10 @@
 from typing import Union, Literal, TYPE_CHECKING
 
+from recomm_town.common import Vec
+from recomm_town.town.place import Room
+
 
 if TYPE_CHECKING:
-    from recomm_town.town.place import Place
     from recomm_town.human import Human, Activity
 
 
@@ -15,20 +17,17 @@ class Action:
 
 
 class Move(Action):
-    def __init__(self, place: "Place"):
-        self.place = place
+    def __init__(self, position: Vec):
+        self.position = position
 
     def do_it(self, human: "Human", dt: float) -> T:
-        diff = self.place.position - human.position
-        if diff.length() < 1.0:
-            return "NEXT"
-
-        heading = diff.normalize()
+        diff = self.position - human.position
         speed = human.info.speed * (dt * 60.0)
         if diff.length() < speed * 2:
-            human.teleport(self.place.position.x, self.place.position.y)
+            human.teleport(self.position.x, self.position.y)
             return "NEXT"
-        vec = heading * speed
+
+        vec = diff.normalize() * speed
         human.move(vec.x, vec.y)
         return "PASS"
 
@@ -66,4 +65,22 @@ class ChangeActivity(Action):
         print("    emotion:", human.measure_emotion().name)
         print("    levels:", human.levels)
         human.activity = self.activity
+        return "NEXT"
+
+
+class TakeRoom(Action):
+    def __init__(self, room: Room) -> None:
+        self.room = room
+
+    def do_it(self, human: "Human", dt: float) -> T:
+        self.room.occupied_by = human
+        return "NEXT"
+
+
+class FreeRoom(Action):
+    def __init__(self, room: Room) -> None:
+        self.room = room
+
+    def do_it(self, human: "Human", dt: float) -> T:
+        self.room.occupied_by = None
         return "NEXT"
