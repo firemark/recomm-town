@@ -1,9 +1,9 @@
 from typing import Optional
 
-from .place import Place, Way
-from .routes import Routes
-from .routes_factory import RoutesFactory
-from ..common import Vec
+from recomm_town.town.place import Place, Way
+from recomm_town.town.routes import Routes
+from recomm_town.town.routes_factory import RoutesFactory
+from recomm_town.common import Vec
 
 
 class Town:

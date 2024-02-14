@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from functools import total_ordering
 from typing import Iterable, Optional, TYPE_CHECKING
 
-from ..common import Vec
+from recomm_town.common import Vec
 
 if TYPE_CHECKING:
-    from ..human import Human
+    from recomm_town.human import Human
 
 
 class PlaceFunction(Enum):

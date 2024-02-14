@@ -1,9 +1,9 @@
 from random import choice, randint, random
 
-from .human import Activity, Emotion, Human
-from .town.town import Town
-from .town.place import Place, Room, PlaceFunction as PF
-from .actions import Action, Move, Wait, ChangeActivity, UpdateLevel
+from recomm_town.human import Activity, Emotion, Human
+from recomm_town.town.town import Town
+from recomm_town.town.place import Place, Room, PlaceFunction as PF
+from recomm_town.actions import Action, Move, Wait, ChangeActivity, UpdateLevel
 
 
 class World:

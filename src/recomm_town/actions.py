@@ -2,8 +2,8 @@ from typing import Union, Literal, TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from .town.place import Place
-    from .human import Human, Activity
+    from recomm_town.town.place import Place
+    from recomm_town.human import Human, Activity
 
 
 T = Union[Literal["PASS"], Literal["NEXT"], "Action"]

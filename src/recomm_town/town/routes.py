@@ -1,5 +1,5 @@
 from typing import Optional
-from .place import Place
+from recomm_town.town.place import Place
 
 
 class Routes:

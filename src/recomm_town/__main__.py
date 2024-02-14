@@ -6,12 +6,12 @@ from random import choice, random
 from pyglet.shapes import Line, Rectangle, Circle
 from pyglet.text import Label
 
-from src.common import Vec
-from src.town.town import Town
-from src.town.place import LocalRoom, Place, PlaceFunction as PF
-from src.human import Human, HumanInfo
-from src.world import World
-from src.app import App
+from recomm_town.common import Vec
+from recomm_town.town.town import Town
+from recomm_town.town.place import LocalRoom, Place, PlaceFunction as PF
+from recomm_town.human import Human, HumanInfo
+from recomm_town.world import World
+from recomm_town.app import App
 
 
 def make_flat_rooms(n, m):

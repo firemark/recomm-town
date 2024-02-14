@@ -1,13 +1,14 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import total_ordering
 from enum import Enum, auto
 from typing import TYPE_CHECKING
-from .common import Vec, Trivia
-from .actions import Action
+
+from recomm_town.common import Vec, Trivia
+from recomm_town.actions import Action
 
 
 if TYPE_CHECKING:
-    from .town.place import Place, Room
+    from recomm_town.town.place import Place, Room
 
 
 class Activity(Enum):
@@ -83,10 +84,10 @@ class Level:
 
 @dataclass
 class Levels:
-    fridge: Level = Level(1.0)
-    fullness: Level = Level(1.0)
-    money: Level = Level(0.0)
-    tiredness: Level = Level(0.0)
+    fridge: Level = field(default_factory=lambda: Level(1.0))
+    fullness: Level = field(default_factory=lambda: Level(1.0))
+    money: Level = field(default_factory=lambda: Level(0.0))
+    tiredness: Level = field(default_factory=lambda: Level(0.0))
 
 
 class Human:

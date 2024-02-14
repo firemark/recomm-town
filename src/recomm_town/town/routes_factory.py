@@ -1,6 +1,6 @@
 from typing import Iterator
-from .place import Place
-from .routes import Routes
+from recomm_town.town.place import Place
+from recomm_town.town.routes import Routes
 
 
 class RoutesFactory:
