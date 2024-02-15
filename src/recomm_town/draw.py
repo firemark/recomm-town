@@ -39,7 +39,7 @@ ACTIVITY_CHAR = {
     Activity.MOVE: ("⚡", _to_color("#E30B5C")),
     Activity.WORK: ("⚒", _to_color("#8B8680")),
     Activity.SHOP: ("$", _to_color("#733380")),
-    Activity.TALK: ("@", _to_color("#95E0E8")),
+    Activity.TALK: ("!", _to_color("#0095B7")),
     Activity.READ: ("✎", _to_color("#CA3435")),
     Activity.EAT: ("★", _to_color("#CA3435")),
     Activity.SLEEP: ("z", _to_color("#3F26BF")),

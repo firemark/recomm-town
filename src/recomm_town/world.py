@@ -1,4 +1,5 @@
 from collections import defaultdict
+from itertools import chain
 from random import choice, randint, random
 
 from recomm_town.human import Activity, Emotion, Human
@@ -59,12 +60,22 @@ class World:
         return neighbors - {human}
 
     def _do_it_human(self, human: Human, dt: float):
-        if not human.actions:
+        while not human.actions:
             human.actions = self._make_new_actions(human)
+            while human.actions:
+                result = human.actions[0].on_start(human)
+                if result != "NEXT":
+                    break
+                human.actions.pop(0)
 
         result = human.actions[0].do_it(human, dt)
         if result == "NEXT":
             human.actions.pop(0)
+            while human.actions:
+                result = human.actions[0].on_start(human)
+                if result != "NEXT":
+                    break
+                human.actions.pop(0)
         elif isinstance(result, Action):
             human.actions[0] = result
 
@@ -177,13 +188,24 @@ class World:
         levels: dict[str, float],
     ) -> list[Action]:
         room = self._find_available_room(place)
+        parts = randint(4, 8)
+        ratio = 1 / parts
+        main_actions = list(
+            chain.from_iterable(
+                [
+                    actions.UpdateLevelsInTime(time, levels, ratio),
+                    actions.RandomTalk(randint(2, 5)),
+                ]
+                for i in range(parts)
+            )
+        )
         return [
             actions.TakeRoom(room),
             actions.ChangeActivity(Activity.MOVE),
             *self._make_move_action_to_place(human, place),
             *self._make_move_action_to_room(room),
             actions.ChangeActivity(activity),
-            actions.UpdateLevelsInTime(time, levels),
+            *main_actions,
             *self._make_move_action_from_room(room),
             actions.FreeRoom(room),
         ]
