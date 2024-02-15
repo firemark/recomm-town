@@ -41,6 +41,8 @@ class Human:
         self.position = position
         self.knowledge = []
         self.position_observers = []
+        self.level_observers = []
+        self.activity_observers = []
         self.actions = []
         self.info = info
         self.levels = Levels()
@@ -59,6 +61,18 @@ class Human:
             return Emotion.TIRED
 
         return Emotion.HAPPY
+
+    def update_activity(self, activity: Activity):
+        self.activity = activity
+        for cb in self.activity_observers:
+            cb(activity)
+
+    def update_level(self, attr: str, value: float):
+        level = getattr(self.levels, attr)
+        level += value
+        setattr(self.levels, attr, level)
+        for cb in self.level_observers:
+            cb(attr, level.value)
 
     def move(self, dx, dy):
         old_position = self.position

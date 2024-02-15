@@ -139,5 +139,5 @@ if __name__ == "__main__":
     draw = Draw(app.batch)
     draw.draw_path(world.town.path, app.town_group)
     draw.draw_places(world.town.places, app.town_group)
-    draw.draw_people(world.people, app.people_group)
+    draw.draw_people(app, world.people, app.people_group)
     app.run()

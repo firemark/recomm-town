@@ -49,8 +49,7 @@ class UpdateLevelsInTime(Action):
         self.time -= dt
         if self.time <= 0.0:
             for attr, value in self.levels.items():
-                level = getattr(human.levels, attr)
-                setattr(human.levels, attr, level + value)
+                human.update_level(attr, value)
             return "NEXT"
         return "PASS"
 
@@ -65,7 +64,7 @@ class ChangeActivity(Action):
         # print("    changes activity", human.activity.name, "=>", self.activity.name)
         # print("    emotion:", human.measure_emotion().name)
         # print("    levels:", human.levels)
-        human.activity = self.activity
+        human.update_activity(self.activity)
         return "NEXT"
 
 
