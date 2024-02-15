@@ -42,15 +42,20 @@ class Wait(Action):
 
 class UpdateLevelsInTime(Action):
     def __init__(self, time: float, levels: dict[str, float]):
+        self.total_time = time
         self.time = time
         self.levels = levels
 
     def do_it(self, human: "Human", dt: float) -> T:
         self.time -= dt
         if self.time <= 0.0:
+            ratio = (dt - self.time) / self.total_time
             for attr, value in self.levels.items():
-                human.update_level(attr, value)
+                human.update_level(attr, value * ratio)
             return "NEXT"
+        ratio = dt / self.total_time
+        for attr, value in self.levels.items():
+            human.update_level(attr, value * ratio)
         return "PASS"
 
 

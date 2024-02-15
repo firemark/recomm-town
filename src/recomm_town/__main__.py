@@ -90,7 +90,7 @@ def make_world():
                     continue
                 break
             info = HumanInfo(
-                name=f"Person {i}{chr(j + ord('A'))}",
+                name=f"{i}{chr(j + ord('A'))}",
                 liveplace=home,
                 liveroom=room,
                 workplace=work,
@@ -124,17 +124,8 @@ def make_world():
 
 
 if __name__ == "__main__":
-    RED = (0xFF, 0x00, 0x00)
-    BLUE = (0x00, 0x00, 0xFF)
-    GREEN = (0x00, 0xFF, 0x00)
-    BLACK = (0x00, 0x00, 0x00)
-    WHITE = (0xFF, 0xFF, 0xFF)
-    GREY = (0xAA, 0xAA, 0xAA)
-
     world = make_world()
-    from pprint import pprint
 
-    pprint(world.town.path)
     app = App(world)
     draw = Draw(app.batch)
     draw.draw_path(world.town.path, app.town_group)

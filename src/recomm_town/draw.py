@@ -3,6 +3,7 @@ from pyglet.graphics import Batch, Group
 from pyglet.shapes import Line, Rectangle, BorderedRectangle, Circle
 from pyglet.window import Window
 from pyglet.text import Label
+from recomm_town.human.activity import Activity
 
 from recomm_town.human.human import Human
 from recomm_town.town import PlaceFunction as PF
@@ -18,19 +19,31 @@ def _to_color(x: str) -> tuple[int, int, int]:
 
 
 class COLORS:
-    room = (0x00, 0x00, 0xFF)
-    human = (0xFF, 0xFF, 0xFF)
-    place = (0xAA, 0xAA, 0xAA)
-    crossroad = (0x00, 0xFF, 0x00)
-    way = (0xFF, 0x00, 0x00)
+    room = _to_color("#3C69E7")
+    human = _to_color("#FFCBA4")
+    place = _to_color("#EED9C4")
+    crossroad = _to_color("#FDD7E4")
+    way = _to_color("#AF593E")
 
 
 LEVELS = ["fridge", "fullness", "money", "tiredness"]
 LEVEL_COLORS = {
     "fridge": _to_color("#D9DAD2"),
-    "fullness": _to_color("#F1D651"),
-    "money": _to_color("#01A638"),
+    "fullness": _to_color("#01A638"),
+    "money": _to_color("#F1D651"),
     "tiredness": _to_color("#2D383A"),
+}
+
+ACTIVITY_CHAR = {
+    Activity.NONE: ("?", _to_color("#000000")),
+    Activity.MOVE: ("⚡", _to_color("#E30B5C")),
+    Activity.WORK: ("⚒", _to_color("#8B8680")),
+    Activity.SHOP: ("$", _to_color("#733380")),
+    Activity.TALK: ("@", _to_color("#95E0E8")),
+    Activity.READ: ("✎", _to_color("#CA3435")),
+    Activity.EAT: ("★", _to_color("#CA3435")),
+    Activity.SLEEP: ("z", _to_color("#3F26BF")),
+    Activity.ENJOY: ("♫", _to_color("#003366")),
 }
 
 
@@ -106,8 +119,6 @@ class Draw:
         kw = dict(**self.kw, group=group)
         kw_font = dict(
             **self.kw_font,
-            color=(0x00, 0x11, 0x44, 255),
-            font_size=14,
             bold=True,
             group=group,
         )
@@ -125,14 +136,28 @@ class Draw:
             )
             level_bars[level] = bar
 
-        self.objs += [
-            Label(human.info.name, x=0, y=size * 1.5, **kw_font),  # Name
-            Circle(0, 0, size, color=COLORS.human, **kw),  # Body
-            level_bars,
-        ]
+        act_label = Label("?", x=0, y=size / 4, font_size=36, **kw_font)
 
-        def update(attr, value):
+        def level_update(attr, value):
             bar = level_bars[attr]
             bar.width = 2 * size * value
 
-        human.level_observers.append(update)
+        def act_update(activity):
+            act_label.text, act_label.color = ACTIVITY_CHAR[activity]
+
+        self.objs += [
+            Label(  # Name
+                human.info.name,
+                x=0,
+                y=size * 1.5,
+                font_size=14,
+                color=_to_color("#E62E6B") + (255,),
+                **kw_font,
+            ),
+            Circle(0, 0, size, color=COLORS.human, **kw),  # Body
+            level_bars,
+            act_label,
+        ]
+
+        human.level_observers.append(level_update)
+        human.activity_observers.append(act_update)

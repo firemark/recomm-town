@@ -48,20 +48,16 @@ class App(Window):
             position = places[self.place_index].position
             self.set_view(position, zoom=8.0)
             self.place_index += 1
-            if self.place_index > len(places):
+            if self.place_index >= len(places):
                 self.place_index = 0
         if symbol == key.UP:
             self.move_position += Vec(0.0, +20.0)
-            self.recreate_view()
         elif symbol == key.DOWN:
             self.move_position += Vec(0.0, -20.0)
-            self.recreate_view()
         elif symbol == key.LEFT:
             self.move_position += Vec(-20.0, 0.0)
-            self.recreate_view()
         elif symbol == key.RIGHT:
             self.move_position += Vec(+20.0, 0.0)
-            self.recreate_view()
         else:
             return super().on_key_press(symbol, modifiers)
 
@@ -78,6 +74,8 @@ class App(Window):
         elif symbol == key.RIGHT:
             self.move_position -= Vec(+20.0, 0.0)
             self.recreate_view()
+        else:
+            return super().on_key_press(symbol, modifiers)
 
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
         zoom = 1.05 if scroll_y > 0 else 0.95
