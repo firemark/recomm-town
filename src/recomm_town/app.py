@@ -1,10 +1,10 @@
-from dataclasses import dataclass
-
 import pyglet
+from pyglet.gl import gl
 from pyglet.math import Mat4
-from pyglet import gl
 from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group
+
+from recomm_town.common import Vec
 
 
 class App(Window):
@@ -19,32 +19,74 @@ class App(Window):
         self.batch = Batch()
         self.town_group = Group(order=0)
         self.people_group = Group(order=1)
+        self.move_position = Vec(0.0, 0.0)
+        self.set_view(Vec(0.0, 0.0))
+        self.world = world
+        self.place_index = 0
+
+    def set_view(self, position, zoom=1.0):
+        self.camera_position = position
+        self.camera_zoom = zoom
+        self.recreate_view()
+
+    def recreate_view(self):
         w = self.width / 2
         h = self.height / 2
-        self.view = self.view.translate((w, h, 0.0))
-        self.view = self.view.scale((h / 1000, h / 1000, 1.0))
-        self.world = world
+        z = self.camera_zoom * h / 4000.0
+        p = self.camera_position * -z + Vec(w, h)
+        view = Mat4()
+        view = view.translate((p.x, p.y, 0.0))
+        view = view.scale((z, z, 1.0))
+        self.view = view
 
     def run(self):
         pyglet.app.run()
 
     def on_key_press(self, symbol, modifiers):
-        print(self.view)
-        ws = 20 / self.view[0]
+        if symbol == key.Q:
+            places = self.world.town.places
+            position = places[self.place_index].position
+            self.set_view(position, zoom=8.0)
+            self.place_index += 1
+            if self.place_index > len(places):
+                self.place_index = 0
         if symbol == key.UP:
-            self.view = self.view.translate((0.0, -ws, 0.0))
+            self.move_position += Vec(0.0, +20.0)
+            self.recreate_view()
         elif symbol == key.DOWN:
-            self.view = self.view.translate((0.0, +ws, 0.0))
+            self.move_position += Vec(0.0, -20.0)
+            self.recreate_view()
         elif symbol == key.LEFT:
-            self.view = self.view.translate((+ws, 0.0, 0.0))
+            self.move_position += Vec(-20.0, 0.0)
+            self.recreate_view()
         elif symbol == key.RIGHT:
-            self.view = self.view.translate((-ws, 0.0, 0.0))
+            self.move_position += Vec(+20.0, 0.0)
+            self.recreate_view()
         else:
             return super().on_key_press(symbol, modifiers)
 
+    def on_key_release(self, symbol, modifiers):
+        if symbol == key.UP:
+            self.move_position -= Vec(0.0, +20.0)
+            self.recreate_view()
+        elif symbol == key.DOWN:
+            self.move_position -= Vec(0.0, -20.0)
+            self.recreate_view()
+        elif symbol == key.LEFT:
+            self.move_position -= Vec(-20.0, 0.0)
+            self.recreate_view()
+        elif symbol == key.RIGHT:
+            self.move_position -= Vec(+20.0, 0.0)
+            self.recreate_view()
+
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
         zoom = 1.05 if scroll_y > 0 else 0.95
-        self.view = self.view.scale((zoom, zoom, 1.0))
+        self.camera_zoom *= zoom
+        self.recreate_view()
+
+    def on_resize(self, width, height):
+        super().on_resize(width, height)
+        self.recreate_view()
 
     def on_draw(self):
         self.clear()
@@ -53,3 +95,6 @@ class App(Window):
 
     def on_refresh(self, dt):
         self.world.do_it(dt)
+        if self.move_position.length_squared() > 1.0:
+            self.camera_position += self.move_position
+            self.recreate_view()
