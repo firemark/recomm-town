@@ -3,10 +3,8 @@ from itertools import chain
 from functools import partial
 from random import choice, random
 
-from pyglet.shapes import Line, Rectangle, Circle
-from pyglet.text import Label
-
 from recomm_town.common import Vec
+from recomm_town.draw import Draw
 from recomm_town.town.town import Town
 from recomm_town.town.place import LocalRoom, Place, PlaceFunction as PF
 from recomm_town.human import Human, HumanInfo
@@ -138,49 +136,8 @@ if __name__ == "__main__":
 
     pprint(world.town.path)
     app = App(world)
-    objs = []
-
-    kw = dict(batch=app.batch, group=app.town_group)
-    kw_font = dict(
-        font_name="Monospace",
-        anchor_x="center",
-        anchor_y="center",
-        color=(0, 0, 0, 255),
-        **kw,
-    )
-
-    for way in world.town.path:
-        a = way.a.position
-        b = way.b.position
-        objs.append(Line(a.x, a.y, b.x, b.y, width=50.0, color=RED, **kw))
-
-    for place in world.town.places:
-        color = GREEN if place.function == PF.CROSSROAD else GREY
-        p = place.position
-        start = place.box_start
-        size = place.box_end - start
-
-        objs.append(Rectangle(start.x, start.y, size.x, size.y, color=color, **kw))
-        objs.append(Label(place.name, x=p.x, y=p.y, font_size=36, **kw_font))
-        # objs.append(
-        #     Label(place.name, x=p.x, y=p.y + size.y - 12, font_size=48, **kw_font)
-        # )
-
-        s = place.room_size
-        h = s / 2
-        for room in place.rooms:
-            r = room.position - h
-            objs.append(Rectangle(r.x, r.y, s, s, color=BLUE, **kw))
-
-    def update(sprite, human, _):
-        sprite.x = human.position.x
-        sprite.y = human.position.y
-
-    kw = dict(batch=app.batch, group=app.people_group)
-    for human in world.people:
-        p = human.position
-        sprite = Circle(p.x, p.y, 20, color=WHITE, **kw)
-        human.position_observers.append(partial(update, sprite))
-        objs.append(sprite)
-
+    draw = Draw(app.batch)
+    draw.draw_path(world.town.path, app.town_group)
+    draw.draw_places(world.town.places, app.town_group)
+    draw.draw_people(world.people, app.people_group)
     app.run()
