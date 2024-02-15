@@ -1,3 +1,4 @@
+from collections import defaultdict
 from random import choice, randint, random
 
 from recomm_town.human import Activity, Emotion, Human
@@ -14,18 +15,55 @@ from recomm_town.actions import (
 
 
 class World:
+    GRID_CELL_SIZE = 200.0
+    NEIGHBOR_CELLS = [(x, y) for x in range(-1, 2) for y in range(-1, 2)]
+
     town: Town
     people: list[Human]
     simulation_speed: float
+    people_grid: dict[tuple[int, int], set[Human]]
 
     def __init__(self, town: Town, people: list[Human]):
         self.town = town
         self.people = people
         self.simulation_speed = 1.0
+        self.people_grid = defaultdict(set)
+        for human in people:
+            self._update_human_coords(human, human.position)
+            human.position_observers.append(self._update_human_coords)
 
     def do_it(self, dt: float):
         for human in self.people:
             self._do_it_human(human, dt * self.simulation_speed)
+
+    def _update_human_coords(self, human: Human, old_position):
+        cell_size = self.GRID_CELL_SIZE
+        old_x = int(old_position.x / cell_size)
+        old_y = int(old_position.y / cell_size)
+
+        new_x = int(human.position.x / cell_size)
+        new_y = int(human.position.y / cell_size)
+
+        if (old_x, old_y) == (new_x, new_y):
+            # not changed.
+            return
+
+        # remove old position
+        for x, y in self.NEIGHBOR_CELLS:
+            self.people_grid[old_x + x, old_y + y].discard(human)
+
+        # add new position
+        for x, y in self.NEIGHBOR_CELLS:
+            self.people_grid[new_x + x, new_y + y].add(human)
+
+    def _find_neighbors(self, human: Human) -> set[Human]:
+        cell_size = self.GRID_CELL_SIZE
+        new_x = int(human.position.x / cell_size)
+        new_y = int(human.position.y / cell_size)
+        neighbors = set()
+        for x, y in self.NEIGHBOR_CELLS:
+            neighbors |= self.people_grid[new_x + x, new_y + y]
+        return neighbors - {human}
 
     def _do_it_human(self, human: Human, dt: float):
         if not human.actions:

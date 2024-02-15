@@ -1,4 +1,5 @@
 from typing import Optional
+
 from recomm_town.town.place import Place
 
 

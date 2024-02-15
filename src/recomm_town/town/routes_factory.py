@@ -1,4 +1,5 @@
 from typing import Iterator
+
 from recomm_town.town.place import Place
 from recomm_town.town.routes import Routes
 

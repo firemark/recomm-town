@@ -1,14 +1,11 @@
-from typing import Union, Literal, TYPE_CHECKING
+from typing import Literal
 
 from recomm_town.common import Vec
 from recomm_town.town.place import Room
+from recomm_town.human import Human, Activity
 
 
-if TYPE_CHECKING:
-    from recomm_town.human import Human, Activity
-
-
-T = Union[Literal["PASS"], Literal["NEXT"], "Action"]
+T = Literal["FAIL", "PASS", "NEXT"] | list["Action"]
 
 
 class Action:
@@ -63,11 +60,11 @@ class ChangeActivity(Action):
         self.activity = activity
 
     def do_it(self, human: "Human", dt: float) -> T:
-        name = human.info.name
-        print(name)
-        print("    changes activity", human.activity.name, "=>", self.activity.name)
-        print("    emotion:", human.measure_emotion().name)
-        print("    levels:", human.levels)
+        # name = human.info.name
+        # print(name)
+        # print("    changes activity", human.activity.name, "=>", self.activity.name)
+        # print("    emotion:", human.measure_emotion().name)
+        # print("    levels:", human.levels)
         human.activity = self.activity
         return "NEXT"
 

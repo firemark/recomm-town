@@ -1,12 +1,10 @@
 from enum import Enum
 from dataclasses import dataclass
 from functools import total_ordering
-from typing import Iterable, TYPE_CHECKING
+from typing import Iterable
 
 from recomm_town.common import Vec
-
-if TYPE_CHECKING:
-    from recomm_town.human import Human
+from recomm_town.human import Human
 
 
 class PlaceFunction(Enum):

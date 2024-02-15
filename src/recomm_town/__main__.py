@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from itertools import chain
 from functools import partial
-from math import copysign
 from random import choice, random
 
 from pyglet.shapes import Line, Rectangle, Circle
@@ -173,9 +172,9 @@ if __name__ == "__main__":
             r = room.position - h
             objs.append(Rectangle(r.x, r.y, s, s, color=BLUE, **kw))
 
-    def update(sprite, v):
-        sprite.x = v.x
-        sprite.y = v.y
+    def update(sprite, human, _):
+        sprite.x = human.position.x
+        sprite.y = human.position.y
 
     kw = dict(batch=app.batch, group=app.people_group)
     for human in world.people:
