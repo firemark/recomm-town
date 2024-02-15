@@ -2,16 +2,9 @@ from collections import defaultdict
 from random import choice, randint, random
 
 from recomm_town.human import Activity, Emotion, Human
-from recomm_town.town.town import Town
-from recomm_town.town.place import Place, Room, PlaceFunction as PF
-from recomm_town.actions import (
-    Action,
-    Move,
-    UpdateLevelsInTime,
-    ChangeActivity,
-    TakeRoom,
-    FreeRoom,
-)
+from recomm_town.town import Town, Place, Room, PlaceFunction as PF
+from recomm_town.actions import Action
+from recomm_town import actions
 
 
 class World:
@@ -156,11 +149,11 @@ class World:
         levels: dict[str, float],
     ) -> list[Action]:
         return [
-            ChangeActivity(Activity.MOVE),
+            actions.ChangeActivity(Activity.MOVE),
             *self._make_move_action_to_place(human, human.info.liveplace),
             *self._make_move_action_to_room(human.info.liveroom),
-            ChangeActivity(activity),
-            UpdateLevelsInTime(time, levels),
+            actions.ChangeActivity(activity),
+            actions.UpdateLevelsInTime(time, levels),
             *self._make_move_action_from_room(human.info.liveroom),
         ]
 
@@ -185,14 +178,14 @@ class World:
     ) -> list[Action]:
         room = self._find_available_room(place)
         return [
-            TakeRoom(room),
-            ChangeActivity(Activity.MOVE),
+            actions.TakeRoom(room),
+            actions.ChangeActivity(Activity.MOVE),
             *self._make_move_action_to_place(human, place),
             *self._make_move_action_to_room(room),
-            ChangeActivity(activity),
-            UpdateLevelsInTime(time, levels),
+            actions.ChangeActivity(activity),
+            actions.UpdateLevelsInTime(time, levels),
             *self._make_move_action_from_room(room),
-            FreeRoom(room),
+            actions.FreeRoom(room),
         ]
 
     def _make_move_action_to_place(self, human: Human, place_to: Place) -> list[Action]:
@@ -200,15 +193,15 @@ class World:
         route = self.town.find_route(place_from, place_to)
         if route is None:
             raise RuntimeError("???")
-        return [Move(place.position) for place in route]
+        return [actions.Move(place.position) for place in route]
 
     def _make_move_action_to_room(self, room: Room) -> list[Action]:
-        actions: list[Action] = [Move(vec) for vec in room.path]
-        return actions + [Move(room.position)]
+        act: list[Action] = [actions.Move(vec) for vec in room.path]
+        return act + [actions.Move(room.position)]
 
     def _make_move_action_from_room(self, room: Room) -> list[Action]:
-        actions: list[Action] = [Move(vec) for vec in room.path[::-1]]
-        return [Move(room.position)] + actions
+        act: list[Action] = [actions.Move(vec) for vec in room.path[::-1]]
+        return [actions.Move(room.position)] + act
 
     def _find_place_by_function(self, human: Human, func: PF) -> Place:
         place_from = self.town.find_nearest_place(human.position)
@@ -226,6 +219,4 @@ class World:
         available_rooms = [
             room for room in place.rooms if not room.owner and not room.occupied_by
         ]
-        if not available_rooms:
-            print("NO ROOMS!", place)
         return choice(available_rooms)
