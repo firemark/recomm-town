@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from functools import total_ordering
 from typing import Iterable
 
-from recomm_town.common import Vec
+from recomm_town.common import Trivia, Vec
 from recomm_town.human import Human
 
 
@@ -39,6 +39,7 @@ class Place:
     room_size: float
     box_start: Vec
     box_end: Vec
+    trivias: list[Trivia]
 
     def __init__(
         self,
@@ -48,6 +49,7 @@ class Place:
         rooms: Iterable[LocalRoom] | None = None,
         room_size: float = 80.0,
         room_padding: float = 10.0,
+        trivias: list[Trivia] | None = None
     ):
         self.name = name
         self.position = position
@@ -55,6 +57,7 @@ class Place:
         self.neighborhood = set()
         self.room_size = room_size
         self.room_padding = room_padding
+        self.trivias = trivias or []
 
         s = room_size + room_padding
         self.rooms = [

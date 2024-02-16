@@ -3,7 +3,7 @@ from itertools import chain
 from functools import partial
 from random import choice, random
 
-from recomm_town.common import Vec
+from recomm_town.common import Trivia, Vec
 from recomm_town.draw import Draw
 from recomm_town.town.town import Town
 from recomm_town.town.place import LocalRoom, Place, PlaceFunction as PF
@@ -35,6 +35,22 @@ def make_grid_rooms(n):
 
 
 def make_world():
+    skill_trivias = [
+        Trivia("skill", "pottery"),
+        Trivia("skill", "soldering"),
+        Trivia("skill", "crocheting"),
+    ]
+    paint_trivias = [
+        Trivia("paiting", "graffiti"),
+        Trivia("paiting", "cubism"),
+        Trivia("paiting", "watercolor"),
+    ]
+    music_trivias = [
+        Trivia("music", "techno"),
+        Trivia("music", "rock"),
+        Trivia("music", "classic"),
+    ]
+
     make_home = partial(
         Place, function=PF.HOME, rooms=list(make_flat_rooms(4, 2)), room_size=120.0
     )
@@ -50,7 +66,13 @@ def make_world():
         make_home("Flat Dawid", home_center_right + Vec(0.0, +500.0)),
     ]
 
-    work = Place("Work", Vec(-1000.0, +1000.0), PF.WORK, make_flat_rooms(8, 4))
+    work = Place(
+        "Work",
+        Vec(-1000.0, +1000.0),
+        PF.WORK,
+        make_flat_rooms(8, 4),
+        trivias=skill_trivias,
+    )
     shop_a = Place("Shop Agata", Vec(0, -300.0), PF.SHOP, make_flat_rooms(2, 2))
     shop_b = Place("Shop Basia", Vec(+1000.0, -1500.0), PF.SHOP, make_flat_rooms(4, 2))
     garden = Place(
@@ -60,9 +82,16 @@ def make_world():
         make_grid_rooms(3),
         100.0,
         80.0,
+        trivias=music_trivias,
     )
     museum = Place(
-        "City museum", Vec(0.0, +500.0), PF.ENTERTAIMENT, make_grid_rooms(2), 50.0, 80.0
+        "City museum",
+        Vec(0.0, +500.0),
+        PF.ENTERTAIMENT,
+        make_grid_rooms(2),
+        50.0,
+        80.0,
+        trivias=paint_trivias,
     )
 
     cross_a = Place("Apple crossway", Vec(-1000.0, 0.0), PF.CROSSROAD)
@@ -120,7 +149,7 @@ def make_world():
             cross_home_left,
         ]
     )
-    return World(town, people)
+    return World(town, people, skill_trivias + paint_trivias + music_trivias)
 
 
 if __name__ == "__main__":
@@ -128,6 +157,7 @@ if __name__ == "__main__":
 
     app = App(world)
     draw = Draw(app.batch)
+    draw.draw_gui(len(world.people), app.gui_group)
     draw.draw_path(world.town.path, app.town_group)
     draw.draw_places(world.town.places, app.town_group)
     draw.draw_people(app, world.people, app.people_group)

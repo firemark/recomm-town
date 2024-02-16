@@ -40,5 +40,5 @@ class Vec(NamedTuple):
 
 
 class Trivia(NamedTuple):
+    category: str
     name: str
-    color: int

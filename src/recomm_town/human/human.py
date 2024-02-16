@@ -1,3 +1,4 @@
+from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -30,7 +31,7 @@ class Levels:
 
 
 class Human:
-    knowledge: list[Trivia]
+    knowledge: dict[Trivia, float]
     actions: list["Action"]
     position: Vec
     info: HumanInfo
@@ -39,10 +40,11 @@ class Human:
 
     def __init__(self, position: Vec, info: HumanInfo):
         self.position = position
-        self.knowledge = []
+        self.knowledge = defaultdict(float)
         self.position_observers = []
         self.level_observers = []
         self.activity_observers = []
+        self.knowledge_observers = []
         self.actions = []
         self.info = info
         self.levels = Levels()
@@ -52,11 +54,10 @@ class Human:
         levels = self.levels
         if levels.money < 0.5:
             return Emotion.POOR
+        if levels.fridge < 0.4:
+            return Emotion.EMPTY_FRIDGE
         if levels.fullness < 0.5:
-            if levels.fridge < 0.4:
-                return Emotion.EMPTY_FRIDGE
-            else:
-                return Emotion.HUNGRY
+            return Emotion.HUNGRY
         if levels.tiredness > 0.6:
             return Emotion.TIRED
 
@@ -73,6 +74,13 @@ class Human:
         setattr(self.levels, attr, level)
         for cb in self.level_observers:
             cb(attr, level.value)
+
+    def update_knowledge(self, trivia: Trivia, value: float, max_value: float=1.0):
+        prev_value = self.knowledge[trivia]
+        new_value = prev_value + min(value, max(0.0, max_value - prev_value))
+        self.knowledge[trivia] = new_value 
+        for cb in self.knowledge_observers:
+            cb(trivia, new_value, prev_value)
 
     def move(self, dx, dy):
         old_position = self.position

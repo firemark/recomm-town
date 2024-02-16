@@ -1,8 +1,10 @@
-from math import pi
+from collections import defaultdict
+
 from pyglet.graphics import Batch, Group
 from pyglet.shapes import Line, Rectangle, BorderedRectangle, Circle
 from pyglet.window import Window
-from pyglet.text import Label
+from pyglet.text import Label, HTMLLabel
+from recomm_town.app import GuiGroup
 from recomm_town.human.activity import Activity
 
 from recomm_town.human.human import Human
@@ -80,6 +82,25 @@ class Draw:
             anchor_y="center",
             **self.kw,
         )
+        self.trivias_level = defaultdict(float)
+
+    def draw_gui(self, people_count, group: GuiGroup):
+        kw = dict(**self.kw, group=group)
+        self.people_count = people_count
+        self.trivia_dashboard = Label(
+            text="",
+            font_name="Monospace",
+            font_size=16,
+            multiline=True,
+            color=(0, 0, 0, 255),
+            width=700.0,
+            anchor_x="left",
+            anchor_y="top",
+            bold=True,
+            x=50.0,
+            y=-20.0,
+            **kw
+        )
 
     def draw_path(self, path: list[Way], group: Group):
         kw = dict(**self.kw, group=group, width=50.0, color=COLORS.way)
@@ -146,6 +167,18 @@ class Draw:
         def act_update(activity):
             act_label.text, act_label.color = ACTIVITY_CHAR[activity]
 
+        def trivia_update(trivia, new, old):
+            diff = new - old
+            if diff == 0.0:
+                return
+            self.trivias_level[trivia] += diff
+            c = self.people_count
+            gen = enumerate(sorted(self.trivias_level.items(), key=lambda o: -o[1]), start=1)
+            self.trivia_dashboard.text = "\n".join(
+                f"{i:2}. {f'[{t.category}] {t.name}':30} {l / c  * 100:6.2f}%"
+                for i, (t, l) in gen
+            )
+
         self.objs += [
             Label(  # Name
                 human.info.name,
@@ -162,3 +195,4 @@ class Draw:
 
         human.level_observers.append(level_update)
         human.activity_observers.append(act_update)
+        human.knowledge_observers.append(trivia_update)

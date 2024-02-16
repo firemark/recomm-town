@@ -7,10 +7,26 @@ from pyglet.graphics import Batch, Group
 from recomm_town.common import Vec
 
 
+class GuiGroup(Group):
+
+    def __init__(self, window: Window, order: int = 0, parent=None):
+        super().__init__(order, parent)
+        self._window = window
+
+    def set_state(self):
+        h = self._window.height
+        self._old_view = self._window.view
+        self._window.view = Mat4().translate((0, h, 0.0))
+
+    def unset_state(self):
+        self._window.view = self._old_view
+
+
 class App(Window):
     batch: Batch
     town_group: Group
     people_group: Group
+    gui_group: GuiGroup
 
     _zoom: float
 
@@ -20,6 +36,7 @@ class App(Window):
         self.batch = Batch()
         self.town_group = Group(order=0)
         self.people_group = Group(order=1)
+        self.gui_group = GuiGroup(self, order=2)
         self.move_position = Vec(0.0, 0.0)
         self.set_view(Vec(0.0, 0.0))
         self.world = world

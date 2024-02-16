@@ -3,6 +3,7 @@ from functools import partial
 from itertools import chain
 from random import choice, randint, random
 
+from recomm_town.common import Trivia
 from recomm_town.human import Activity, Emotion, Human
 from recomm_town.town import Town, Place, Room, PlaceFunction as PF
 from recomm_town.actions import Action
@@ -17,12 +18,14 @@ class World:
     people: list[Human]
     simulation_speed: float
     people_grid: dict[tuple[int, int], set[Human]]
+    trivias: list[Trivia]
 
-    def __init__(self, town: Town, people: list[Human]):
+    def __init__(self, town: Town, people: list[Human], trivias: list[Trivia]):
         self.town = town
         self.people = people
         self.simulation_speed = 1.0
         self.people_grid = defaultdict(set)
+        self.trivas = trivias 
         for human in people:
             self._update_human_coords(human, human.position)
             human.position_observers.append(self._update_human_coords)
@@ -180,12 +183,16 @@ class World:
         levels: dict[str, float],
     ) -> list[Action]:
         room = self._find_available_room(place)
+        if random() > 0.5:
+            trivia = choice(place.trivias) if place.trivias else None
+        else:
+            trivia = None
         parts = randint(4, 8)
         ratio = 1 / parts
         main_actions = list(
             chain.from_iterable(
                 [
-                    actions.UpdateLevelsInTime(time, levels, ratio),
+                    actions.UpdateLevelsInTime(time, levels, ratio, trivia),
                     actions.RandomTalk(randint(2, 5), partial(self._find_neighbours, human)),
                 ]
                 for i in range(parts)

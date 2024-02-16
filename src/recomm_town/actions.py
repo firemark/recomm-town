@@ -1,7 +1,8 @@
+from functools import partial
 from typing import Literal
-from random import randint, random
+from random import choice, randint, random
 
-from recomm_town.common import Vec
+from recomm_town.common import Trivia, Vec
 from recomm_town.town.place import Room
 from recomm_town.human import Human, Activity
 
@@ -61,18 +62,24 @@ class Wait(Action):
 
 
 class UpdateLevelsInTime(Action):
-    def __init__(self, time: float, levels: dict[str, float], ratio: float = 1.0):
+    def __init__(
+        self,
+        time: float,
+        levels: dict[str, float],
+        ratio: float = 1.0,
+        trivia: Trivia | None = None,
+    ):
         self.total_time = ratio * time
         self.time = ratio * time
         self.levels = levels
         self.ratio = ratio
+        self.trivia = trivia
 
     def do_it(self, human: "Human", dt: float) -> T:
         self.time -= dt
         if self.time <= 0.0:
-            ratio = self.ratio * (dt - self.time) / self.total_time
-            for attr, value in self.levels.items():
-                human.update_level(attr, value * ratio)
+            if self.trivia:
+                human.update_knowledge(self.trivia, 0.2 * self.ratio, max_value=0.5)
             return "NEXT"
         ratio = self.ratio * dt / self.total_time
         for attr, value in self.levels.items():
@@ -105,16 +112,31 @@ class RandomTalk(ActionWithStart):
         for stranger in self.find_neighbours():
             if stranger.activity != Activity.TALK:
                 continue
-
-            time_to_share = randint(2, 5)
-            human.actions[0] = ShareTo(time_to_share, stranger)
-            stranger.actions[0] = ShareFrom(time_to_share, human)
-            return "STOP"
+            if stranger.knowledge and human.knowledge:
+                if random() > 0.5:
+                    return self._share(stranger, human)
+                else:
+                    return self._share(human, stranger)
+            if stranger.knowledge:
+                return self._share(stranger, human)
+            elif human.knowledge:
+                return self._share(human, stranger)
 
         self.previous_activity = human.activity
         human.update_activity(Activity.TALK)
         return "PASS"
 
+    @staticmethod
+    def _share(teacher: Human, student: Human):
+        time_to_share = randint(2, 5)
+        teach_level = randint(2, 5) / 10
+        trivia = choice(list(teacher.knowledge.keys()))
+        level = teacher.knowledge[trivia]
+        share = partial(Share, time_to_share, trivia)
+        teacher.actions[0] = share(max=1.0)
+        student.actions[0] = share(level=teach_level, max=level)
+        return "STOP"
+
     def on_invoke(self, human: "Human", dt: float) -> T:
         self.time -= dt
         if self.time <= 0.0:
@@ -123,10 +145,12 @@ class RandomTalk(ActionWithStart):
         return "PASS"
 
 
-class ShareFrom(ActionWithStart):
-    def __init__(self, time: float, teacher: Human) -> None:
+class Share(ActionWithStart):
+    def __init__(self, time: float, trivia: Trivia, level: float = 0.2, max: float = 1.0) -> None:
         self.time = time
-        self.teacher = teacher
+        self.trivia = trivia
+        self.level = level
+        self.max = max
 
     def on_start(self, human: Human) -> T:
         self.previous_activity = human.activity
@@ -137,25 +161,9 @@ class ShareFrom(ActionWithStart):
         self.time -= dt
         if self.time <= 0.0:
             human.update_activity(self.previous_activity)
+            human.update_knowledge(self.trivia, self.level, self.max)
             return "NEXT"
-        return "PASS"
 
-
-class ShareTo(ActionWithStart):
-    def __init__(self, time: float, student: Human) -> None:
-        self.time = time
-        self.student = student
-
-    def on_start(self, human: Human) -> T:
-        self.previous_activity = human.activity
-        human.update_activity(Activity.SHARE)
-        return "PASS"
-
-    def on_invoke(self, human: "Human", dt: float) -> T:
-        self.time -= dt
-        if self.time <= 0.0:
-            human.update_activity(self.previous_activity)
-            return "NEXT"
         return "PASS"
 
 
