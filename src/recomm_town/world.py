@@ -1,4 +1,5 @@
 from collections import defaultdict
+from functools import partial
 from itertools import chain
 from random import choice, randint, random
 
@@ -9,7 +10,7 @@ from recomm_town import actions
 
 
 class World:
-    GRID_CELL_SIZE = 200.0
+    GRID_CELL_SIZE = 150.0
     NEIGHBOR_CELLS = [(x, y) for x in range(-1, 2) for y in range(-1, 2)]
 
     town: Town
@@ -50,7 +51,7 @@ class World:
         for x, y in self.NEIGHBOR_CELLS:
             self.people_grid[new_x + x, new_y + y].add(human)
 
-    def _find_neighbors(self, human: Human) -> set[Human]:
+    def _find_neighbours(self, human: Human) -> set[Human]:
         cell_size = self.GRID_CELL_SIZE
         new_x = int(human.position.x / cell_size)
         new_y = int(human.position.y / cell_size)
@@ -62,22 +63,13 @@ class World:
     def _do_it_human(self, human: Human, dt: float):
         while not human.actions:
             human.actions = self._make_new_actions(human)
-            while human.actions:
-                result = human.actions[0].on_start(human)
-                if result != "NEXT":
-                    break
-                human.actions.pop(0)
 
         result = human.actions[0].do_it(human, dt)
-        if result == "NEXT":
-            human.actions.pop(0)
-            while human.actions:
-                result = human.actions[0].on_start(human)
-                if result != "NEXT":
-                    break
+        match result:
+            case "NEXT":
                 human.actions.pop(0)
-        elif isinstance(result, Action):
-            human.actions[0] = result
+            case "FAIL":
+                human.actions = []
 
     def _make_new_actions(self, human: Human) -> list[Action]:
         match human.measure_emotion():
@@ -194,7 +186,7 @@ class World:
             chain.from_iterable(
                 [
                     actions.UpdateLevelsInTime(time, levels, ratio),
-                    actions.RandomTalk(randint(2, 5)),
+                    actions.RandomTalk(randint(2, 5), partial(self._find_neighbours, human)),
                 ]
                 for i in range(parts)
             )

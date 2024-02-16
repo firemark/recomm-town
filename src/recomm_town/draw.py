@@ -44,6 +44,7 @@ ACTIVITY_CHAR = {
     Activity.EAT: ("★", _to_color("#CA3435")),
     Activity.SLEEP: ("z", _to_color("#3F26BF")),
     Activity.ENJOY: ("♫", _to_color("#003366")),
+    Activity.SHARE: ("♥", _to_color("#CA3435")),
 }
 
 
@@ -123,9 +124,8 @@ class Draw:
             group=group,
         )
 
-        level_bars = {}
-        for index, level in enumerate(LEVELS, start=1):
-            bar = BorderedRectangle(
+        level_bars = {
+            level: BorderedRectangle(
                 -size,
                 -size * 1.6 - size / 2 * (4 - index),
                 2 * size * getattr(human.levels, level).value,
@@ -134,7 +134,8 @@ class Draw:
                 border=5,
                 **kw,
             )
-            level_bars[level] = bar
+            for index, level in enumerate(LEVELS, start=1)
+        }
 
         act_label = Label("?", x=0, y=size / 4, font_size=36, **kw_font)
 

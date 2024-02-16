@@ -1,19 +1,35 @@
 from typing import Literal
-from random import random
+from random import randint, random
 
 from recomm_town.common import Vec
 from recomm_town.town.place import Room
 from recomm_town.human import Human, Activity
 
 
-T = Literal["FAIL", "PASS", "NEXT"] | list["Action"]
+T = Literal["FAIL", "PASS", "STOP", "NEXT"]
 
 
 class Action:
+
+    def do_it(self, human: "Human", dt: float) -> T:
+        return "PASS"
+
+
+class ActionWithStart(Action):
+    __first_time: bool = True
+
+    def do_it(self, human: "Human", dt: float) -> T:
+        if self.__first_time:
+            self.__first_time = False
+            result = self.on_start(human)
+            if result != "PASS":
+                return result
+        return self.on_invoke(human, dt)
+
     def on_start(self, human: "Human") -> T:
         return "PASS"
 
-    def do_it(self, human: "Human", dt: float) -> T:
+    def on_invoke(self, human: "Human", dt: float) -> T:
         return "PASS"
 
 
@@ -37,7 +53,7 @@ class Wait(Action):
     def __init__(self, time: float):
         self.time = time
 
-    def do_it(self, human: "Human", dt: float) -> T:
+    def on_invoke(self, human: "Human", dt: float) -> T:
         self.time -= dt
         if self.time <= 0.0:
             return "NEXT"
@@ -77,18 +93,65 @@ class ChangeActivity(Action):
         human.update_activity(self.activity)
         return "NEXT"
 
-class RandomTalk(Action):
-    def __init__(self, time: float) -> None:
+
+class RandomTalk(ActionWithStart):
+    def __init__(self, time: float, find_neighbours) -> None:
         self.time = time
+        self.find_neighbours = find_neighbours
 
     def on_start(self, human: Human) -> T:
-        if random() > 0.5:
+        if random() > 0.25:
             return "NEXT"
+        for stranger in self.find_neighbours():
+            if stranger.activity != Activity.TALK:
+                continue
+
+            time_to_share = randint(2, 5)
+            human.actions[0] = ShareTo(time_to_share, stranger)
+            stranger.actions[0] = ShareFrom(time_to_share, human)
+            return "STOP"
+
         self.previous_activity = human.activity
         human.update_activity(Activity.TALK)
         return "PASS"
 
-    def do_it(self, human: "Human", dt: float) -> T:
+    def on_invoke(self, human: "Human", dt: float) -> T:
+        self.time -= dt
+        if self.time <= 0.0:
+            human.update_activity(self.previous_activity)
+            return "NEXT"
+        return "PASS"
+
+
+class ShareFrom(ActionWithStart):
+    def __init__(self, time: float, teacher: Human) -> None:
+        self.time = time
+        self.teacher = teacher
+
+    def on_start(self, human: Human) -> T:
+        self.previous_activity = human.activity
+        human.update_activity(Activity.SHARE)
+        return "PASS"
+
+    def on_invoke(self, human: "Human", dt: float) -> T:
+        self.time -= dt
+        if self.time <= 0.0:
+            human.update_activity(self.previous_activity)
+            return "NEXT"
+        return "PASS"
+
+
+class ShareTo(ActionWithStart):
+    def __init__(self, time: float, student: Human) -> None:
+        self.time = time
+        self.student = student
+
+    def on_start(self, human: Human) -> T:
+        self.previous_activity = human.activity
+        human.update_activity(Activity.SHARE)
+        return "PASS"
+
+    def on_invoke(self, human: "Human", dt: float) -> T:
         self.time -= dt
         if self.time <= 0.0:
             human.update_activity(self.previous_activity)

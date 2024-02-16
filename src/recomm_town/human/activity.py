@@ -11,3 +11,4 @@ class Activity(Enum):
     EAT = auto()
     SLEEP = auto()
     ENJOY = auto()
+    SHARE = auto()
