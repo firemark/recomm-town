@@ -15,7 +15,8 @@ class App(Window):
     _zoom: float
 
     def __init__(self, world):
-        super().__init__(width=800, height=600)
+        config = pyglet.gl.Config(alpha_size=8, samples=4)
+        super().__init__(config=config)
         self.batch = Batch()
         self.town_group = Group(order=0)
         self.people_group = Group(order=1)
