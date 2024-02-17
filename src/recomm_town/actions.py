@@ -128,13 +128,13 @@ class RandomTalk(ActionWithStart):
 
     @staticmethod
     def _share(teacher: Human, student: Human):
+        trivia = choice(list(teacher.knowledge.keys()))
         time_to_share = randint(2, 5)
         teach_level = randint(2, 5) / 10
-        trivia = choice(list(teacher.knowledge.keys()))
-        level = teacher.knowledge[trivia]
+        teacher_level = teacher.knowledge[trivia]
         share = partial(Share, time_to_share, trivia)
-        teacher.actions[0] = share(max=1.0)
-        student.actions[0] = share(level=teach_level, max=level)
+        teacher.actions[0] = share(level=0.2, max=1.0)
+        student.actions[0] = share(level=teach_level, max=teacher_level)
         return "STOP"
 
     def on_invoke(self, human: "Human", dt: float) -> T:

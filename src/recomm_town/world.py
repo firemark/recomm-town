@@ -16,6 +16,7 @@ class World:
 
     town: Town
     people: list[Human]
+    tracked_human: Human | None
     simulation_speed: float
     people_grid: dict[tuple[int, int], set[Human]]
     trivias: list[Trivia]
@@ -28,7 +29,7 @@ class World:
         self.trivas = trivias 
         for human in people:
             self._update_human_coords(human, human.position)
-            human.position_observers.append(self._update_human_coords)
+            human.position_observers["world"] = self._update_human_coords
 
     def do_it(self, dt: float):
         for human in self.people:

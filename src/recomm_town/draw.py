@@ -133,7 +133,7 @@ class Draw:
     def draw_people(self, window: Window, people: list[Human], people_group: Group):
         for index, human in enumerate(people):
             group = HumanGroup(window, index, human, people_group)
-            human.position_observers.append(group.update)
+            human.position_observers["draw"] = group.update
             self._draw_human(human, group)
 
     def _draw_human(self, human: Human, group: HumanGroup):
@@ -193,6 +193,6 @@ class Draw:
             act_label,
         ]
 
-        human.level_observers.append(level_update)
-        human.activity_observers.append(act_update)
-        human.knowledge_observers.append(trivia_update)
+        human.level_observers["draw"] = level_update
+        human.activity_observers["draw"] = act_update
+        human.knowledge_observers["draw"] = (trivia_update)

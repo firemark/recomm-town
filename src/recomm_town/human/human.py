@@ -41,10 +41,10 @@ class Human:
     def __init__(self, position: Vec, info: HumanInfo):
         self.position = position
         self.knowledge = defaultdict(float)
-        self.position_observers = []
-        self.level_observers = []
-        self.activity_observers = []
-        self.knowledge_observers = []
+        self.position_observers = {}
+        self.level_observers = {}
+        self.activity_observers = {}
+        self.knowledge_observers = {}
         self.actions = []
         self.info = info
         self.levels = Levels()
@@ -65,31 +65,31 @@ class Human:
 
     def update_activity(self, activity: Activity):
         self.activity = activity
-        for cb in self.activity_observers:
+        for cb in self.activity_observers.values():
             cb(activity)
 
     def update_level(self, attr: str, value: float):
         level = getattr(self.levels, attr)
         level += value
         setattr(self.levels, attr, level)
-        for cb in self.level_observers:
+        for cb in self.level_observers.values():
             cb(attr, level.value)
 
     def update_knowledge(self, trivia: Trivia, value: float, max_value: float=1.0):
         prev_value = self.knowledge[trivia]
         new_value = prev_value + min(value, max(0.0, max_value - prev_value))
         self.knowledge[trivia] = new_value 
-        for cb in self.knowledge_observers:
+        for cb in self.knowledge_observers.values():
             cb(trivia, new_value, prev_value)
 
     def move(self, dx, dy):
         old_position = self.position
         self.position += Vec(dx, dy)
-        for cb in self.position_observers:
+        for cb in self.position_observers.values():
             cb(self, old_position)
 
     def teleport(self, x, y):
         old_position = self.position
         self.position = Vec(x, y)
-        for cb in self.position_observers:
+        for cb in self.position_observers.values():
             cb(self, old_position)

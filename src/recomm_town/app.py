@@ -5,6 +5,7 @@ from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group
 
 from recomm_town.common import Vec
+from recomm_town.human import Human
 
 
 class GuiGroup(Group):
@@ -41,6 +42,8 @@ class App(Window):
         self.set_view(Vec(0.0, 0.0))
         self.world = world
         self.place_index = 0
+        self.human_index = 0
+        self.tracked_human = None
 
     def set_view(self, position, zoom=1.0):
         self.camera_position = position
@@ -64,10 +67,18 @@ class App(Window):
         if symbol == key.Q:
             places = self.world.town.places
             position = places[self.place_index].position
+            self._stop_tracking()
             self.set_view(position, zoom=8.0)
             self.place_index += 1
             if self.place_index >= len(places):
                 self.place_index = 0
+        if symbol == key.W:
+            human = self.world.people[self.human_index]
+            self._start_tracking(human)
+            self.set_view(human.position, zoom=8.0)
+            self.human_index += 1
+            if self.human_index >= len(self.world.people):
+                self.human_index = 0
         if symbol == key.UP:
             self.move_position += Vec(0.0, +20.0)
         elif symbol == key.DOWN:
@@ -82,18 +93,36 @@ class App(Window):
     def on_key_release(self, symbol, modifiers):
         if symbol == key.UP:
             self.move_position -= Vec(0.0, +20.0)
+            self._stop_tracking()
             self.recreate_view()
         elif symbol == key.DOWN:
             self.move_position -= Vec(0.0, -20.0)
+            self._stop_tracking()
             self.recreate_view()
         elif symbol == key.LEFT:
             self.move_position -= Vec(-20.0, 0.0)
+            self._stop_tracking()
             self.recreate_view()
         elif symbol == key.RIGHT:
             self.move_position -= Vec(+20.0, 0.0)
+            self._stop_tracking()
             self.recreate_view()
         else:
             return super().on_key_press(symbol, modifiers)
+
+    def _stop_tracking(self):
+        if self.tracked_human:
+            self.tracked_human.position_observers.pop("track", None)
+            self.tracked_human = None
+
+    def _start_tracking(self, human: Human):
+        self._stop_tracking()
+        self.tracked_human = human
+        self.tracked_human.position_observers["track"] = self._track_human
+
+    def _track_human(self, human, _):
+        self.camera_position = human.position
+        self.recreate_view()
 
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
         zoom = 1.05 if scroll_y > 0 else 0.95
