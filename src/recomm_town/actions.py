@@ -11,7 +11,6 @@ T = Literal["FAIL", "PASS", "STOP", "NEXT"]
 
 
 class Action:
-
     def do_it(self, human: "Human", dt: float) -> T:
         return "PASS"
 
@@ -146,7 +145,9 @@ class RandomTalk(ActionWithStart):
 
 
 class Share(ActionWithStart):
-    def __init__(self, time: float, trivia: Trivia, level: float = 0.2, max: float = 1.0) -> None:
+    def __init__(
+        self, time: float, trivia: Trivia, level: float = 0.2, max: float = 1.0
+    ) -> None:
         self.time = time
         self.trivia = trivia
         self.level = level
@@ -162,6 +163,18 @@ class Share(ActionWithStart):
         if self.time <= 0.0:
             human.update_activity(self.previous_activity)
             human.update_knowledge(self.trivia, self.level, self.max)
+            return "NEXT"
+
+        return "PASS"
+
+
+class Wait(Action):
+    def __init__(self, time) -> None:
+        self.time = time
+
+    def do_it(self, human: "Human", dt: float) -> T:
+        self.time -= dt
+        if self.time <= 0.0:
             return "NEXT"
 
         return "PASS"

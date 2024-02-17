@@ -99,7 +99,7 @@ class Draw:
             bold=True,
             x=50.0,
             y=-20.0,
-            **kw
+            **kw,
         )
 
     def draw_path(self, path: list[Way], group: Group):
@@ -173,7 +173,9 @@ class Draw:
                 return
             self.trivias_level[trivia] += diff
             c = self.people_count
-            gen = enumerate(sorted(self.trivias_level.items(), key=lambda o: -o[1]), start=1)
+            gen = enumerate(
+                sorted(self.trivias_level.items(), key=lambda o: -o[1]), start=1
+            )
             self.trivia_dashboard.text = "\n".join(
                 f"{i:2}. {f'[{t.category}] {t.name}':30} {l / c  * 100:6.2f}%"
                 for i, (t, l) in gen
@@ -195,4 +197,4 @@ class Draw:
 
         human.level_observers["draw"] = level_update
         human.activity_observers["draw"] = act_update
-        human.knowledge_observers["draw"] = (trivia_update)
+        human.knowledge_observers["draw"] = trivia_update

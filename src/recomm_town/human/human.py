@@ -75,10 +75,10 @@ class Human:
         for cb in self.level_observers.values():
             cb(attr, level.value)
 
-    def update_knowledge(self, trivia: Trivia, value: float, max_value: float=1.0):
+    def update_knowledge(self, trivia: Trivia, value: float, max_value: float = 1.0):
         prev_value = self.knowledge[trivia]
         new_value = prev_value + min(value, max(0.0, max_value - prev_value))
-        self.knowledge[trivia] = new_value 
+        self.knowledge[trivia] = new_value
         for cb in self.knowledge_observers.values():
             cb(trivia, new_value, prev_value)
 

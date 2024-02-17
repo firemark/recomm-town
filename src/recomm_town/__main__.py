@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-from itertools import chain
+from itertools import chain, product
 from functools import partial
-from random import choice, random
+from random import choice, randint, random
 
 from recomm_town.common import Trivia, Vec
 from recomm_town.draw import Draw
@@ -32,6 +32,16 @@ def make_grid_rooms(n):
             for y in range(1, n + 1)
         )
     )
+
+
+vowels = "eiuoa"
+consonants = "tpsdhjklmn"
+syllabes = [c + v for c, v in product(consonants, vowels)]
+
+
+def make_name() -> str:
+    length = randint(2, 4)
+    return "".join(choice(syllabes) for _ in range(length)).title()
 
 
 def make_world():
@@ -110,16 +120,10 @@ def make_world():
 
     people = []
     houses = houses_left + houses_right
-    for i in range(4):
-        home = houses[i]
-        for j in range(4):
-            while True:
-                room = choice(home.rooms)
-                if room.occupied_by:
-                    continue
-                break
+    for home in houses:
+        for room in home.rooms:
             info = HumanInfo(
-                name=f"{i}{chr(j + ord('A'))}",
+                name=make_name(),
                 liveplace=home,
                 liveroom=room,
                 workplace=work,

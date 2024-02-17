@@ -26,7 +26,7 @@ class World:
         self.people = people
         self.simulation_speed = 1.0
         self.people_grid = defaultdict(set)
-        self.trivas = trivias 
+        self.trivas = trivias
         for human in people:
             self._update_human_coords(human, human.position)
             human.position_observers["world"] = self._update_human_coords
@@ -161,6 +161,7 @@ class World:
             *self._make_move_action_to_room(human.info.liveroom),
             actions.ChangeActivity(activity),
             actions.UpdateLevelsInTime(time, levels),
+            actions.ChangeActivity(Activity.MOVE),
             *self._make_move_action_from_room(human.info.liveroom),
         ]
 
@@ -184,6 +185,8 @@ class World:
         levels: dict[str, float],
     ) -> list[Action]:
         room = self._find_available_room(place)
+        if room is None:
+            return [actions.Wait(randint(2, 5))]
         if random() > 0.5:
             trivia = choice(place.trivias) if place.trivias else None
         else:
@@ -194,7 +197,9 @@ class World:
             chain.from_iterable(
                 [
                     actions.UpdateLevelsInTime(time, levels, ratio, trivia),
-                    actions.RandomTalk(randint(2, 5), partial(self._find_neighbours, human)),
+                    actions.RandomTalk(
+                        randint(2, 5), partial(self._find_neighbours, human)
+                    ),
                 ]
                 for i in range(parts)
             )
@@ -206,6 +211,7 @@ class World:
             *self._make_move_action_to_room(room),
             actions.ChangeActivity(activity),
             *main_actions,
+            actions.ChangeActivity(Activity.MOVE),
             *self._make_move_action_from_room(room),
             actions.FreeRoom(room),
         ]
@@ -237,8 +243,8 @@ class World:
             break
         return place_to
 
-    def _find_available_room(self, place: Place) -> Room:
+    def _find_available_room(self, place: Place) -> Room | None:
         available_rooms = [
             room for room in place.rooms if not room.owner and not room.occupied_by
         ]
-        return choice(available_rooms)
+        return choice(available_rooms) if available_rooms else None

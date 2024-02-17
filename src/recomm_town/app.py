@@ -9,7 +9,6 @@ from recomm_town.human import Human
 
 
 class GuiGroup(Group):
-
     def __init__(self, window: Window, order: int = 0, parent=None):
         super().__init__(order, parent)
         self._window = window

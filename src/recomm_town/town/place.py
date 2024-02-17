@@ -49,7 +49,7 @@ class Place:
         rooms: Iterable[LocalRoom] | None = None,
         room_size: float = 80.0,
         room_padding: float = 10.0,
-        trivias: list[Trivia] | None = None
+        trivias: list[Trivia] | None = None,
     ):
         self.name = name
         self.position = position
