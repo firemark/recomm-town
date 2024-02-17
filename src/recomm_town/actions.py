@@ -8,6 +8,7 @@ from recomm_town.human import Human, Activity
 
 
 T = Literal["FAIL", "PASS", "STOP", "NEXT"]
+SHARE_ACTIVITIES = [Activity.SHARE_LOVE, Activity.SHARE_MUSIC, Activity.SHARE_WOW]
 
 
 class Action:
@@ -46,17 +47,6 @@ class Move(Action):
 
         vec = diff.normalize() * speed
         human.move(vec.x, vec.y)
-        return "PASS"
-
-
-class Wait(Action):
-    def __init__(self, time: float):
-        self.time = time
-
-    def on_invoke(self, human: "Human", dt: float) -> T:
-        self.time -= dt
-        if self.time <= 0.0:
-            return "NEXT"
         return "PASS"
 
 
@@ -155,7 +145,7 @@ class Share(ActionWithStart):
 
     def on_start(self, human: Human) -> T:
         self.previous_activity = human.activity
-        human.update_activity(Activity.SHARE)
+        human.update_activity(choice(SHARE_ACTIVITIES))
         return "PASS"
 
     def on_invoke(self, human: "Human", dt: float) -> T:

@@ -9,6 +9,8 @@ from recomm_town.town import Town, Place, Room, PlaceFunction as PF
 from recomm_town.actions import Action
 from recomm_town import actions
 
+ENJOY_ACTIVITIES = [Activity.ENJOY_DRINK, Activity.ENJOY_MUSIC, Activity.ENJOY_PLAY]
+
 
 class World:
     GRID_CELL_SIZE = 150.0
@@ -128,7 +130,7 @@ class World:
                 if r > 0.5:
                     return self._go_to_place_by_function(
                         human=human,
-                        activity=Activity.ENJOY,
+                        activity=ENJOY_ACTIVITIES,
                         function=PF.ENTERTAIMENT,
                         time=randint(5, 10),
                         levels={
@@ -151,10 +153,12 @@ class World:
     def _go_home(
         self,
         human: Human,
-        activity: Activity,
+        activity: list[Activity] | Activity,
         time: float,
         levels: dict[str, float],
     ) -> list[Action]:
+        if isinstance(activity, list):
+            activity = choice(activity)
         return [
             actions.ChangeActivity(Activity.MOVE),
             *self._make_move_action_to_place(human, human.info.liveplace),
@@ -168,7 +172,7 @@ class World:
     def _go_to_place_by_function(
         self,
         human: Human,
-        activity: Activity,
+        activity: list[Activity] | Activity,
         function: PF,
         time: float,
         levels: dict[str, float],
@@ -179,11 +183,13 @@ class World:
     def _go_to_place(
         self,
         human: Human,
-        activity: Activity,
+        activity: list[Activity] | Activity,
         place: Place,
         time: float,
         levels: dict[str, float],
     ) -> list[Action]:
+        if isinstance(activity, list):
+            activity = choice(activity)
         room = self._find_available_room(place)
         if room is None:
             return [actions.Wait(randint(2, 5))]

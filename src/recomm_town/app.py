@@ -32,7 +32,7 @@ class App(Window):
 
     def __init__(self, world):
         config = pyglet.gl.Config(alpha_size=8, samples=4)
-        super().__init__(config=config)
+        super().__init__(config=config, resizable=True)
         self.batch = Batch()
         self.town_group = Group(order=0)
         self.people_group = Group(order=1)
