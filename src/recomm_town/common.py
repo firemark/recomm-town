@@ -45,6 +45,14 @@ class Color(NamedTuple):
     b: float
 
     @classmethod
+    def from_hex(cls, x: str) -> Self:
+        assert x[0] == "#"
+        r = int(x[1:3], 16)
+        g = int(x[3:5], 16)
+        b = int(x[5:7], 16)
+        return cls.from_pyglet(r, g, b)
+
+    @classmethod
     def from_pyglet(cls, r: float, g: float, b: float) -> Self:
         return cls(r / 255, g / 255, b / 255)
 
@@ -70,17 +78,16 @@ class Color(NamedTuple):
     def __neg__(self) -> "Color":
         return Color(-self.r, -self.g, -self.b)
 
-    def normalize(self) -> "Color":
-        max_abs = max(self.r, self.g, self.b)
-        assert max_abs != 0.0
-        return Color(self.r / max_abs, self.g / max_abs, self.b / max_abs)
+    def mix(self, other: "Color", level: float) -> "Color":
+        level = min(max(level, 0.0), 1.0)
+        return self * level + other * (1.0 - level)
 
     def to_pyglet(self):
         r, g, b = self
         return (
-            min(max(r, 0.0), 1.0) * 255,
-            min(max(g, 0.0), 1.0) * 255,
-            min(max(b, 0.0), 1.0) * 255,
+            int(min(max(r, 0.0), 1.0) * 255),
+            int(min(max(g, 0.0), 1.0) * 255),
+            int(min(max(b, 0.0), 1.0) * 255),
         )
 
 

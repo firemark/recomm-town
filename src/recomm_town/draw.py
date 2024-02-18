@@ -33,12 +33,16 @@ def _to_color(x: str) -> tuple[int, int, int]:
 
 
 class COLORS:
-    room = _to_color("#3C69E7")
-    place = _to_color("#EED9C4")
-    crossroad = _to_color("#FDD7E4")
-    way = _to_color("#AF593E")
-    light_skin = Color.from_pyglet(*_to_color("#FFCBA4"))
-    dark_skin = Color.from_pyglet(*_to_color("#805533"))
+    room_a = Color.from_hex("#50BFE6")
+    room_b = Color.from_hex("#01A638")
+    place_a = Color.from_hex("#EED9C4")
+    place_b = Color.from_hex("#C0D5F0")
+    crossroad_a = Color.from_hex("#FDD7E4")
+    crossroad_b = Color.from_hex("#FEBAAD")
+    way_a = Color.from_hex("#AF593E")
+    way_b = Color.from_hex("#E97451")
+    light_skin = Color.from_hex("#FFCBA4")
+    dark_skin = Color.from_hex("#805533")
 
 
 LEVELS = ["fridge", "fullness", "money", "tiredness"]
@@ -254,18 +258,22 @@ class Draw:
         ]
 
     def draw_path(self, path: list[Way], group: Group):
-        kw = dict(**self.kw, group=group, width=50.0, color=COLORS.way)
+        kw = dict(**self.kw, group=group, width=50.0)
         for way in path:
             a = way.a.position
             b = way.b.position
-            self.objs.append(Line(a.x, a.y, b.x, b.y, **kw))
+            color = COLORS.way_a.mix(COLORS.way_b, random()).to_pyglet()
+            self.objs.append(Line(a.x, a.y, b.x, b.y, color=color, **kw))
 
     def draw_places(self, places: list[Place], group: Group):
         kw = dict(**self.kw, group=group)
         kw_font = dict(**self.kw_font, color=(0, 0, 0, 255), font_size=36, group=group)
 
         for place in places:
-            color = COLORS.crossroad if place.function == PF.CROSSROAD else COLORS.place
+            if place.function == PF.CROSSROAD:
+                color = COLORS.crossroad_a.mix(COLORS.crossroad_b, random()).to_pyglet()
+            else:
+                color = COLORS.place_a.mix(COLORS.place_b, random()).to_pyglet()
             p = place.position
             start = place.box_start
             size = place.box_end - start
@@ -277,9 +285,10 @@ class Draw:
 
             s = place.room_size
             h = s / 2
+            room_color = COLORS.room_a.mix(COLORS.room_b, random()).to_pyglet()
             for room in place.rooms:
                 r = room.position - h
-                self.objs.append(Rectangle(r.x, r.y, s, s, color=COLORS.room, **kw))
+                self.objs.append(Rectangle(r.x, r.y, s, s, color=room_color, **kw))
 
     def draw_people(self, window: Window, people: list[Human], people_group: Group):
         for index, human in enumerate(people):
@@ -321,11 +330,9 @@ class Draw:
             act_sprite.image = self.activity_sprites[activity]
             act_sprite.color = ACTIVITY_COLORS[activity]
 
-        skin_level = random()
-        color = COLORS.dark_skin * skin_level + COLORS.light_skin * (1.0 - skin_level)
         body = Sprite(self.human_sprites[randint(0, 3)], x=-size, y=-size, **kw)
         body.scale = size / 32
-        body.color = color.to_pyglet()
+        body.color = COLORS.dark_skin.mix(COLORS.light_skin, random()).to_pyglet()
 
         self.objs += [
             Label(  # Name
