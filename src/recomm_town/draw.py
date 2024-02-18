@@ -257,13 +257,14 @@ class Draw:
             ),
         ]
 
-    def draw_path(self, path: list[Way], group: Group):
-        kw = dict(**self.kw, group=group, width=50.0)
-        for way in path:
-            a = way.a.position
-            b = way.b.position
-            color = COLORS.way_a.mix(COLORS.way_b, random()).to_pyglet()
-            self.objs.append(Line(a.x, a.y, b.x, b.y, color=color, **kw))
+    def draw_path(self, path: dict[tuple[Place, Place], Way], group: Group):
+        kw = dict(**self.kw, group=group, width=40.0)
+        for way in path.values():
+            for i in range(len(way.points) - 1):
+                a = way.points[i]
+                b = way.points[i + 1]
+                color = COLORS.way_a.mix(COLORS.way_b, random()).to_pyglet()
+                self.objs.append(Line(a.x, a.y, b.x, b.y, color=color, **kw))
 
     def draw_places(self, places: list[Place], group: Group):
         kw = dict(**self.kw, group=group)

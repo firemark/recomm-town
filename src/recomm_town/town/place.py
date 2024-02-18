@@ -107,8 +107,5 @@ class Place:
 
 @dataclass
 class Way:
-    a: Place
-    b: Place
+    points: list[Vec]
 
-    def __repr__(self):
-        return f"Way[{self.a.name:<20} <=> {self.b.name:>20}]"

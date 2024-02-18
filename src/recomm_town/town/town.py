@@ -8,32 +8,37 @@ from recomm_town.common import Vec
 
 class Town:
     places: list[Place]
-    path: list[Way]
-    place_to_way: dict[Place, Way]
+    path: dict[tuple[Place, Place], Way]
     routes: Routes
 
     def __init__(self, places: list[Place]):
         self.places = places
-        self.path, self.place_to_way = self.__create_ways_between_places(places)
+        self.path = self.__create_ways_between_places(places)
         self.routes = RoutesFactory(places).make()
 
     def __create_ways_between_places(self, places: list[Place]):
-        path: list[Way] = []
-        place_to_way: dict[Place, Way] = {}
-        places_to_go = places.copy()
+        path: dict[tuple[Place, Place], Way] = {}
+        # places_to_go = places.copy()
         for place in places:
-            places_to_go.remove(place)
+            # places_to_go.remove(place)
             for neighbor in place.neighborhood:
-                if neighbor not in places_to_go:
-                    continue
-                if place < neighbor:
-                    way = Way(a=place, b=neighbor)
-                else:
-                    way = Way(a=neighbor, b=place)
-                path.append(way)
-                place_to_way[place] = way
-                place_to_way[neighbor] = way
-        return path, place_to_way
+                # if neighbor not in places_to_go:
+                #     continue
+                path.update(self.__create_ways(place, neighbor))
+        return path
+
+    def __create_ways(self, a: Place, b: Place) -> dict[tuple[Place, Place], Way]:
+        ap = a.position
+        bp = b.position
+        direction = (ap - bp).normalize() * 25.0
+        left_shift = Vec(direction.y, -direction.x)
+        right_shift = Vec(-direction.y, direction.x)
+        way_ab = Way([ap + right_shift, bp + right_shift])
+        way_ba = Way([bp + left_shift, ap + left_shift])
+        return {
+            (a, b): way_ab,
+            (b, a): way_ba,
+        }
 
     def find_nearest_place(self, position: Vec) -> Place:
         return min(

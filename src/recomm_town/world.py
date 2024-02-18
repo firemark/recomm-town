@@ -248,8 +248,13 @@ class World:
         if route is None:
             raise RuntimeError("???")
         acts: list[Action] = []
-        for place in route:
-            acts.append(actions.Move(place.position))
+        for i in range(len(route) - 1):
+            place = route[i]
+            next_place = route[i + 1]
+            way = self.town.path.get((place, next_place))
+            if not way:
+                acts.append(actions.Move(place.position))
+
             if place.function == PF.CROSSROAD and random() > 0.9:
                 size = place.box_start - place.box_end
                 local = Vec(size.x * (random() - 0.5), size.y * (random() - 0.5))
@@ -269,6 +274,9 @@ class World:
                     actions.ChangeActivity(Activity.MOVE),
                     actions.Move(place.position),
                 ]
+                
+            if way:
+                acts += [actions.Move(p) for p in way.points]
         return acts
 
     def _make_move_action_to_room(self, room: Room) -> list[Action]:
