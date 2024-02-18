@@ -18,10 +18,10 @@ class RoutesFactory:
             for place_from, place_to, route in new_routes:
                 self.routes[place_from, place_to] = route
 
-        z = sorted(self.routes.items(), key=lambda o: (o[0][0], len(o[1]), o[0][1]))
-        print("Total:", len(self.routes))
-        for (a, b), route in z:
-            print(a, "=>", b, "::", " -> ".join(r.name for r in route))
+        # z = sorted(self.routes.items(), key=lambda o: (o[0][0], len(o[1]), o[0][1]))
+        # print("Total:", len(self.routes))
+        # for (a, b), route in z:
+        #     print(a, "=>", b, "::", " -> ".join(r.name for r in route))
         return self.routes
 
 

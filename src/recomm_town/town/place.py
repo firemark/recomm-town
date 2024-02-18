@@ -89,7 +89,7 @@ class Place:
     def __repr__(self):
         return f"Place[{self.name}]"
 
-    def connect(self, *others: "Place"):
+    def connect(self, *others: Self):
         for other in others:
             self.neighborhood.add(other)
             other.neighborhood.add(self)

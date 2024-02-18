@@ -13,7 +13,7 @@ ENJOY_ACTIVITIES = [Activity.ENJOY_DRINK, Activity.ENJOY_MUSIC, Activity.ENJOY_P
 
 
 class World:
-    GRID_CELL_SIZE = 150.0
+    GRID_CELL_SIZE = 100.0
     NEIGHBOR_CELLS = [(x, y) for x in range(-1, 2) for y in range(-1, 2)]
 
     town: Town

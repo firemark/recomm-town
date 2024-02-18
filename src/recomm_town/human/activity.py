@@ -5,10 +5,10 @@ class Activity(IntEnum):
     NONE = 12
     MOVE = 13
     WORK = 14
-    SHOP = 15 
+    SHOP = 15
     TALK = 8
     READ = 9
-    EAT = 10 
+    EAT = 10
     SLEEP = 11
     WTF = 4
     TIME_BREAK = 5

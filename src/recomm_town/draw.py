@@ -1,5 +1,6 @@
 from collections import defaultdict
-from math import atan2, fmod, sqrt, degrees
+from math import fmod, sqrt
+from random import randint, random
 
 from pyglet.graphics import Batch, Group
 from pyglet.sprite import (
@@ -11,13 +12,13 @@ from pyglet.sprite import (
     GL_TRIANGLES,
 )
 from pyglet.image import ImageGrid, load as image_load
-from pyglet.shapes import Line, Rectangle, BorderedRectangle, Circle
+from pyglet.shapes import Line, Rectangle, BorderedRectangle
 from pyglet.window import Window
 from pyglet.text import Label
 from pyglet import clock
 
 from recomm_town.app import GuiGroup
-from recomm_town.common import Trivia
+from recomm_town.common import Color, Trivia
 from recomm_town.human import Human, Activity
 from recomm_town.town import PlaceFunction as PF
 from recomm_town.town.place import Place, Way
@@ -33,10 +34,11 @@ def _to_color(x: str) -> tuple[int, int, int]:
 
 class COLORS:
     room = _to_color("#3C69E7")
-    human = _to_color("#FFCBA4")
     place = _to_color("#EED9C4")
     crossroad = _to_color("#FDD7E4")
     way = _to_color("#AF593E")
+    light_skin = Color.from_pyglet(*_to_color("#FFCBA4"))
+    dark_skin = Color.from_pyglet(*_to_color("#805533"))
 
 
 LEVELS = ["fridge", "fullness", "money", "tiredness"]
@@ -192,6 +194,7 @@ class HumanGroup(Group):
 
 
 class Draw:
+
     def __init__(self, batch: Batch, people_group: Group) -> None:
         self.objs = []
         self.kw = dict(batch=batch)
@@ -204,26 +207,50 @@ class Draw:
         self.people_group = people_group
         self.trivias_level = defaultdict(float)
         self.activity_sprites = ImageGrid(image_load("textures/activities.png"), 4, 4)
+        self.human_sprites = ImageGrid(image_load("textures/human.png"), 2, 2)
         self.learnbar_image = image_load("textures/learnbar.png")
         self.lifeobjs = {}
 
     def draw_gui(self, people_count, group: GuiGroup):
         kw = dict(**self.kw, group=group)
+        kw_font = dict(
+            **kw,
+            color=(255, 255, 255, 255),
+            font_name="Monospace",
+            font_size=14,
+            bold=True,
+        )
         self.people_count = people_count
         self.trivia_dashboard = Label(
             text="",
-            font_name="Monospace",
-            font_size=16,
             multiline=True,
-            color=(0, 0, 0, 255),
-            width=700.0,
             anchor_x="left",
             anchor_y="top",
-            bold=True,
-            x=50.0,
-            y=-20.0,
-            **kw,
+            width=600.0,
+            x=30.0,
+            y=-40.0,
+            **kw_font,
         )
+        self.objs += [
+            Label(
+                text="DASHBOARD",
+                x=325.0,
+                y=-20.0,
+                anchor_x="center",
+                anchor_y="top",
+                **kw_font,
+            ),
+            BorderedRectangle(
+                x=0.0,
+                y=-300.0,
+                width=650.0,
+                height=300.0,
+                border=10,
+                color=(0, 0, 0, 128),
+                border_color=(255, 255, 255),
+                **kw,
+            ),
+        ]
 
     def draw_path(self, path: list[Way], group: Group):
         kw = dict(**self.kw, group=group, width=50.0, color=COLORS.way)
@@ -271,9 +298,9 @@ class Draw:
         level_bars = {
             level: BorderedRectangle(
                 -size,
-                -size * 1.6 - size / 2 * (4 - index),
+                -size * 1.2 - size / 3.8 * (4 - index),
                 2 * size * getattr(human.levels, level).value,
-                size / 2,
+                size / 4,
                 color=LEVEL_COLORS[level],
                 border=5,
                 **kw,
@@ -287,10 +314,17 @@ class Draw:
         def level_update(attr, value):
             bar = level_bars[attr]
             bar.width = 2 * size * value
+            bar.visible = bar.width > 0.05
 
         def act_update(activity):
             act_sprite.image = self.activity_sprites[activity]
             act_sprite.color = ACTIVITY_COLORS[activity]
+
+        skin_level = random()
+        color = COLORS.dark_skin * skin_level + COLORS.light_skin * (1.0 - skin_level)
+        body = Sprite(self.human_sprites[randint(0, 3)], x=-size, y=-size, **kw)
+        body.scale = size / 32
+        body.color = color.to_pyglet()
 
         self.objs += [
             Label(  # Name
@@ -301,7 +335,7 @@ class Draw:
                 color=_to_color("#2D383A") + (255,),
                 **kw_font,
             ),
-            Circle(0, 0, size, color=COLORS.human, **kw),  # Body
+            body,
             level_bars,
             act_sprite,
         ]
@@ -317,17 +351,24 @@ class Draw:
             return
         self.trivias_level[trivia] += diff
         c = self.people_count
-        gen = enumerate(
-            sorted(self.trivias_level.items(), key=lambda o: -o[1]), start=1
+        gen = zip(
+            range(1, 11),
+            sorted(self.trivias_level.items(), key=lambda o: o[1], reverse=True),
         )
         self.trivia_dashboard.text = "\n".join(
-            f"{i:2}. {f'[{t.category}] {t.name}':40} {l / c  * 100:6.2f}%"
-            for i, (t, l) in gen
+            self._trivia_label(i, t, percent=l / c * 100) for i, (t, l) in gen
         )
+
+    @staticmethod
+    def _trivia_label(i, t, percent) -> str:
+        name = f"[{t.category}] {t.name}"
+        return f"{i:2}. {name:40}{' ' if len(t.name) <= 40 else '…'} {percent:6.2f} %"
 
     def _talk_update(self, a: Human, b: Human, trivia: Trivia, state: str):
         kw = dict(**self.kw, group=self.people_group)
-        kw_font = dict(**self.kw_font, font_size=18, bold=True, color=(0x00, 0x22, 0x55, 0xFF))
+        kw_font = dict(
+            **self.kw_font, font_size=18, bold=True, color=(0x00, 0x22, 0x55, 0xFF)
+        )
         key = (a, b)
         if state == "START" and key not in self.lifeobjs:
             c = (a.position + b.position) * 0.5

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from itertools import chain, product
 from functools import partial
-from random import choice, randint, random
+from random import choice, randint, random, shuffle
 
 from recomm_town.common import Book, Trivia, Vec
 from recomm_town.draw import Draw
@@ -67,7 +67,7 @@ def make_world():
         Trivia("book", "Lem - Eden"),
         Trivia("book", "Mrożek - Tango"),
         Trivia("book", "Mrożek - Policja"),
-        Trivia("book", "Piskorski - 40 i 4")
+        Trivia("book", "Piskorski - 40 i 4"),
     ]
     books = [Book(t) for t in book_trivias]
 
@@ -93,8 +93,12 @@ def make_world():
         make_flat_rooms(8, 4),
         trivias=skill_trivias,
     )
-    shop_a = Place("Shop Agata", Vec(0, -300.0), PF.SHOP, make_flat_rooms(2, 2), books=books)
-    shop_b = Place("Shop Basia", Vec(+1000.0, -1500.0), PF.SHOP, make_flat_rooms(4, 2), books=books)
+    shop_a = Place(
+        "Shop Agata", Vec(0, -300.0), PF.SHOP, make_flat_rooms(2, 2), books=books
+    )
+    shop_b = Place(
+        "Shop Basia", Vec(+1000.0, -1500.0), PF.SHOP, make_flat_rooms(4, 2), books=books
+    )
     garden = Place(
         "Garden",
         Vec(+1000.0, +2000.0),
@@ -149,6 +153,8 @@ def make_world():
             room.occupied_by = human
             people.append(human)
 
+    shuffle(people)  # for random selecting people
+
     town = Town(
         houses
         + [
@@ -165,7 +171,9 @@ def make_world():
             cross_home_left,
         ]
     )
-    return World(town, people, skill_trivias + paint_trivias + music_trivias + book_trivias)
+    return World(
+        town, people, skill_trivias + paint_trivias + music_trivias + book_trivias
+    )
 
 
 if __name__ == "__main__":
