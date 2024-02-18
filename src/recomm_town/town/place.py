@@ -80,8 +80,8 @@ class Place:
             self.box_start = Vec(x_min, y_min) - h
             self.box_end = Vec(x_max, y_max) + h
         else:
-            self.box_start = self.position - 50.0
-            self.box_end = self.position + 50.0
+            self.box_start = self.position - 100.0
+            self.box_end = self.position + 100.0
 
     def __hash__(self):
         return hash(self.name)

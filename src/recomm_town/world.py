@@ -3,7 +3,7 @@ from functools import partial
 from itertools import chain
 from random import choice, randint, random
 
-from recomm_town.common import Trivia
+from recomm_town.common import Trivia, Vec
 from recomm_town.human import Activity, Emotion, Human
 from recomm_town.town import Town, Place, Room, PlaceFunction as PF
 from recomm_town.actions import Action
@@ -85,6 +85,7 @@ class World:
                     activity=Activity.WORK,
                     place=human.info.workplace,
                     time=randint(20, 30),
+                    talk_probablity=0.5,
                     levels={
                         "money": +0.5 + random() * 0.3,
                         "tiredness": +0.5 + random() * 0.2,
@@ -200,6 +201,7 @@ class World:
         time: float,
         levels: dict[str, float],
         end_actions: list[Action] | None = None,
+        talk_probablity=0.75,
     ) -> list[Action]:
         if isinstance(activity, list):
             activity = choice(activity)
@@ -214,13 +216,12 @@ class World:
 
         parts = randint(4, 8)
         ratio = 1 / parts
+        find = partial(self._find_neighbours, human)
         main_actions = list(
             chain.from_iterable(
                 [
                     actions.UpdateLevelsInTime(time, levels, ratio),
-                    actions.RandomTalk(
-                        randint(2, 5), partial(self._find_neighbours, human)
-                    ),
+                    actions.RandomTalk(randint(2, 5), find, talk_probablity),
                 ]
                 for i in range(parts)
             )
@@ -246,7 +247,29 @@ class World:
         route = self.town.find_route(place_from, place_to)
         if route is None:
             raise RuntimeError("???")
-        return [actions.Move(place.position) for place in route]
+        acts: list[Action] = []
+        for place in route:
+            acts.append(actions.Move(place.position))
+            if place.function == PF.CROSSROAD and random() > 0.9:
+                size = place.box_start - place.box_end
+                local = Vec(size.x * (random() - 0.5), size.y * (random() - 0.5))
+                find = partial(self._find_neighbours, human)
+                acts += [
+                    actions.Move(place.position + local),
+                    actions.ChangeActivity(Activity.TIME_BREAK),
+                    actions.Wait(random() * 10.0),
+                ]
+                for i in range(randint(1, 4)):
+                    acts += [
+                        actions.Wait(random() * 5.0),
+                        actions.RandomTalk(randint(10, 15) / 10.0, find, probality=0.9),
+                    ]
+
+                acts += [
+                    actions.ChangeActivity(Activity.MOVE),
+                    actions.Move(place.position),
+                ]
+        return acts
 
     def _make_move_action_to_room(self, room: Room) -> list[Action]:
         act: list[Action] = [actions.Move(vec) for vec in room.path]

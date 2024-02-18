@@ -59,6 +59,7 @@ ACTIVITY_COLORS = {
     Activity.WTF: _to_color("#FF0000"),
     Activity.EAT: _to_color("#CA3435"),
     Activity.SLEEP: _to_color("#0066CC"),
+    Activity.TIME_BREAK: _to_color("#FFFFFF"),
     Activity.ENJOY_DRINK: _to_color("#02A4D3"),
     Activity.ENJOY_PLAY: _to_color("#02A4D3"),
     Activity.ENJOY_MUSIC: _to_color("#02A4D3"),

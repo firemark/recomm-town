@@ -108,12 +108,13 @@ class ChangeActivity(Action):
 
 
 class RandomTalk(ActionWithStart):
-    def __init__(self, time: float, find_neighbours) -> None:
+    def __init__(self, time: float, find_neighbours, probality: float = 0.75) -> None:
         self.time = time
         self.find_neighbours = find_neighbours
+        self.probality = probality
 
     def on_start(self, human: Human) -> T:
-        if random() > 0.25:
+        if random() >= self.probality:
             return "NEXT"
         for stranger in self.find_neighbours():
             if stranger.activity != Activity.TALK:
