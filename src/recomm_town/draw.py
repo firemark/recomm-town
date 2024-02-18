@@ -1,5 +1,5 @@
 from collections import defaultdict
-from math import fmod, sqrt
+from math import atan2, fmod, sqrt, degrees
 
 from pyglet.graphics import Batch, Group
 from pyglet.sprite import (
@@ -17,6 +17,7 @@ from pyglet.text import Label
 from pyglet import clock
 
 from recomm_town.app import GuiGroup
+from recomm_town.common import Trivia
 from recomm_town.human import Human, Activity
 from recomm_town.town import PlaceFunction as PF
 from recomm_town.town.place import Place, Way
@@ -324,11 +325,15 @@ class Draw:
             for i, (t, l) in gen
         )
 
-    def _talk_update(self, a: Human, b: Human, state):
+    def _talk_update(self, a: Human, b: Human, trivia: Trivia, state: str):
         kw = dict(**self.kw, group=self.people_group)
+        kw_font = dict(**self.kw_font, font_size=18, bold=True, color=(0x00, 0x22, 0x55, 0xFF))
         key = (a, b)
         if state == "START" and key not in self.lifeobjs:
+            c = (a.position + b.position) * 0.5
+
             self.lifeobjs[key] = [
+                Label(trivia.name, x=c.x, y=c.y, **kw_font),
                 AnimatedLine(
                     self.learnbar_image,
                     a.position.x,
@@ -342,6 +347,6 @@ class Draw:
                 ),
             ]
         else:
-            objs = self.lifeobjs.pop(key)
+            objs = self.lifeobjs.pop(key, [])
             for obj in objs:
                 obj.delete()

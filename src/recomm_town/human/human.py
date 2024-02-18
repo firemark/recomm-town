@@ -66,13 +66,13 @@ class Human:
 
         return Emotion.HAPPY
 
-    def start_talk(self, stranger: Self):
+    def start_talk(self, stranger: Self, trivia: Trivia):
         for cb in self.talk_observers.values():
-            cb(self, stranger, "START")
+            cb(self, stranger, trivia, "START")
 
     def stop_talk(self, stranger: Self):
         for cb in self.talk_observers.values():
-            cb(self, stranger, "STOP")
+            cb(self, stranger, None, "STOP")
 
     def update_activity(self, activity: Activity):
         self.activity = activity

@@ -94,7 +94,7 @@ def make_world():
         trivias=skill_trivias,
     )
     shop_a = Place("Shop Agata", Vec(0, -300.0), PF.SHOP, make_flat_rooms(2, 2), books=books)
-    shop_b = Place("Shop Basia", Vec(+1000.0, -1500.0), PF.SHOP, make_flat_rooms(4, 2))
+    shop_b = Place("Shop Basia", Vec(+1000.0, -1500.0), PF.SHOP, make_flat_rooms(4, 2), books=books)
     garden = Place(
         "Garden",
         Vec(+1000.0, +2000.0),

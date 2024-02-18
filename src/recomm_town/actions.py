@@ -138,7 +138,7 @@ class RandomTalk(ActionWithStart):
         time_to_share = randint(2, 5)
         teacher.actions[0] = ShareTo(time_to_share, trivia, student)
         student.actions[0] = ShareFrom(time_to_share, trivia, teacher)
-        teacher.start_talk(student)
+        teacher.start_talk(student, trivia)
         return "STOP"
 
     def on_invoke(self, human: "Human", dt: float) -> T:
