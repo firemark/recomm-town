@@ -160,7 +160,7 @@ if __name__ == "__main__":
     world = make_world()
 
     app = App(world)
-    draw = Draw(app.batch)
+    draw = Draw(app.batch, app.people_group)
     draw.draw_gui(len(world.people), app.gui_group)
     draw.draw_path(world.town.path, app.town_group)
     draw.draw_places(world.town.places, app.town_group)

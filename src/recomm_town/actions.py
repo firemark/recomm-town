@@ -119,11 +119,9 @@ class RandomTalk(ActionWithStart):
     def _share(teacher: Human, student: Human):
         trivia = choice(list(teacher.knowledge.keys()))
         time_to_share = randint(2, 5)
-        teach_level = randint(2, 5) / 10
-        teacher_level = teacher.knowledge[trivia]
-        share = partial(Share, time_to_share, trivia)
-        teacher.actions[0] = share(level=0.2, max=1.0)
-        student.actions[0] = share(level=teach_level, max=teacher_level)
+        teacher.actions[0] = ShareTo(time_to_share, trivia, student)
+        student.actions[0] = ShareFrom(time_to_share, trivia, teacher)
+        teacher.start_talk(student)
         return "STOP"
 
     def on_invoke(self, human: "Human", dt: float) -> T:
@@ -148,14 +146,35 @@ class Share(ActionWithStart):
         human.update_activity(choice(SHARE_ACTIVITIES))
         return "PASS"
 
-    def on_invoke(self, human: "Human", dt: float) -> T:
+    def on_stop(self, human: Human):
+        human.update_activity(self.previous_activity)
+        human.update_knowledge(self.trivia, self.level, self.max)
+
+    def on_invoke(self, human: Human, dt: float) -> T:
         self.time -= dt
         if self.time <= 0.0:
-            human.update_activity(self.previous_activity)
-            human.update_knowledge(self.trivia, self.level, self.max)
+            self.on_stop(human)
             return "NEXT"
 
         return "PASS"
+
+class ShareFrom(Share):
+
+    def __init__(self, time: float, trivia: Trivia, teacher: Human):
+        teach_level = randint(2, 5) / 10
+        teacher_level = teacher.knowledge[trivia]
+        super().__init__(time, trivia, level=teach_level, max=teacher_level)
+
+
+class ShareTo(Share):
+
+    def __init__(self, time: float, trivia: Trivia, student: Human):
+        super().__init__(time, trivia, level=0.2, max=1.0)
+        self.student = student
+
+    def on_stop(self, human: Human):
+        super().on_stop(human)
+        human.stop_talk(self.student)
 
 
 class Wait(Action):

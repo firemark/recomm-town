@@ -192,7 +192,7 @@ class World:
             activity = choice(activity)
         room = self._find_available_room(place)
         if room is None:
-            return [actions.Wait(randint(2, 5))]
+            return [actions.ChangeActivity(Activity.WTF), actions.Wait(randint(2, 5))]
         if random() > 0.5:
             trivia = choice(place.trivias) if place.trivias else None
         else:

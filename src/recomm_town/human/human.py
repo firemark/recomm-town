@@ -1,6 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Self
 
 from recomm_town.common import Vec, Trivia
 from recomm_town.human.level import Level
@@ -45,6 +45,7 @@ class Human:
         self.level_observers = {}
         self.activity_observers = {}
         self.knowledge_observers = {}
+        self.talk_observers = {}
         self.actions = []
         self.info = info
         self.levels = Levels()
@@ -62,6 +63,14 @@ class Human:
             return Emotion.TIRED
 
         return Emotion.HAPPY
+
+    def start_talk(self, stranger: Self):
+        for cb in self.talk_observers.values():
+            cb(self, stranger, "START")
+
+    def stop_talk(self, stranger: Self):
+        for cb in self.talk_observers.values():
+            cb(self, stranger, "STOP")
 
     def update_activity(self, activity: Activity):
         self.activity = activity
