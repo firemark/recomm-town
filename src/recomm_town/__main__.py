@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+from dataclasses import dataclass
 from itertools import chain, product
 from functools import partial
-from random import choice, randint, random, shuffle
+from random import choice, choices, randint, random, shuffle
 
 from recomm_town.common import Book, Trivia, Vec
 from recomm_town.draw import Draw
@@ -44,60 +45,143 @@ def make_name() -> str:
     return "".join(choice(syllabes) for _ in range(length)).title()
 
 
+class TriviaBuilder:
+
+    def __init__(self):
+        self.ceramic = [
+            Trivia("skill", "pottery"),
+            Trivia("skill", "wine glass"),
+            Trivia("skill", "ceramic"),
+            Trivia("skill", "stained glass"),
+        ]
+        self.website = [
+            Trivia("skill", "HTML"),
+            Trivia("skill", "CSS"),
+            Trivia("skill", "GUI"),
+        ]
+        self.programming = [
+            Trivia("skill", "python"),
+            Trivia("skill", "javascript"),
+            Trivia("skill", "c++"),
+        ]
+        self.paint = [
+            Trivia("paiting", "dada"),
+            Trivia("paiting", "cubism"),
+            Trivia("paiting", "watercolor"),
+            Trivia("paiting", "hypperrealism"),
+        ]
+        self.music = [
+            Trivia("music", "techno"),
+            Trivia("music", "rock"),
+            Trivia("music", "classic"),
+            Trivia("music", "country"),
+        ]
+        self.book = [
+            Trivia("book", "Lem - Solaris"),
+            Trivia("book", "Dukaj - Starość aksolotla"),
+            Trivia("book", "Tokarczuk - Księgi Jakubowe"),
+            Trivia("book", "Lem - Eden"),
+            Trivia("book", "Mrożek - Tango"),
+            Trivia("book", "Mrożek - Policja"),
+            Trivia("book", "Piskorski - 40 i 4"),
+        ]
+
+    def __iter__(self):
+        yield from self.ceramic
+        yield from self.website
+        yield from self.programming
+        yield from self.paint
+        yield from self.music
+        yield from self.book
+
+
+class JobBuilder:
+
+    def __init__(self, trivias: TriviaBuilder):
+        self.factory = Place(
+            "Ceramic factory",
+            Vec(-1000.0, +1000.0),
+            PF.WORK,
+            make_flat_rooms(5, 4),
+            trivias=trivias.ceramic,
+        )
+        self.website_office = Place(
+            "Website office",
+            Vec(+2300.0, +2000.0),
+            PF.WORK,
+            make_flat_rooms(3, 3),
+            trivias=trivias.website,
+        )
+        self.programming_office = Place(
+            "Blip blob office",
+            Vec(+1000.0, +3000.0),
+            PF.WORK,
+            make_flat_rooms(3, 3),
+            trivias=trivias.programming,
+        )
+
+    def __iter__(self):
+        yield self.factory
+        yield self.website_office
+        yield self.programming_office
+
+
+class HousesBuilder:
+
+    def __init__(self) -> None:
+        self.center = Vec(-1000.0, -2000.0)
+        self.center_left = self.center + Vec(-800.0, 0.0)
+        self.center_right = self.center + Vec(+800.0, 0.0)
+
+        self.houses_left = [
+            self._make_home("Flat Andrzej", self.center_left + Vec(0.0, -500.0)),
+            self._make_home("Flat Bogdan", self.center_left + Vec(0.0, +500.0)),
+        ]
+        self.houses_right = [
+            self._make_home("Flat Czesiek", self.center_right + Vec(0.0, -500.0)),
+            self._make_home("Flat Dawid", self.center_right + Vec(0.0, +500.0)),
+        ]
+
+    def _make_home(self, name: str, position):
+        return Place(
+            name=name,
+            position=position,
+            function=PF.HOME,
+            rooms=make_flat_rooms(4, 2),
+            room_size=120.0,
+        )
+
+    def __iter__(self):
+        yield from self.houses_left
+        yield from self.houses_right
+
+
+@dataclass
+class AvailableWorkplace:
+    place: Place
+    jobs: int
+
+
 def make_world():
-    skill_trivias = [
-        Trivia("skill", "pottery"),
-        Trivia("skill", "soldering"),
-        Trivia("skill", "crocheting"),
-    ]
-    paint_trivias = [
-        Trivia("paiting", "graffiti"),
-        Trivia("paiting", "cubism"),
-        Trivia("paiting", "watercolor"),
-    ]
-    music_trivias = [
-        Trivia("music", "techno"),
-        Trivia("music", "rock"),
-        Trivia("music", "classic"),
-    ]
-    book_trivias = [
-        Trivia("book", "Lem - Solaris"),
-        Trivia("book", "Dukaj - Starość aksolotla"),
-        Trivia("book", "Tokarczuk - Księgi Jakubowe"),
-        Trivia("book", "Lem - Eden"),
-        Trivia("book", "Mrożek - Tango"),
-        Trivia("book", "Mrożek - Policja"),
-        Trivia("book", "Piskorski - 40 i 4"),
-    ]
-    books = [Book(t) for t in book_trivias]
+    trivias = TriviaBuilder()
+    books = [Book(t) for t in trivias.book]
+    programming_books = [Book(t) for t in trivias.programming]
+    home = HousesBuilder()
+    jobs = JobBuilder(trivias)
 
-    make_home = partial(
-        Place, function=PF.HOME, rooms=list(make_flat_rooms(4, 2)), room_size=120.0
-    )
-    home_center = Vec(-1000.0, -2000.0)
-    home_center_left = home_center + Vec(-800.0, 0.0)
-    houses_left = [
-        make_home("Flat Andrzej", home_center_left + Vec(0.0, -500.0)),
-        make_home("Flat Bogdan", home_center_left + Vec(0.0, +500.0)),
-    ]
-    home_center_right = home_center + Vec(+800.0, 0.0)
-    houses_right = [
-        make_home("Flat Czesiek", home_center_right + Vec(0.0, -500.0)),
-        make_home("Flat Dawid", home_center_right + Vec(0.0, +500.0)),
-    ]
-
-    work = Place(
-        "Work",
-        Vec(-1000.0, +1000.0),
-        PF.WORK,
-        make_flat_rooms(8, 4),
-        trivias=skill_trivias,
-    )
     shop_a = Place(
-        "Shop Agata", Vec(0, -300.0), PF.SHOP, make_flat_rooms(2, 2), books=books
+        "Shop Agata",
+        Vec(0, -300.0),
+        PF.SHOP,
+        make_flat_rooms(2, 2),
+        books=books + programming_books,
     )
     shop_b = Place(
-        "Shop Basia", Vec(+1000.0, -1500.0), PF.SHOP, make_flat_rooms(4, 2), books=books
+        "Shop Basia",
+        Vec(+1000.0, -1500.0),
+        PF.SHOP,
+        make_flat_rooms(4, 2),
+        books=books,
     )
     garden = Place(
         "Garden",
@@ -106,7 +190,7 @@ def make_world():
         make_grid_rooms(3),
         100.0,
         80.0,
-        trivias=music_trivias,
+        trivias=trivias.paint,
     )
     museum = Place(
         "City museum",
@@ -115,32 +199,43 @@ def make_world():
         make_grid_rooms(2),
         50.0,
         80.0,
-        trivias=paint_trivias,
+        trivias=trivias.music,
     )
 
     cross_a = Place("Apple crossway", Vec(-1000.0, 0.0), PF.CROSSROAD)
     cross_b = Place("Cherry crossway", Vec(+1000.0, 0.0), PF.CROSSROAD)
     cross_main = Place("Center", Vec(0.0, 0.0), PF.CROSSROAD)
-    cross_home = Place("Coconut crossway", home_center, PF.CROSSROAD)
-    cross_home_left = Place("Pinata crossway", home_center_left, PF.CROSSROAD)
-    cross_home_right = Place("Banana crossway", home_center_right, PF.CROSSROAD)
+    cross_home = Place("Coconut crossway", home.center, PF.CROSSROAD)
+    cross_home_left = Place("Pinata crossway", home.center_left, PF.CROSSROAD)
+    cross_home_right = Place("Banana crossway", home.center_right, PF.CROSSROAD)
 
-    cross_a.connect(cross_home, work)
+    cross_a.connect(cross_home, jobs.factory)
     cross_b.connect(shop_b, garden)
     cross_main.connect(cross_a, cross_b, museum, shop_a)
     cross_home.connect(cross_home_left, cross_home_right)
-    cross_home_left.connect(*houses_left)
-    cross_home_right.connect(*houses_right)
+    cross_home_left.connect(*home.houses_left)
+    cross_home_right.connect(*home.houses_right)
+    garden.connect(jobs.programming_office, jobs.website_office)
 
     people = []
-    houses = houses_left + houses_right
+    houses = list(home)
+    available_workplaces = [AvailableWorkplace(p, len(p.rooms)) for p in jobs]
     for home in houses:
         for room in home.rooms:
+            available_workspace = choices(
+                available_workplaces,
+                weights=[w.jobs for w in available_workplaces],
+            )[0]
+            available_workspace.jobs -= 1
+            if available_workspace.jobs == 0:
+                index = available_workplaces.index(available_workspace)
+                available_workplaces.pop(index)
+
             info = HumanInfo(
                 name=make_name(),
                 liveplace=home,
                 liveroom=room,
-                workplace=work,
+                workplace=available_workspace.place,
                 speed=5.0 + random() * 5.0,
             )
             human = Human(info.liveroom.position, info)
@@ -156,9 +251,9 @@ def make_world():
     shuffle(people)  # for random selecting people
 
     town = Town(
-        houses
-        + [
-            work,
+        [
+            *houses,
+            *jobs,
             shop_a,
             shop_b,
             garden,
@@ -171,9 +266,7 @@ def make_world():
             cross_home_left,
         ]
     )
-    return World(
-        town, people, skill_trivias + paint_trivias + music_trivias + book_trivias
-    )
+    return World(town, people, list(trivias))
 
 
 if __name__ == "__main__":

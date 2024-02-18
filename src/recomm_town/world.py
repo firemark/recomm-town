@@ -257,12 +257,12 @@ class World:
                 acts += [
                     actions.Move(place.position + local),
                     actions.ChangeActivity(Activity.TIME_BREAK),
-                    actions.Wait(random() * 10.0),
+                    actions.Wait(random() * 2.0),
                 ]
                 for i in range(randint(1, 4)):
                     acts += [
-                        actions.Wait(random() * 5.0),
                         actions.RandomTalk(randint(10, 15) / 10.0, find, probality=0.9),
+                        actions.Wait(random() * 2.0),
                     ]
 
                 acts += [
