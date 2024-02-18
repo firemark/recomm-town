@@ -42,3 +42,7 @@ class Vec(NamedTuple):
 class Trivia(NamedTuple):
     category: str
     name: str
+
+
+class Book(NamedTuple):
+    trivia: Trivia

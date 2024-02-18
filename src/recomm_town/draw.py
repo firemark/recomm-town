@@ -320,7 +320,7 @@ class Draw:
             sorted(self.trivias_level.items(), key=lambda o: -o[1]), start=1
         )
         self.trivia_dashboard.text = "\n".join(
-            f"{i:2}. {f'[{t.category}] {t.name}':30} {l / c  * 100:6.2f}%"
+            f"{i:2}. {f'[{t.category}] {t.name}':40} {l / c  * 100:6.2f}%"
             for i, (t, l) in gen
         )
 

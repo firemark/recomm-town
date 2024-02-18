@@ -2,7 +2,7 @@ from functools import partial
 from typing import Literal
 from random import choice, randint, random
 
-from recomm_town.common import Trivia, Vec
+from recomm_town.common import Book, Trivia, Vec
 from recomm_town.town.place import Room
 from recomm_town.human import Human, Activity
 
@@ -56,24 +56,41 @@ class UpdateLevelsInTime(Action):
         time: float,
         levels: dict[str, float],
         ratio: float = 1.0,
-        trivia: Trivia | None = None,
     ):
         self.total_time = ratio * time
         self.time = ratio * time
         self.levels = levels
         self.ratio = ratio
-        self.trivia = trivia
 
     def do_it(self, human: "Human", dt: float) -> T:
         self.time -= dt
         if self.time <= 0.0:
-            if self.trivia:
-                human.update_knowledge(self.trivia, 0.2 * self.ratio, max_value=0.5)
             return "NEXT"
         ratio = self.ratio * dt / self.total_time
         for attr, value in self.levels.items():
             human.update_level(attr, value * ratio)
         return "PASS"
+
+
+class LearnTrivia(Action):
+    def __init__(self, trivia: Trivia, level: float, max_level: float):
+        self.trivia = trivia
+        self.level = level
+        self.max_level = max_level
+
+    def do_it(self, human: "Human", dt: float) -> T:
+        human.update_knowledge(self.trivia, self.level, max_value=self.max_level)
+        return "NEXT"
+
+
+class BuyBook(Action):
+    def __init__(self, book: Book):
+        self.book = book
+
+    def do_it(self, human: "Human", dt: float) -> T:
+        if self.book not in human.library:
+            human.library.append(self.book)
+        return "NEXT"
 
 
 class ChangeActivity(Action):
@@ -157,6 +174,7 @@ class Share(ActionWithStart):
             return "NEXT"
 
         return "PASS"
+
 
 class ShareFrom(Share):
 

@@ -2,7 +2,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Self
 
-from recomm_town.common import Vec, Trivia
+from recomm_town.common import Book, Vec, Trivia
 from recomm_town.human.level import Level
 from recomm_town.human.activity import Activity
 from recomm_town.human.emotion import Emotion
@@ -33,6 +33,7 @@ class Levels:
 class Human:
     knowledge: dict[Trivia, float]
     actions: list["Action"]
+    library: list[Book]
     position: Vec
     info: HumanInfo
     levels: Levels
@@ -47,6 +48,7 @@ class Human:
         self.knowledge_observers = {}
         self.talk_observers = {}
         self.actions = []
+        self.library = []
         self.info = info
         self.levels = Levels()
         self.activity = Activity.NONE

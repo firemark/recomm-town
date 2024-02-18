@@ -1,9 +1,9 @@
 from enum import Enum
 from dataclasses import dataclass
 from functools import total_ordering
-from typing import Iterable
+from typing import Iterable, Self
 
-from recomm_town.common import Trivia, Vec
+from recomm_town.common import Book, Trivia, Vec
 from recomm_town.human import Human
 
 
@@ -34,12 +34,13 @@ class Place:
     name: str
     position: Vec
     function: PlaceFunction
-    neighborhood: set["Place"]
+    neighborhood: set[Self]
     rooms: list[Room]
     room_size: float
     box_start: Vec
     box_end: Vec
     trivias: list[Trivia]
+    books: list[Book]
 
     def __init__(
         self,
@@ -50,6 +51,7 @@ class Place:
         room_size: float = 80.0,
         room_padding: float = 10.0,
         trivias: list[Trivia] | None = None,
+        books: list[Book] | None = None,
     ):
         self.name = name
         self.position = position
@@ -58,6 +60,7 @@ class Place:
         self.room_size = room_size
         self.room_padding = room_padding
         self.trivias = trivias or []
+        self.books = books or []
 
         s = room_size + room_padding
         self.rooms = [

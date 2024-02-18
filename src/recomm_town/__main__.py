@@ -3,7 +3,7 @@ from itertools import chain, product
 from functools import partial
 from random import choice, randint, random
 
-from recomm_town.common import Trivia, Vec
+from recomm_town.common import Book, Trivia, Vec
 from recomm_town.draw import Draw
 from recomm_town.town.town import Town
 from recomm_town.town.place import LocalRoom, Place, PlaceFunction as PF
@@ -60,6 +60,16 @@ def make_world():
         Trivia("music", "rock"),
         Trivia("music", "classic"),
     ]
+    book_trivias = [
+        Trivia("book", "Lem - Solaris"),
+        Trivia("book", "Dukaj - Starość aksolotla"),
+        Trivia("book", "Tokarczuk - Księgi Jakubowe"),
+        Trivia("book", "Lem - Eden"),
+        Trivia("book", "Mrożek - Tango"),
+        Trivia("book", "Mrożek - Policja"),
+        Trivia("book", "Piskorski - 40 i 4")
+    ]
+    books = [Book(t) for t in book_trivias]
 
     make_home = partial(
         Place, function=PF.HOME, rooms=list(make_flat_rooms(4, 2)), room_size=120.0
@@ -83,7 +93,7 @@ def make_world():
         make_flat_rooms(8, 4),
         trivias=skill_trivias,
     )
-    shop_a = Place("Shop Agata", Vec(0, -300.0), PF.SHOP, make_flat_rooms(2, 2))
+    shop_a = Place("Shop Agata", Vec(0, -300.0), PF.SHOP, make_flat_rooms(2, 2), books=books)
     shop_b = Place("Shop Basia", Vec(+1000.0, -1500.0), PF.SHOP, make_flat_rooms(4, 2))
     garden = Place(
         "Garden",
@@ -134,6 +144,8 @@ def make_world():
             human.levels.tiredness += random() * 0.5
             human.levels.fullness -= random() * 0.3
             human.levels.fridge -= random() * 0.5
+            if random() > 0.95:
+                human.library.append(choice(books))
             room.occupied_by = human
             people.append(human)
 
@@ -153,7 +165,7 @@ def make_world():
             cross_home_left,
         ]
     )
-    return World(town, people, skill_trivias + paint_trivias + music_trivias)
+    return World(town, people, skill_trivias + paint_trivias + music_trivias + book_trivias)
 
 
 if __name__ == "__main__":

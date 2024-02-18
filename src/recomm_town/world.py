@@ -92,10 +92,16 @@ class World:
                     },
                 )
             case Emotion.EMPTY_FRIDGE:
-                return self._go_to_place_by_function(
+                place = self._find_place_by_function(human, PF.SHOP)
+                end_actions: list[Action]
+                if place.books and random() > 0.3:
+                    end_actions = [actions.BuyBook(choice(place.books))]
+                else:
+                    end_actions = []
+                return self._go_to_place(
                     human=human,
                     activity=Activity.SHOP,
-                    function=PF.SHOP,
+                    place=place,
                     time=randint(5, 10),
                     levels={
                         "fridge": 1.0 - random() * 0.2,
@@ -103,6 +109,7 @@ class World:
                         "tiredness": 0.2 + random() * 0.1,
                         "fullness": -0.1 - random() * 0.1,
                     },
+                    end_actions=end_actions,
                 )
             case Emotion.HUNGRY:
                 return self._go_home(
@@ -128,18 +135,29 @@ class World:
             case _:  # otherwise
                 r = random()
                 if r > 0.5:
-                    return self._go_to_place_by_function(
+                    place = self._find_place_by_function(human, PF.ENTERTAIMENT)
+                    end_actions: list[Action]
+                    if place.books and random() > 0.8:
+                        end_actions = [actions.BuyBook(choice(place.books))]
+                    else:
+                        end_actions = []
+                    return self._go_to_place(
                         human=human,
                         activity=ENJOY_ACTIVITIES,
-                        function=PF.ENTERTAIMENT,
+                        place=place,
                         time=randint(5, 10),
                         levels={
                             "money": -0.1 - random() * 0.2,
                             "tiredness": +0.2 + random() * 0.2,
                             "fullness": -0.3 - random() * 0.2,
                         },
+                        end_actions=end_actions,
                     )
                 else:
+                    end_actions: list[Action]
+                    if not human.library:
+                        return self._make_fail()
+                    trivia = choice(human.library).trivia
                     return self._go_home(
                         human=human,
                         activity=Activity.READ,
@@ -148,6 +166,9 @@ class World:
                             "fullness": -0.1 - random() * 0.2,
                             "tiredness": -0.3 - random() * 0.2,
                         },
+                        end_actions=[
+                            actions.LearnTrivia(trivia, level=0.5, max_level=1.0),
+                        ],
                     )
 
     def _go_home(
@@ -156,6 +177,7 @@ class World:
         activity: list[Activity] | Activity,
         time: float,
         levels: dict[str, float],
+        end_actions: list[Action] | None = None,
     ) -> list[Action]:
         if isinstance(activity, list):
             activity = choice(activity)
@@ -165,20 +187,10 @@ class World:
             *self._make_move_action_to_room(human.info.liveroom),
             actions.ChangeActivity(activity),
             actions.UpdateLevelsInTime(time, levels),
+            *(end_actions or []),
             actions.ChangeActivity(Activity.MOVE),
             *self._make_move_action_from_room(human.info.liveroom),
         ]
-
-    def _go_to_place_by_function(
-        self,
-        human: Human,
-        activity: list[Activity] | Activity,
-        function: PF,
-        time: float,
-        levels: dict[str, float],
-    ) -> list[Action]:
-        place = self._find_place_by_function(human, function)
-        return self._go_to_place(human, activity, place, time, levels)
 
     def _go_to_place(
         self,
@@ -187,22 +199,25 @@ class World:
         place: Place,
         time: float,
         levels: dict[str, float],
+        end_actions: list[Action] | None = None,
     ) -> list[Action]:
         if isinstance(activity, list):
             activity = choice(activity)
+        end_actions = end_actions or []
         room = self._find_available_room(place)
         if room is None:
-            return [actions.ChangeActivity(Activity.WTF), actions.Wait(randint(2, 5))]
-        if random() > 0.5:
-            trivia = choice(place.trivias) if place.trivias else None
-        else:
-            trivia = None
+            return self._make_fail()
+        if random() > 0.5 and place.trivias:
+            end_actions.append(
+                actions.LearnTrivia(choice(place.trivias), level=0.2, max_level=0.5)
+            )
+
         parts = randint(4, 8)
         ratio = 1 / parts
         main_actions = list(
             chain.from_iterable(
                 [
-                    actions.UpdateLevelsInTime(time, levels, ratio, trivia),
+                    actions.UpdateLevelsInTime(time, levels, ratio),
                     actions.RandomTalk(
                         randint(2, 5), partial(self._find_neighbours, human)
                     ),
@@ -217,10 +232,14 @@ class World:
             *self._make_move_action_to_room(room),
             actions.ChangeActivity(activity),
             *main_actions,
+            *(end_actions or []),
             actions.ChangeActivity(Activity.MOVE),
             *self._make_move_action_from_room(room),
             actions.FreeRoom(room),
         ]
+
+    def _make_fail(self):
+        return [actions.ChangeActivity(Activity.WTF), actions.Wait(randint(2, 5))]
 
     def _make_move_action_to_place(self, human: Human, place_to: Place) -> list[Action]:
         place_from = self.town.find_nearest_place(human.position)
