@@ -90,6 +90,15 @@ class Color(NamedTuple):
             int(min(max(b, 0.0), 1.0) * 255),
         )
 
+    def to_pyglet_alpha(self, a=1.0):
+        r, g, b = self
+        return (
+            int(min(max(r, 0.0), 1.0) * 255),
+            int(min(max(g, 0.0), 1.0) * 255),
+            int(min(max(b, 0.0), 1.0) * 255),
+            int(min(max(a, 0.0), 1.0) * 255),
+        )
+
 
 class Trivia(NamedTuple):
     category: str

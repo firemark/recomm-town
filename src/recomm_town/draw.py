@@ -2,14 +2,13 @@ from collections import defaultdict
 from random import randint, random
 
 from pyglet.graphics import Batch, Group
-from pyglet.sprite import Sprite
 from pyglet.image import ImageGrid, load as image_load
 from pyglet.shapes import Line, Rectangle, BorderedRectangle
 from pyglet.window import Window
 from pyglet.text import Label
 
 from recomm_town.app import GuiGroup
-from recomm_town.shaders import AnimatedLine
+from recomm_town.shaders import AnimatedLine, Sprite
 from recomm_town.common import Color, Trivia, Vec
 from recomm_town.human import Human, Activity
 from recomm_town.town import PlaceFunction as PF
@@ -22,6 +21,19 @@ def _to_color(x: str) -> tuple[int, int, int]:
     g = int(x[3:5], 16)
     b = int(x[5:7], 16)
     return (r, g, b)
+
+
+def _c(x: str) -> tuple[int, int, int, int]:
+    assert x[0] == "#"
+    r = int(x[1:3], 16)
+    g = int(x[3:5], 16)
+    b = int(x[5:7], 16)
+    a = int(x[7:9] or "FF", 16)
+    return (r, g, b, a)
+
+
+def _n():
+    return (0, 0, 0, 0)
 
 
 class COLORS:
@@ -46,22 +58,22 @@ LEVEL_COLORS = {
 }
 
 ACTIVITY_COLORS = {
-    Activity.NONE: _to_color("#000000"),
-    Activity.MOVE: _to_color("#E30B5C"),
-    Activity.WORK: _to_color("#8B8680"),
-    Activity.SHOP: _to_color("#A63A79"),
-    Activity.TALK: _to_color("#FFFFFF"),
-    Activity.READ: _to_color("#CA3435"),
-    Activity.WTF: _to_color("#FF0000"),
-    Activity.EAT: _to_color("#CA3435"),
-    Activity.SLEEP: _to_color("#0066CC"),
-    Activity.TIME_BREAK: _to_color("#FFFFFF"),
-    Activity.ENJOY_DRINK: _to_color("#02A4D3"),
-    Activity.ENJOY_PLAY: _to_color("#02A4D3"),
-    Activity.ENJOY_MUSIC: _to_color("#02A4D3"),
-    Activity.SHARE_LOVE: _to_color("#FE6F5E"),
-    Activity.SHARE_MUSIC: _to_color("#FE6F5E"),
-    Activity.SHARE_WOW: _to_color("#FE6F5E"),
+    Activity.NONE: (_n(), _n(), _n()),
+    Activity.MOVE: (_c("#E30B5C"), _n(), _n()),
+    Activity.WORK: (_c("#8B8680"), _n(), _n()),
+    Activity.SHOP: (_c("#A63A79"), _n(), _n()),
+    Activity.TALK: (_c("#0095B7"), _c("#FFFFFF"), _c("#000000")),
+    Activity.READ: (_c("#AF593E"), _c("#CA3435"), _c("#2D383A")),
+    Activity.WTF: (_c("#FF0000"), _n(), _n()),
+    Activity.EAT: (_c("#87421F"), _c("#CA3435"), _c("#FFFFFF")),
+    Activity.SLEEP: (_c("#0066CC"), _c("#000000"), _n()),
+    Activity.TIME_BREAK: (_c("#FFFFFF"), _c("#FFFF66"), _c("#00000044")),
+    Activity.ENJOY_DRINK: (_c("#02A4D3"), _c("#87421F"), _c("#FFFFFF")),
+    Activity.ENJOY_PLAY: (_c("#02A4D3"), _c("#7A89B8"), _c("#000000")),
+    Activity.ENJOY_MUSIC: (_c("#02A4D3"), _c("#2D383A"), _n()),
+    Activity.SHARE_LOVE: (_c("#D92121"), _c("#FFFFFF"), _c("#000000")),
+    Activity.SHARE_MUSIC: (_c("#D92121"), _c("#FFFFFF"), _c("#000000")),
+    Activity.SHARE_WOW: (_c("#D92121"), _c("#FFFFFF"), _c("#000000")),
 }
 
 
@@ -188,6 +200,7 @@ class Draw:
 
     def _draw_human(self, human: Human, group: HumanGroup):
         size = 20
+        act_size = size * 1.33
         kw = dict(**self.kw, group=group)
         kw_font = dict(
             **self.kw_font,
@@ -208,8 +221,13 @@ class Draw:
             for index, level in enumerate(LEVELS, start=1)
         }
 
-        act_sprite = Sprite(img=self.activity_sprites[0], **kw)
-        act_sprite.update(x=-size, y=-size, scale=size / 98)
+        a = 2 * act_size - size
+        act_sprite = Sprite(
+            img=self.activity_sprites[0],
+            p0=Vec(-size, -size),
+            p1=Vec(a, a),
+            **kw,
+        )
 
         def level_update(attr, value):
             bar = level_bars[attr]
@@ -217,12 +235,20 @@ class Draw:
             bar.visible = bar.width > 0.05
 
         def act_update(activity):
-            act_sprite.image = self.activity_sprites[activity]
-            act_sprite.color = ACTIVITY_COLORS[activity]
+            act_sprite.set_img(self.activity_sprites[activity])
+            r, g, b = ACTIVITY_COLORS[activity]
+            act_sprite.set_color_r(r)
+            act_sprite.set_color_g(g)
+            act_sprite.set_color_b(b)
 
-        body = Sprite(self.human_sprites[randint(0, 3)], x=-size, y=-size, **kw)
-        body.scale = size / 32
-        body.color = COLORS.dark_skin.mix(COLORS.light_skin, random()).to_pyglet()
+        body = Sprite(
+            self.human_sprites[randint(0, 3)],
+            p0=Vec(-size, -size),
+            p1=Vec(size, size),
+            color_r=COLORS.dark_skin.mix(COLORS.light_skin, random()).to_pyglet_alpha(),
+            color_g=COLORS.dark_skin.mix(COLORS.light_skin, random()).to_pyglet_alpha(),
+            **kw,
+        )
 
         self.objs += [
             Label(  # Name

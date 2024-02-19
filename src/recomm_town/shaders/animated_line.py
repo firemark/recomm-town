@@ -1,4 +1,4 @@
-from math import fmod, sqrt
+from math import fmod
 
 from pyglet import clock
 from pyglet import gl
@@ -20,7 +20,6 @@ vertex_source = """#version 150 core
 
     out vec4 vertex_colors;
     out vec2 texture_coords;
-
 
     uniform WindowBlock
     {
