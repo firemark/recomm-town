@@ -108,4 +108,3 @@ class Place:
 @dataclass
 class Way:
     points: list[Vec]
-

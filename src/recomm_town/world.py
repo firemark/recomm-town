@@ -274,7 +274,7 @@ class World:
                     actions.ChangeActivity(Activity.MOVE),
                     actions.Move(place.position),
                 ]
-                
+
             if way:
                 acts += [actions.Move(p) for p in way.points]
         return acts

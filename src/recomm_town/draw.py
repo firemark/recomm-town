@@ -1,24 +1,16 @@
 from collections import defaultdict
-from math import fmod, sqrt
 from random import randint, random
 
 from pyglet.graphics import Batch, Group
-from pyglet.sprite import (
-    Sprite,
-    SpriteGroup,
-    get_default_shader,
-    GL_SRC_ALPHA,
-    GL_ONE_MINUS_SRC_ALPHA,
-    GL_TRIANGLES,
-)
+from pyglet.sprite import Sprite
 from pyglet.image import ImageGrid, load as image_load
 from pyglet.shapes import Line, Rectangle, BorderedRectangle
 from pyglet.window import Window
 from pyglet.text import Label
-from pyglet import clock
 
 from recomm_town.app import GuiGroup
-from recomm_town.common import Color, Trivia
+from recomm_town.shaders import AnimatedLine
+from recomm_town.common import Color, Trivia, Vec
 from recomm_town.human import Human, Activity
 from recomm_town.town import PlaceFunction as PF
 from recomm_town.town.place import Place, Way
@@ -71,109 +63,6 @@ ACTIVITY_COLORS = {
     Activity.SHARE_MUSIC: _to_color("#FE6F5E"),
     Activity.SHARE_WOW: _to_color("#FE6F5E"),
 }
-
-
-class AnimatedLine:
-    _vertex_list = None
-    group_class = SpriteGroup
-
-    def __init__(
-        self,
-        img,
-        x0,
-        y0,
-        x1,
-        y1,
-        width=1,
-        move_x=0,
-        move_y=1,
-        dt=0.05,
-        blend_src=GL_SRC_ALPHA,
-        blend_dest=GL_ONE_MINUS_SRC_ALPHA,
-        batch=None,
-        group=None,
-        color=(255, 255, 255, 255),
-    ):
-        diff_x = x0 - x1
-        diff_y = y0 - y1
-        length = sqrt(diff_x**2 + diff_y**2)
-        diff_max = max(abs(diff_x), abs(diff_y))
-        diff_x *= width / diff_max / 2
-        diff_y *= width / diff_max / 2
-
-        # fmt: off
-        self._v = (
-            x0 - diff_y, y0 + diff_x, 0.0,
-            x0 + diff_y, y0 - diff_x, 0.0,
-            x1 + diff_y, y1 - diff_x, 0.0,
-            x1 - diff_y, y1 + diff_x, 0.0,
-        )
-        # fmt: on
-        self._texture = img.get_texture()
-        self._program = get_default_shader()
-        self._repeat_x = 1.0
-        self._repeat_y = length / width
-        self._move_x = move_x
-        self._move_y = move_y
-        self._color = color
-
-        self.batch = batch
-        self.group = self.group_class(
-            self._texture, blend_src, blend_dest, self._program, group
-        )
-        self.dt = dt
-        self.t = 0.0
-        self._create_vertex_list()
-        clock.schedule_interval(self._animate, dt)
-
-    def _create_vertex_list(self):
-        tx = self._move_x * self.t
-        ty = self._move_y * self.t
-        ttx = tx + self._repeat_x
-        tty = ty + self._repeat_y
-        tex_coords = (tx, ty, 0.0) + (ttx, ty, 0.0) + (ttx, tty, 0.0) + (tx, tty, 0.0)
-        self._vertex_list = self._program.vertex_list_indexed(
-            4,
-            GL_TRIANGLES,
-            [0, 1, 2, 0, 2, 3],
-            self.batch,
-            self.group,
-            position=("f", self._v),
-            colors=("Bn", self._color * 4),
-            translate=("f", (0, 0, 0) * 4),
-            scale=("f", (1.0, 1.0) * 4),
-            rotation=("f", (0.0,) * 4),
-            tex_coords=("f", tex_coords),
-        )
-
-    def draw(self):
-        if self._vertex_list is None:
-            return
-        self.group.set_state_recursive()
-        self._vertex_list.draw(GL_TRIANGLES)
-        self.group.unset_state_recursive()
-
-    def __del__(self):
-        try:
-            if self._vertex_list is not None:
-                self._vertex_list.delete()
-        except:
-            pass
-
-    def _animate(self, dt):
-        if self._vertex_list is None:
-            return  # Deleted in event handler.
-        self.t = fmod(self.t + dt, 1.0)
-        self._vertex_list.delete()
-        self._create_vertex_list()
-
-    def delete(self):
-        clock.unschedule(self._animate)
-        if self._vertex_list is not None:
-            self._vertex_list.delete()
-        self._vertex_list = None
-        self._texture = None
-        self._group = None
 
 
 class HumanGroup(Group):
@@ -386,13 +275,11 @@ class Draw:
                 Label(trivia.name, x=c.x, y=c.y, **kw_font),
                 AnimatedLine(
                     self.learnbar_image,
-                    a.position.x,
-                    a.position.y,
-                    b.position.x,
-                    b.position.y,
+                    a.position,
+                    b.position,
                     color=(0x33, 0xCC, 0xFF, 0x80),
-                    move_y=2,
-                    width=32,
+                    speed=Vec(0.0, 2.0),
+                    width=32.0,
                     **kw,
                 ),
             ]
