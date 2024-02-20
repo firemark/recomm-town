@@ -2,6 +2,7 @@
 from recomm_town.app import App
 
 from recomm_town.creator.default import make_world
+from recomm_town.creator.isolated import make_world
 from recomm_town.draw import Draw
 
 

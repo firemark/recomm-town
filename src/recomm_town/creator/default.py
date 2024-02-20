@@ -113,9 +113,6 @@ class ShopBuilder(CommonBuilder[Place]):
             }
         )
 
-    def _make(self, name: str, position: Vec):
-        return Place(f"{name} crossway", position, PF.CROSSROAD)
-
 
 def make_world():
     trivias = TriviaBuilder()

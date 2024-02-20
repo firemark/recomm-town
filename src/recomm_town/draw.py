@@ -179,12 +179,12 @@ class Draw:
             p = place.position
             rot = place.rotation
             size = place.box_end - place.box_start
-            center = size * 0.5
+            center = p - place.box_start
             start = center + place.box_start
 
             rect = Rectangle(start.x, start.y, size.x, size.y, color=color, **kw)
             rect.anchor_position = center
-            rect.rotation = rot
+            rect.rotation = -rot
 
             self.objs += [
                 rect,
@@ -198,7 +198,7 @@ class Draw:
                 r = room.position
                 rect = Rectangle(r.x, r.y, s, s, color=room_color, **kw)
                 rect.anchor_position = h, h
-                rect.rotation = rot
+                rect.rotation = -rot
                 self.objs.append(rect)
 
     def draw_people(self, window: Window, people: list[Human], people_group: Group):
