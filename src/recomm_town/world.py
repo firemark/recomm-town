@@ -104,6 +104,7 @@ class World:
                     activity=Activity.SHOP,
                     place=place,
                     time=randint(5, 10),
+                    talk_probablity=0.3,
                     levels={
                         "fridge": 1.0 - random() * 0.2,
                         "money": -0.3 - random() * 0.1,
@@ -256,27 +257,32 @@ class World:
                 acts.append(actions.Move(place.position))
 
             if place.function == PF.CROSSROAD and random() > 0.9:
-                size = place.box_start - place.box_end
-                local = Vec(size.x * (random() - 0.5), size.y * (random() - 0.5))
-                find = partial(self._find_neighbours, human)
-                acts += [
-                    actions.Move(place.position + local),
-                    actions.ChangeActivity(Activity.TIME_BREAK),
-                    actions.Wait(random() * 2.0),
-                ]
-                for i in range(randint(1, 4)):
-                    acts += [
-                        actions.RandomTalk(randint(10, 15) / 10.0, find, probality=0.9),
-                        actions.Wait(random() * 2.0),
-                    ]
-
-                acts += [
-                    actions.ChangeActivity(Activity.MOVE),
-                    actions.Move(place.position),
-                ]
+                acts += self._wait_at_crossroad(human, place)
 
             if way:
                 acts += [actions.Move(p) for p in way.points]
+        return acts
+
+    def _wait_at_crossroad(self, human: Human, place: Place):
+        acts: list[Action] = []
+        size = place.box_start - place.box_end  # TODO - use rotation argument
+        local = Vec(size.x * (random() - 0.5), size.y * (random() - 0.5))
+        find = partial(self._find_neighbours, human)
+        acts += [
+            actions.Move(place.position + local),
+            actions.ChangeActivity(Activity.TIME_BREAK),
+            actions.Wait(random() * 2.0),
+        ]
+        for i in range(randint(1, 4)):
+            acts += [
+                actions.RandomTalk(randint(10, 15) / 10.0, find, probality=0.9),
+                actions.Wait(random() * 2.0),
+            ]
+
+        acts += [
+            actions.ChangeActivity(Activity.MOVE),
+            actions.Move(place.position),
+        ]
         return acts
 
     def _make_move_action_to_room(self, room: Room) -> list[Action]:

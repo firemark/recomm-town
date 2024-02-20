@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from functools import total_ordering
 from typing import Iterable, Self
 
-from recomm_town.common import Book, Trivia, Vec
+from recomm_town.common import Book, Rotate, Trivia, Vec
 from recomm_town.human import Human
 
 
@@ -52,6 +52,7 @@ class Place:
         room_padding: float = 10.0,
         trivias: list[Trivia] | None = None,
         books: list[Book] | None = None,
+        rotation: float = 0.0,
     ):
         self.name = name
         self.position = position
@@ -61,24 +62,28 @@ class Place:
         self.room_padding = room_padding
         self.trivias = trivias or []
         self.books = books or []
+        self.rotation = rotation
 
+        rot = Rotate(self.rotation)
         s = room_size + room_padding
+        p = self.position
+        rooms = list(rooms) if rooms else []
         self.rooms = [
             Room(
-                position=self.position + room.local_position * s,
-                path=[self.position + vec * s for vec in room.local_path],
+                position=p + rot(room.local_position * s),
+                path=[p + rot(vec * s) for vec in room.local_path],
             )
-            for room in rooms or []
+            for room in rooms
         ]
 
-        if self.rooms:
+        if rooms:
             h = s / 2
-            x_min = min(room.position.x for room in self.rooms)
-            y_min = min(room.position.y for room in self.rooms)
-            x_max = max(room.position.x for room in self.rooms)
-            y_max = max(room.position.y for room in self.rooms)
-            self.box_start = Vec(x_min, y_min) - h
-            self.box_end = Vec(x_max, y_max) + h
+            x_min = min(room.local_position.x for room in rooms)
+            y_min = min(room.local_position.y for room in rooms)
+            x_max = max(room.local_position.x for room in rooms)
+            y_max = max(room.local_position.y for room in rooms)
+            self.box_start = p + Vec(x_min, y_min) * s - h
+            self.box_end = p + Vec(x_max, y_max) * s + h
         else:
             self.box_start = self.position - 100.0
             self.box_end = self.position + 100.0

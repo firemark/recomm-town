@@ -1,3 +1,4 @@
+from math import sin, cos, radians
 from typing import NamedTuple, Self
 
 
@@ -107,3 +108,20 @@ class Trivia(NamedTuple):
 
 class Book(NamedTuple):
     trivia: Trivia
+
+
+class Rotate:
+
+    def __init__(self, rotation: float):
+        self.rotation = rotation
+        self.rotation_rad = radians(rotation)
+        self.sin = sin(self.rotation_rad)
+        self.cos = cos(self.rotation_rad)
+
+    def __call__(self, p: Vec) -> Vec:
+        s = self.sin
+        c = self.cos
+        return Vec(
+            x=p.x * c - p.y * s,
+            y=p.x * s + p.y * c,
+        )

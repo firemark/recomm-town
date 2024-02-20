@@ -177,11 +177,17 @@ class Draw:
             else:
                 color = COLORS.place_a.mix(COLORS.place_b, random()).to_pyglet()
             p = place.position
-            start = place.box_start
-            size = place.box_end - start
+            rot = place.rotation
+            size = place.box_end - place.box_start
+            center = size * 0.5
+            start = center + place.box_start
+
+            rect = Rectangle(start.x, start.y, size.x, size.y, color=color, **kw)
+            rect.anchor_position = center
+            rect.rotation = rot
 
             self.objs += [
-                Rectangle(start.x, start.y, size.x, size.y, color=color, **kw),
+                rect,
                 Label(place.name, x=p.x, y=p.y, **kw_font),
             ]
 
@@ -189,8 +195,11 @@ class Draw:
             h = s / 2
             room_color = COLORS.room_a.mix(COLORS.room_b, random()).to_pyglet()
             for room in place.rooms:
-                r = room.position - h
-                self.objs.append(Rectangle(r.x, r.y, s, s, color=room_color, **kw))
+                r = room.position
+                rect = Rectangle(r.x, r.y, s, s, color=room_color, **kw)
+                rect.anchor_position = h, h
+                rect.rotation = rot
+                self.objs.append(rect)
 
     def draw_people(self, window: Window, people: list[Human], people_group: Group):
         for index, human in enumerate(people):
