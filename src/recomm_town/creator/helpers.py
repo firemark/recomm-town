@@ -89,3 +89,30 @@ class AvailableWorkplaces:
             index = self.places.index(available_workspace)
             self.places.pop(index)
         return available_workspace.place
+
+
+class CommonListBuilder[T]:
+    __objs: dict[str, list[T]]
+
+    def __init__(self, objs: dict[str, list[T]]) -> None:
+        self.__objs = objs
+
+    def __getattr__(self, attr: str) -> list[T]:
+        return self.__objs[attr]
+
+    def __iter__(self):
+        for obj in self.__objs.values():
+            yield from obj
+
+
+class CommonBuilder[T]:
+    __objs: dict[str, T]
+
+    def __init__(self, objs: dict[str, T]) -> None:
+        self.__objs = objs
+
+    def __getattr__(self, attr: str) -> T:
+        return self.__objs[attr]
+
+    def __iter__(self):
+        yield from self.__objs.values()

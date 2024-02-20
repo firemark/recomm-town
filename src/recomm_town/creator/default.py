@@ -1,113 +1,69 @@
 from recomm_town.common import Book, Trivia, Vec
+from recomm_town.creator.trivias import TriviaBuilder
 from recomm_town.town.town import Town
 from recomm_town.town.place import Place, PlaceFunction as PF
 from recomm_town.world import World
 
 from recomm_town.creator.helpers import (
+    CommonBuilder,
+    CommonListBuilder,
     make_flat_rooms,
     make_grid_rooms,
     generate_people,
 )
 
 
-class TriviaBuilder:
-
-    def __init__(self):
-        self.ceramic = [
-            Trivia("skill", "pottery"),
-            Trivia("skill", "wine glass"),
-            Trivia("skill", "ceramic"),
-            Trivia("skill", "stained glass"),
-        ]
-        self.website = [
-            Trivia("skill", "HTML"),
-            Trivia("skill", "CSS"),
-            Trivia("skill", "GUI"),
-        ]
-        self.programming = [
-            Trivia("skill", "python"),
-            Trivia("skill", "javascript"),
-            Trivia("skill", "c++"),
-        ]
-        self.paint = [
-            Trivia("paiting", "dada"),
-            Trivia("paiting", "cubism"),
-            Trivia("paiting", "watercolor"),
-            Trivia("paiting", "hypperrealism"),
-        ]
-        self.music = [
-            Trivia("music", "techno"),
-            Trivia("music", "rock"),
-            Trivia("music", "classic"),
-            Trivia("music", "country"),
-        ]
-        self.book = [
-            Trivia("book", "Lem - Solaris"),
-            Trivia("book", "Dukaj - Starość aksolotla"),
-            Trivia("book", "Tokarczuk - Księgi Jakubowe"),
-            Trivia("book", "Lem - Eden"),
-            Trivia("book", "Mrożek - Tango"),
-            Trivia("book", "Mrożek - Policja"),
-            Trivia("book", "Piskorski - 40 i 4"),
-        ]
-
-    def __iter__(self):
-        yield from self.ceramic
-        yield from self.website
-        yield from self.programming
-        yield from self.paint
-        yield from self.music
-        yield from self.book
-
-
-class JobBuilder:
+class JobBuilder(CommonBuilder[Place]):
 
     def __init__(self, trivias: TriviaBuilder):
-        self.factory = Place(
-            "Ceramic factory",
-            Vec(-1000.0, +1000.0),
-            PF.WORK,
-            make_flat_rooms(5, 4),
-            trivias=trivias.ceramic,
-        )
-        self.website_office = Place(
-            "Website office",
-            Vec(+2300.0, +2000.0),
-            PF.WORK,
-            make_flat_rooms(3, 3),
-            trivias=trivias.website,
-        )
-        self.programming_office = Place(
-            "Blip blob office",
-            Vec(+1000.0, +3000.0),
-            PF.WORK,
-            make_flat_rooms(3, 3),
-            trivias=trivias.programming,
+        super().__init__(
+            {
+                "factory": Place(
+                    "Ceramic factory",
+                    Vec(-1000.0, +1000.0),
+                    PF.WORK,
+                    make_flat_rooms(5, 4),
+                    trivias=trivias.ceramic,
+                ),
+                "website_office": Place(
+                    "Website office",
+                    Vec(+2300.0, +2000.0),
+                    PF.WORK,
+                    make_flat_rooms(3, 3),
+                    trivias=trivias.website,
+                ),
+                "programming_office": Place(
+                    "Blip blob office",
+                    Vec(+1000.0, +3000.0),
+                    PF.WORK,
+                    make_flat_rooms(3, 3),
+                    trivias=trivias.programming,
+                ),
+            }
         )
 
-    def __iter__(self):
-        yield self.factory
-        yield self.website_office
-        yield self.programming_office
 
-
-class HousesBuilder:
+class HousesBuilder(CommonListBuilder[Place]):
 
     def __init__(self) -> None:
         self.center = Vec(-1000.0, -2000.0)
         self.center_left = self.center + Vec(-800.0, 0.0)
         self.center_right = self.center + Vec(+800.0, 0.0)
 
-        self.houses_left = [
-            self._make_home("Flat Andrzej", self.center_left + Vec(0.0, -500.0)),
-            self._make_home("Flat Bogdan", self.center_left + Vec(0.0, +500.0)),
-        ]
-        self.houses_right = [
-            self._make_home("Flat Czesiek", self.center_right + Vec(0.0, -500.0)),
-            self._make_home("Flat Dawid", self.center_right + Vec(0.0, +500.0)),
-        ]
+        super().__init__(
+            {
+                "left": [
+                    self._make("Flat Andrzej", self.center_left + Vec(0.0, -500.0)),
+                    self._make("Flat Bogdan", self.center_left + Vec(0.0, +500.0)),
+                ],
+                "right": [
+                    self._make("Flat Czesiek", self.center_right + Vec(0.0, -500.0)),
+                    self._make("Flat Dawid", self.center_right + Vec(0.0, +500.0)),
+                ],
+            }
+        )
 
-    def _make_home(self, name: str, position):
+    def _make(self, name: str, position: Vec):
         return Place(
             name=name,
             position=position,
@@ -116,32 +72,59 @@ class HousesBuilder:
             room_size=120.0,
         )
 
-    def __iter__(self):
-        yield from self.houses_left
-        yield from self.houses_right
+
+class CrossBuilder(CommonBuilder[Place]):
+
+    def __init__(self, home: HousesBuilder):
+        super().__init__(
+            {
+                "a": self._make("Apple", Vec(-1000.0, 0.0)),
+                "b": self._make("Cherry", Vec(+1000.0, 0.0)),
+                "main": self._make("Center", Vec(0.0, 0.0)),
+                "home": self._make("Coconut", home.center),
+                "home_left": self._make("Pinata", home.center_left),
+                "home_right": self._make("Banana", home.center_right),
+            }
+        )
+
+    def _make(self, name: str, position: Vec):
+        return Place(f"{name} crossway", position, PF.CROSSROAD)
+
+
+class ShopBuilder(CommonBuilder[Place]):
+
+    def __init__(self, books: list[Book]):
+        super().__init__(
+            {
+                "agata": Place(
+                    "Shop Agata",
+                    Vec(0, -300.0),
+                    PF.SHOP,
+                    make_flat_rooms(2, 2),
+                    books=books,
+                ),
+                "basia": Place(
+                    "Shop Basia",
+                    Vec(+1000.0, -1500.0),
+                    PF.SHOP,
+                    make_flat_rooms(4, 2),
+                    books=books,
+                ),
+            }
+        )
+
+    def _make(self, name: str, position: Vec):
+        return Place(f"{name} crossway", position, PF.CROSSROAD)
 
 
 def make_world():
     trivias = TriviaBuilder()
-    books = [Book(t) for t in trivias.book]
-    programming_books = [Book(t) for t in trivias.programming]
+    books = [Book(t) for t in trivias.book + trivias.programming]
     home = HousesBuilder()
     jobs = JobBuilder(trivias)
+    cross = CrossBuilder(home)
+    shop = ShopBuilder(books)
 
-    shop_a = Place(
-        "Shop Agata",
-        Vec(0, -300.0),
-        PF.SHOP,
-        make_flat_rooms(2, 2),
-        books=books + programming_books,
-    )
-    shop_b = Place(
-        "Shop Basia",
-        Vec(+1000.0, -1500.0),
-        PF.SHOP,
-        make_flat_rooms(4, 2),
-        books=books,
-    )
     garden = Place(
         "Garden",
         Vec(+1000.0, +2000.0),
@@ -161,19 +144,12 @@ def make_world():
         trivias=trivias.music,
     )
 
-    cross_a = Place("Apple crossway", Vec(-1000.0, 0.0), PF.CROSSROAD)
-    cross_b = Place("Cherry crossway", Vec(+1000.0, 0.0), PF.CROSSROAD)
-    cross_main = Place("Center", Vec(0.0, 0.0), PF.CROSSROAD)
-    cross_home = Place("Coconut crossway", home.center, PF.CROSSROAD)
-    cross_home_left = Place("Pinata crossway", home.center_left, PF.CROSSROAD)
-    cross_home_right = Place("Banana crossway", home.center_right, PF.CROSSROAD)
-
-    cross_a.connect(cross_home, jobs.factory)
-    cross_b.connect(shop_b, garden)
-    cross_main.connect(cross_a, cross_b, museum, shop_a)
-    cross_home.connect(cross_home_left, cross_home_right)
-    cross_home_left.connect(*home.houses_left)
-    cross_home_right.connect(*home.houses_right)
+    cross.a.connect(cross.home, jobs.factory)
+    cross.b.connect(shop.basia, garden)
+    cross.main.connect(cross.a, cross.b, museum, shop.agata)
+    cross.home.connect(cross.home_left, cross.home_right)
+    cross.home_left.connect(*home.left)
+    cross.home_right.connect(*home.right)
     garden.connect(jobs.programming_office, jobs.website_office)
 
     houses = list(home)
@@ -183,16 +159,10 @@ def make_world():
         [
             *houses,
             *jobs,
-            shop_a,
-            shop_b,
+            *cross,
+            *shop,
             garden,
             museum,
-            cross_home,
-            cross_a,
-            cross_b,
-            cross_main,
-            cross_home_right,
-            cross_home_left,
         ]
     )
     return World(town, people, list(trivias))
