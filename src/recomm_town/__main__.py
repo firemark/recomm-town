@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
-from recomm_town.app import App
+import argparse
 
-from recomm_town.creator.default import make_world
-from recomm_town.creator.isolated import make_world
+from recomm_town.app import App
 from recomm_town.draw import Draw
+from importlib import import_module
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("town")
 
 
 if __name__ == "__main__":
-    world = make_world()
+    args = parser.parse_args()
+    # TODO - change importing town to another format (XML?)
+    module = import_module(f"recomm_town.creator.{args.town}")
+    world = module.make_world()
 
     app = App(world)
     draw = Draw(app.batch, app.people_group)
