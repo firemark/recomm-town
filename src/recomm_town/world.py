@@ -14,6 +14,8 @@ ENJOY_ACTIVITIES = [Activity.ENJOY_DRINK, Activity.ENJOY_MUSIC, Activity.ENJOY_P
 
 
 class World:
+    FORGETTING_TICK = 1.0
+    FORGETTING_LEVEL = 1e-3
     GRID_CELL_SIZE = 100.0
     NEIGHBOR_CELLS = [(x, y) for x in range(-1, 2) for y in range(-1, 2)]
 
@@ -24,6 +26,7 @@ class World:
     people_grid: dict[tuple[int, int], set[Human]]
     radio_program: Program
     tv_program: Program
+    forget_lifetime: float
 
     def __init__(
         self,
@@ -40,6 +43,7 @@ class World:
         self.tv_program = Program(tv_program or [], lifetime=30.0)
         self.tv_program_index = 0
         self.radio_program_index = 0
+        self.forget_lifetime = self.FORGETTING_TICK
 
         for human in people:
             self._update_human_coords(human, human.position)
@@ -49,8 +53,15 @@ class World:
         dt *= self.simulation_speed
         self.radio_program.do_it(dt)
         self.tv_program.do_it(dt)
+
         for human in self.people:
             self._do_it_human(human, dt)
+
+        self.forget_lifetime -= dt
+        if self.forget_lifetime < 0.0:
+            self.forget_lifetime = self.FORGETTING_TICK
+            human = choice(self.people)
+            self._forget_trivias(human, self.FORGETTING_TICK)
 
     def _update_human_coords(self, human: Human, old_position):
         cell_size = self.GRID_CELL_SIZE
@@ -80,6 +91,10 @@ class World:
         for x, y in self.NEIGHBOR_CELLS:
             neighbors |= self.people_grid[new_x + x, new_y + y]
         return neighbors - {human}
+
+    def _forget_trivias(self, human: Human, dt: float):
+        forgetting_level = self.FORGETTING_LEVEL * len(human.knowledge) * dt
+        human.forget_trivias(forgetting_level)
 
     def _do_it_human(self, human: Human, dt: float):
         while not human.actions:
@@ -167,14 +182,14 @@ class World:
                         human=human,
                         activity=Activity.RADIO,
                         trivia=trivia,
-                        learn_level=0.1,
+                        learn_level=0.05,
                     ),
                     (trivia := self.tv_program.trivia)
                     and self._go_home_learn(
                         human=human,
                         activity=Activity.TV,
                         trivia=trivia,
-                        learn_level=0.1,
+                        learn_level=0.05,
                     ),
                 ]
                 filtered_possibilities = [p for p in possibilities if p is not None]

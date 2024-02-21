@@ -87,11 +87,22 @@ class Human:
             cb(attr, level.value)
 
     def update_knowledge(self, trivia: Trivia, value: float, max_value: float = 1.0):
-        prev_value = self.knowledge[trivia]
+        prev_value = self.knowledge.get(trivia, 0.0)
         new_value = prev_value + min(value, max(0.0, max_value - prev_value))
         self.knowledge[trivia] = new_value
         for cb in self.knowledge_observers.values():
             cb(trivia, new_value, prev_value)
+
+    def forget_trivias(self, forgetting_level: float):
+        if not self.knowledge:
+            return
+        new_knowledge: dict[Trivia, float] = {}
+        for trivia, level in self.knowledge.items():
+            new_level = max(0.0, level - forgetting_level)
+            new_knowledge[trivia] = new_level
+            for cb in self.knowledge_observers.values():
+                cb(trivia, new_level, level)
+        self.knowledge = new_knowledge
 
     def move(self, dx, dy):
         old_position = self.position

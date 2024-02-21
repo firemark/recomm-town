@@ -61,7 +61,7 @@ ACTIVITY_COLORS = {
     Activity.NONE: (_n(), _n(), _n()),
     Activity.MOVE: (_c("#E30B5C"), _n(), _n()),
     Activity.WORK: (_c("#8B8680"), _n(), _n()),
-    Activity.SHOP: (_c("#A63A79"), _c("#00000044"), _n()),
+    Activity.SHOP: (_c("#C9C0BB"), _c("#00000044"), _n()),
     Activity.TALK: (_c("#0095B7"), _c("#FFFFFF"), _c("#000000")),
     Activity.READ: (_c("#AF593E"), _c("#CA3435"), _c("#2D383A")),
     Activity.RADIO: (_c("#805533"), _c("#C9C0BB"), _c("#736A62")),
