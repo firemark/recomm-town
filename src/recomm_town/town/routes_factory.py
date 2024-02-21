@@ -20,7 +20,9 @@ class RoutesFactory:
             new_routes = RoutesForSinglePlaceFactory(self.routes).make(place)
             for place_from, place_to, new_route in new_routes:
                 new_route_len = self._len(new_route)
-                old_route_len = self._len_cache.get((place_from, place_to), float("inf"))
+                old_route_len = self._len_cache.get(
+                    (place_from, place_to), float("inf")
+                )
                 if old_route_len < new_route_len:
                     continue
 

@@ -177,4 +177,6 @@ def make_world():
             garden,
         ]
     )
-    return World(town, people_l + people_r, list(trivias))
+    return World(
+        town, people_l + people_r, radio_program=trivias.music, tv_program=trivias.tv
+    )

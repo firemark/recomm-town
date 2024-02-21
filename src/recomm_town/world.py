@@ -5,6 +5,7 @@ from random import choice, randint, random
 
 from recomm_town.common import Trivia, Vec
 from recomm_town.human import Activity, Emotion, Human
+from recomm_town.program import Program
 from recomm_town.town import Town, Place, Room, PlaceFunction as PF
 from recomm_town.actions import Action
 from recomm_town import actions
@@ -21,21 +22,35 @@ class World:
     tracked_human: Human | None
     simulation_speed: float
     people_grid: dict[tuple[int, int], set[Human]]
-    trivias: list[Trivia]
+    radio_program: Program
+    tv_program: Program
 
-    def __init__(self, town: Town, people: list[Human], trivias: list[Trivia]):
+    def __init__(
+        self,
+        town: Town,
+        people: list[Human],
+        radio_program: list[Trivia] | None = None,
+        tv_program: list[Trivia] | None = None,
+    ):
         self.town = town
         self.people = people
         self.simulation_speed = 1.0
         self.people_grid = defaultdict(set)
-        self.trivas = trivias
+        self.radio_program = Program(radio_program or [], lifetime=15.0)
+        self.tv_program = Program(tv_program or [], lifetime=30.0)
+        self.tv_program_index = 0
+        self.radio_program_index = 0
+
         for human in people:
             self._update_human_coords(human, human.position)
             human.position_observers["world"] = self._update_human_coords
 
     def do_it(self, dt: float):
+        dt *= self.simulation_speed
+        self.radio_program.do_it(dt)
+        self.tv_program.do_it(dt)
         for human in self.people:
-            self._do_it_human(human, dt * self.simulation_speed)
+            self._do_it_human(human, dt)
 
     def _update_human_coords(self, human: Human, old_position):
         cell_size = self.GRID_CELL_SIZE
@@ -135,43 +150,57 @@ class World:
                     },
                 )
             case _:  # otherwise
-                r = random()
-                if r > 0.5:
-                    place = self._find_place_by_function(human, PF.ENTERTAIMENT)
-                    end_actions: list[Action]
-                    if place.books and random() > 0.8:
-                        end_actions = [actions.BuyBook(choice(place.books))]
-                    else:
-                        end_actions = []
-                    return self._go_to_place(
+                possibilities: list[list[Action] | None] = [
+                    self._go_fun_fun(human),
+                    (
+                        None
+                        if not human.library
+                        else self._go_home_learn(
+                            human=human,
+                            activity=Activity.READ,
+                            trivia=choice(human.library).trivia,
+                            learn_level=0.5,
+                        )
+                    ),
+                    (trivia := self.radio_program.trivia)
+                    and self._go_home_learn(
                         human=human,
-                        activity=ENJOY_ACTIVITIES,
-                        place=place,
-                        time=randint(5, 10),
-                        levels={
-                            "money": -0.1 - random() * 0.2,
-                            "tiredness": +0.2 + random() * 0.2,
-                            "fullness": -0.3 - random() * 0.2,
-                        },
-                        end_actions=end_actions,
-                    )
-                else:
-                    end_actions: list[Action]
-                    if not human.library:
-                        return self._make_fail()
-                    trivia = choice(human.library).trivia
-                    return self._go_home(
+                        activity=Activity.RADIO,
+                        trivia=trivia,
+                        learn_level=0.1,
+                    ),
+                    (trivia := self.tv_program.trivia)
+                    and self._go_home_learn(
                         human=human,
-                        activity=Activity.READ,
-                        time=randint(5, 10),
-                        levels={
-                            "fullness": -0.1 - random() * 0.2,
-                            "tiredness": -0.3 - random() * 0.2,
-                        },
-                        end_actions=[
-                            actions.LearnTrivia(trivia, level=0.5, max_level=1.0),
-                        ],
-                    )
+                        activity=Activity.TV,
+                        trivia=trivia,
+                        learn_level=0.1,
+                    ),
+                ]
+                filtered_possibilities = [p for p in possibilities if p is not None]
+                if not filtered_possibilities:
+                    return self._make_fail()
+                return choice(filtered_possibilities)
+
+    def _go_fun_fun(self, human: Human) -> list[Action]:
+        place = self._find_place_by_function(human, PF.ENTERTAIMENT)
+        end_actions: list[Action]
+        if place.books and random() > 0.8:
+            end_actions = [actions.BuyBook(choice(place.books))]
+        else:
+            end_actions = []
+        return self._go_to_place(
+            human=human,
+            activity=ENJOY_ACTIVITIES,
+            place=place,
+            time=randint(5, 10),
+            levels={
+                "money": -0.1 - random() * 0.2,
+                "tiredness": +0.2 + random() * 0.2,
+                "fullness": -0.3 - random() * 0.2,
+            },
+            end_actions=end_actions,
+        )
 
     def _go_home(
         self,
@@ -193,6 +222,26 @@ class World:
             actions.ChangeActivity(Activity.MOVE),
             *self._make_move_action_from_room(human.info.liveroom),
         ]
+
+    def _go_home_learn(
+        self,
+        human: Human,
+        activity: Activity,
+        trivia: Trivia,
+        learn_level: float,
+    ) -> list[Action]:
+        return self._go_home(
+            human=human,
+            activity=activity,
+            time=randint(5, 10),
+            levels={
+                "fullness": -0.1 - random() * 0.2,
+                "tiredness": -0.3 - random() * 0.2,
+            },
+            end_actions=[
+                actions.LearnTrivia(trivia, level=learn_level, max_level=1.0),
+            ],
+        )
 
     def _go_to_place(
         self,

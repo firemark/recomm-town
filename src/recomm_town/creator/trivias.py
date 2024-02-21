@@ -44,5 +44,22 @@ class TriviaBuilder(CommonListBuilder[Trivia]):
                     Trivia("book", "Mrożek - Policja"),
                     Trivia("book", "Piskorski - 40 i 4"),
                 ],
+                "tv": [
+                    Trivia("movie", "Matrix"),
+                    Trivia("movie", "The Lord of the rings"),
+                    Trivia("movie", "Forrest Gump"),
+                    Trivia("movie", "Fight club"),
+                    Trivia("movie", "Inception"),
+                    Trivia("series", "Breaking Bad"),
+                    Trivia("series", "Rick & Morty"),
+                    Trivia("series", "The Office"),
+                    Trivia("series", "The Big bang Theory"),
+                ],
+                "podcasts": [
+                    Trivia("podcast", "ancient history"),
+                    Trivia("podcast", "medieval history"),
+                    Trivia("podcast", "asian cooking"),
+                    Trivia("podcast", "oriental cooking"),
+                ],
             }
         )

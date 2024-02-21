@@ -2,18 +2,20 @@ from enum import IntEnum
 
 
 class Activity(IntEnum):
-    NONE = 12
-    MOVE = 13
-    WORK = 14
-    SHOP = 15
-    TALK = 8
-    READ = 9
-    EAT = 10
-    SLEEP = 11
-    WTF = 4
-    TIME_BREAK = 5
-    SHARE_LOVE = 6
-    SHARE_MUSIC = 7
+    NONE = 15
+    MOVE = 16
+    WORK = 17
+    SHOP = 18
+    TALK = 10
+    READ = 11
+    RADIO = 19
+    TV = 14
+    EAT = 12
+    SLEEP = 13
+    WTF = 5
+    TIME_BREAK = 6
+    SHARE_LOVE = 7
+    SHARE_MUSIC = 8
     SHARE_WOW = 0
     ENJOY_MUSIC = 1
     ENJOY_DRINK = 2

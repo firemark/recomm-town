@@ -162,4 +162,4 @@ def make_world():
             museum,
         ]
     )
-    return World(town, people, list(trivias))
+    return World(town, people, radio_program=trivias.podcasts, tv_program=trivias.tv)
