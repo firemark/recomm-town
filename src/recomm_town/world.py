@@ -15,7 +15,7 @@ ENJOY_ACTIVITIES = [Activity.ENJOY_DRINK, Activity.ENJOY_MUSIC, Activity.ENJOY_P
 
 class World:
     FORGETTING_TICK = 1.0
-    FORGETTING_LEVEL = 1e-3
+    FORGETTING_FACTOR = 1.00
     GRID_CELL_SIZE = 100.0
     NEIGHBOR_CELLS = [(x, y) for x in range(-1, 2) for y in range(-1, 2)]
 
@@ -61,7 +61,7 @@ class World:
         if self.forget_lifetime < 0.0:
             self.forget_lifetime = self.FORGETTING_TICK
             human = choice(self.people)
-            self._forget_trivias(human, self.FORGETTING_TICK)
+            self._forget_trivias(human)
 
     def _update_human_coords(self, human: Human, old_position):
         cell_size = self.GRID_CELL_SIZE
@@ -92,8 +92,8 @@ class World:
             neighbors |= self.people_grid[new_x + x, new_y + y]
         return neighbors - {human}
 
-    def _forget_trivias(self, human: Human, dt: float):
-        forgetting_level = self.FORGETTING_LEVEL * len(human.knowledge) * dt
+    def _forget_trivias(self, human: Human):
+        forgetting_level = self.FORGETTING_FACTOR * len(human.knowledge) * self.FORGETTING_TICK
         human.forget_trivias(forgetting_level)
 
     def _do_it_human(self, human: Human, dt: float):

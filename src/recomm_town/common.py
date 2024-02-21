@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from math import sin, cos, radians
 from typing import NamedTuple, Self
 
@@ -101,9 +102,11 @@ class Color(NamedTuple):
         )
 
 
-class Trivia(NamedTuple):
+@dataclass(frozen=True)
+class Trivia:
     category: str
     name: str
+    forgetting_level: float = 0.01
 
 
 class Book(NamedTuple):

@@ -93,12 +93,12 @@ class Human:
         for cb in self.knowledge_observers.values():
             cb(trivia, new_value, prev_value)
 
-    def forget_trivias(self, forgetting_level: float):
+    def forget_trivias(self, forgetting_factor: float):
         if not self.knowledge:
             return
         new_knowledge: dict[Trivia, float] = {}
         for trivia, level in self.knowledge.items():
-            new_level = max(0.0, level - forgetting_level)
+            new_level = max(0.0, level - trivia.forgetting_level * forgetting_factor)
             new_knowledge[trivia] = new_level
             for cb in self.knowledge_observers.values():
                 cb(trivia, new_level, level)
