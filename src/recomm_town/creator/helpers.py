@@ -53,7 +53,7 @@ def generate_people(houses, jobs, books) -> list[Human]:
                 liveroom=room,
                 workplace=available_workplaces.find(),
                 speed=5.0 + random() * 5.0,
-                stranger_trust_level=0.3 + random() * 0.2,
+                stranger_trust_level=0.2 + random() * 0.1,
             )
             human = Human(info.liveroom.position, info)
             human.levels.money += random()
@@ -76,8 +76,8 @@ def _update_family_friendness(family: list[Human]):
         for b in family:
             if a is b:
                 continue
-            a.update_friend_level(b, value=0.2 + random() * 0.5)
-            b.update_friend_level(b, value=0.2 + random() * 0.5)
+            a.update_friend_level(b, value=random() * 0.5)
+            b.update_friend_level(b, value=random() * 0.5)
 
 
 @dataclass

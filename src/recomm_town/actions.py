@@ -133,7 +133,9 @@ class RandomTalk(ActionWithStart):
     def on_start(self, human: Human) -> T:
         if random() >= self.probality:
             return "NEXT"
-        for stranger in self.find_neighbours():
+        neighbours = list(self.find_neighbours())
+        neighbours.sort(key=human.get_trust_level, reverse=True)
+        for stranger in neighbours:
             if stranger.activity != Activity.TALK:
                 continue
 
