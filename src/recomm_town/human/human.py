@@ -80,6 +80,13 @@ class Human:
     def get_trust_level(self, other: "Human") -> float:
         return self.friend_levels[other].value + self.info.stranger_trust_level
 
+    def replace_first_action(self, action: "Action"):
+        if self.actions:
+            self.actions[0].on_destroy(self)
+            self.actions[0] = action
+        else:
+            self.actions.append(action)
+
     def start_talk(self, stranger: Self, trivia: Trivia):
         self.talk_observers(self, stranger, trivia, "START")
 

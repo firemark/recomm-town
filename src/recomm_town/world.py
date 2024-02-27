@@ -105,9 +105,13 @@ class World:
         result = human.actions[0].do_it(human, dt)
         match result:
             case "NEXT":
-                human.actions.pop(0)
+                action = human.actions.pop(0)
+                action.on_destroy(human)
             case "FAIL":
-                human.actions = []
+                for action in human.actions:
+                    action.on_destroy(human)
+
+                human.actions.clear()
 
     def _make_new_actions(self, human: Human) -> list[Action]:
         match human.measure_emotion():

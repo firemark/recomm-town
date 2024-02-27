@@ -15,9 +15,16 @@ class Action:
     def do_it(self, human: "Human", dt: float) -> T:
         return "PASS"
 
+    def on_destroy(self, human: "Human"):
+        pass
+
 
 class ActionWithStart(Action):
     __first_time: bool = True
+    time: float
+
+    def __init__(self, time: float) -> None:
+        self.time = time
 
     def do_it(self, human: "Human", dt: float) -> T:
         if self.__first_time:
@@ -30,7 +37,11 @@ class ActionWithStart(Action):
     def on_start(self, human: "Human") -> T:
         return "PASS"
 
-    def on_invoke(self, human: "Human", dt: float) -> T:
+    def on_invoke(self, human: Human, dt: float) -> T:
+        self.time -= dt
+        if self.time <= 0.0:
+            return "NEXT"
+
         return "PASS"
 
 
@@ -114,9 +125,10 @@ class RandomTalk(ActionWithStart):
         find_neighbours: Callable[[], list[Human]],
         probality: float = 0.75,
     ) -> None:
-        self.time = time
+        super().__init__(time)
         self.find_neighbours = find_neighbours
         self.probality = probality
+        self.previous_activity = None
 
     def on_start(self, human: Human) -> T:
         if random() >= self.probality:
@@ -152,17 +164,14 @@ class RandomTalk(ActionWithStart):
         trivia_chunk = trivia.get_chunk(chunk_id)
 
         time_to_share = randint(2, 5)
-        teacher.actions[0] = ShareTo(time_to_share, trivia_chunk, student)
-        student.actions[0] = ShareFrom(time_to_share, trivia_chunk, teacher)
+        teacher.replace_first_action(ShareTo(time_to_share, trivia_chunk, student))
+        student.replace_first_action(ShareFrom(time_to_share, trivia_chunk, teacher))
         teacher.start_talk(student, trivia)
         return "STOP"
 
-    def on_invoke(self, human: "Human", dt: float) -> T:
-        self.time -= dt
-        if self.time <= 0.0:
+    def on_destroy(self, human: Human):
+        if self.previous_activity is not None:
             human.update_activity(self.previous_activity)
-            return "NEXT"
-        return "PASS"
 
 
 class Share(ActionWithStart):
@@ -174,7 +183,7 @@ class Share(ActionWithStart):
         level: float = 0.2,
         max: float = 1.0,
     ) -> None:
-        self.time = time
+        super().__init__(time)
         self.other = other
         self.trivia = trivia
         self.level = level
@@ -185,18 +194,10 @@ class Share(ActionWithStart):
         human.update_activity(choice(SHARE_ACTIVITIES))
         return "PASS"
 
-    def on_stop(self, human: Human):
+    def on_destroy(self, human: Human):
         human.update_activity(self.previous_activity)
         human.update_knowledge(self.trivia, self.level, self.max)
         human.update_friend_level(self.other, random() * 0.2)
-
-    def on_invoke(self, human: Human, dt: float) -> T:
-        self.time -= dt
-        if self.time <= 0.0:
-            self.on_stop(human)
-            return "NEXT"
-
-        return "PASS"
 
 
 class ShareFrom(Share):
@@ -213,8 +214,8 @@ class ShareTo(Share):
         super().__init__(time, student, trivia, level=0.2, max=1.0)
         self.student = student
 
-    def on_stop(self, human: Human):
-        super().on_stop(human)
+    def on_destroy(self, human: Human):
+        super().on_destroy(human)
         human.stop_talk(self.student)
 
 
