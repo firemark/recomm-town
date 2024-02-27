@@ -106,7 +106,16 @@ class Color(NamedTuple):
 class Trivia:
     category: str
     name: str
-    forgetting_level: float = 0.01
+    chunks: int = 4
+    forgetting_level: float = 1e-4
+
+    def get_chunk(self, id: int) -> "TriviaChunk":
+        return TriviaChunk(self, id)
+
+
+class TriviaChunk(NamedTuple):
+    trivia: Trivia
+    id: int
 
 
 class Book(NamedTuple):

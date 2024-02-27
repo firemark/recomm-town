@@ -280,11 +280,12 @@ class Draw:
         human.knowledge_observers["draw"] = self._trivia_update
         human.talk_observers["draw"] = self._talk_update
 
-    def _trivia_update(self, trivia, new, old):
+    def _trivia_update(self, trivia_chunk, new, old):
         diff = new - old
         if diff == 0.0:
             return
-        self.trivias_level[trivia] += diff
+        trivia, chunk_id = trivia_chunk
+        self.trivias_level[trivia] += diff / trivia.chunks
         c = self.people_count
         gen = zip(
             range(1, 11),

@@ -45,6 +45,7 @@ def generate_people(houses, jobs, books) -> list[Human]:
     available_workplaces = AvailableWorkplaces(jobs)
     people = []
     for home in houses:
+        family = []
         for room in home.rooms:
             info = HumanInfo(
                 name=make_name(),
@@ -52,6 +53,7 @@ def generate_people(houses, jobs, books) -> list[Human]:
                 liveroom=room,
                 workplace=available_workplaces.find(),
                 speed=5.0 + random() * 5.0,
+                stranger_trust_level=0.3 + random() * 0.2,
             )
             human = Human(info.liveroom.position, info)
             human.levels.money += random()
@@ -61,10 +63,21 @@ def generate_people(houses, jobs, books) -> list[Human]:
             if random() > 0.95:
                 human.library.append(choice(books))
             room.occupied_by = human
-            people.append(human)
+            family.append(human)
+        _update_family_friendness(family)
+        people += family
 
     shuffle(people)  # for random selecting people
     return people
+
+
+def _update_family_friendness(family: list[Human]):
+    for a in family:
+        for b in family:
+            if a is b:
+                continue
+            a.update_friend_level(b, value=0.2 + random() * 0.5)
+            b.update_friend_level(b, value=0.2 + random() * 0.5)
 
 
 @dataclass

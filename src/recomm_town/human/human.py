@@ -1,8 +1,8 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Any, Callable, Literal, Self
 
-from recomm_town.common import Book, Vec, Trivia
+from recomm_town.common import Book, Vec, Trivia, TriviaChunk
 from recomm_town.human.level import Level
 from recomm_town.human.activity import Activity
 from recomm_town.human.emotion import Emotion
@@ -20,6 +20,7 @@ class HumanInfo:
     liveroom: "Room"
     workplace: "Place"
     speed: float = 5.0
+    stranger_trust_level: float = 0.5
 
 
 @dataclass
@@ -30,28 +31,38 @@ class Levels:
     tiredness: Level = field(default_factory=lambda: Level(0.0))
 
 
+class Observer[*Args](dict[str, Callable[[*Args], None]]):
+
+    def __call__(self, *args: *Args) -> None:
+        for callback in self.values():
+            callback(*args)
+
+
 class Human:
-    knowledge: dict[Trivia, float]
+    knowledge: dict[Trivia, dict[int, float]]
     actions: list["Action"]
     library: list[Book]
     position: Vec
     info: HumanInfo
     levels: Levels
     activity: Activity
+    friend_levels: defaultdict["Human", Level]
 
     def __init__(self, position: Vec, info: HumanInfo):
         self.position = position
-        self.knowledge = defaultdict(float)
-        self.position_observers = {}
-        self.level_observers = {}
-        self.activity_observers = {}
-        self.knowledge_observers = {}
-        self.talk_observers = {}
+        self.knowledge = {}
+        self.friend_levels = defaultdict(Level)
         self.actions = []
         self.library = []
         self.info = info
         self.levels = Levels()
         self.activity = Activity.NONE
+
+        self.position_observers: Observer["Human", Vec] = Observer()
+        self.level_observers: Observer[str, float] = Observer()
+        self.activity_observers: Observer[Activity] = Observer()
+        self.knowledge_observers: Observer[TriviaChunk, float, float] = Observer()
+        self.talk_observers: Observer["Human", "Human", Trivia | None, str] = Observer()
 
     def measure_emotion(self) -> Emotion:
         levels = self.levels
@@ -66,52 +77,66 @@ class Human:
 
         return Emotion.HAPPY
 
+    def get_trust_level(self, other: "Human") -> float:
+        return self.friend_levels[other].value + self.info.stranger_trust_level
+
     def start_talk(self, stranger: Self, trivia: Trivia):
-        for cb in self.talk_observers.values():
-            cb(self, stranger, trivia, "START")
+        self.talk_observers(self, stranger, trivia, "START")
 
     def stop_talk(self, stranger: Self):
-        for cb in self.talk_observers.values():
-            cb(self, stranger, None, "STOP")
+        self.talk_observers(self, stranger, None, "STOP")
 
     def update_activity(self, activity: Activity):
         self.activity = activity
-        for cb in self.activity_observers.values():
-            cb(activity)
+        self.activity_observers(activity)
 
     def update_level(self, attr: str, value: float):
         level = getattr(self.levels, attr)
         level += value
         setattr(self.levels, attr, level)
-        for cb in self.level_observers.values():
-            cb(attr, level.value)
+        self.level_observers(attr, level.value)
 
-    def update_knowledge(self, trivia: Trivia, value: float, max_value: float = 1.0):
-        prev_value = self.knowledge.get(trivia, 0.0)
+    def update_friend_level(self, other: "Human", value: float = 0.1):
+        self.friend_levels[other] += value
+
+    def update_knowledge(
+        self, trivia_chunk: TriviaChunk, value: float, max_value: float = 1.0
+    ):
+        trivia, chunk_id = trivia_chunk
+        try:
+            chunks = self.knowledge[trivia]
+        except KeyError:
+            chunks = {}
+            self.knowledge[trivia] = chunks
+
+        prev_value = chunks.get(chunk_id, 0.0)
         new_value = prev_value + min(value, max(0.0, max_value - prev_value))
-        self.knowledge[trivia] = new_value
-        for cb in self.knowledge_observers.values():
-            cb(trivia, new_value, prev_value)
+        chunks[chunk_id] = new_value
+        self.knowledge_observers(trivia_chunk, new_value, prev_value)
 
     def forget_trivias(self, forgetting_factor: float):
         if not self.knowledge:
             return
-        new_knowledge: dict[Trivia, float] = {}
-        for trivia, level in self.knowledge.items():
-            new_level = max(0.0, level - trivia.forgetting_level * forgetting_factor)
-            new_knowledge[trivia] = new_level
-            for cb in self.knowledge_observers.values():
-                cb(trivia, new_level, level)
+        new_knowledge: dict[Trivia, dict[int, float]] = {}
+        for trivia, chunks in self.knowledge.items():
+            forgetting_level = (
+                trivia.forgetting_level * forgetting_factor / trivia.chunks
+            )
+            new_chunks: dict[int, float] = {}
+            for chunk_id, level in chunks.items():
+                new_level = max(0.0, level - forgetting_level)
+                new_chunks[chunk_id] = new_level
+                for cb in self.knowledge_observers.values():
+                    cb(trivia.get_chunk(chunk_id), new_level, level)
+            new_knowledge[trivia] = new_chunks
         self.knowledge = new_knowledge
 
     def move(self, dx, dy):
         old_position = self.position
         self.position += Vec(dx, dy)
-        for cb in self.position_observers.values():
-            cb(self, old_position)
+        self.position_observers(self, old_position)
 
     def teleport(self, x, y):
         old_position = self.position
         self.position = Vec(x, y)
-        for cb in self.position_observers.values():
-            cb(self, old_position)
+        self.position_observers(self, old_position)

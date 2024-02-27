@@ -1,8 +1,8 @@
 from functools import partial
-from typing import Literal
+from typing import Callable, Literal
 from random import choice, randint, random
 
-from recomm_town.common import Book, Trivia, Vec
+from recomm_town.common import Book, TriviaChunk, Vec
 from recomm_town.town.place import Room
 from recomm_town.human import Human, Activity
 
@@ -73,7 +73,7 @@ class UpdateLevelsInTime(Action):
 
 
 class LearnTrivia(Action):
-    def __init__(self, trivia: Trivia, level: float, max_level: float):
+    def __init__(self, trivia: TriviaChunk, level: float, max_level: float):
         self.trivia = trivia
         self.level = level
         self.max_level = max_level
@@ -108,7 +108,12 @@ class ChangeActivity(Action):
 
 
 class RandomTalk(ActionWithStart):
-    def __init__(self, time: float, find_neighbours, probality: float = 0.75) -> None:
+    def __init__(
+        self,
+        time: float,
+        find_neighbours: Callable[[], list[Human]],
+        probality: float = 0.75,
+    ) -> None:
         self.time = time
         self.find_neighbours = find_neighbours
         self.probality = probality
@@ -119,6 +124,13 @@ class RandomTalk(ActionWithStart):
         for stranger in self.find_neighbours():
             if stranger.activity != Activity.TALK:
                 continue
+
+            self_trust = human.get_trust_level(stranger)
+            stranger_trust = stranger.get_trust_level(human)
+            trust = (self_trust + stranger_trust) / 2.0
+            if random() < trust:
+                continue
+
             if stranger.knowledge and human.knowledge:
                 if random() > 0.5:
                     return self._share(stranger, human)
@@ -136,9 +148,12 @@ class RandomTalk(ActionWithStart):
     @staticmethod
     def _share(teacher: Human, student: Human):
         trivia = choice(list(teacher.knowledge.keys()))
+        chunk_id = choice(list(teacher.knowledge[trivia].keys()))
+        trivia_chunk = trivia.get_chunk(chunk_id)
+
         time_to_share = randint(2, 5)
-        teacher.actions[0] = ShareTo(time_to_share, trivia, student)
-        student.actions[0] = ShareFrom(time_to_share, trivia, teacher)
+        teacher.actions[0] = ShareTo(time_to_share, trivia_chunk, student)
+        student.actions[0] = ShareFrom(time_to_share, trivia_chunk, teacher)
         teacher.start_talk(student, trivia)
         return "STOP"
 
@@ -152,9 +167,15 @@ class RandomTalk(ActionWithStart):
 
 class Share(ActionWithStart):
     def __init__(
-        self, time: float, trivia: Trivia, level: float = 0.2, max: float = 1.0
+        self,
+        time: float,
+        other: Human,
+        trivia: TriviaChunk,
+        level: float = 0.2,
+        max: float = 1.0,
     ) -> None:
         self.time = time
+        self.other = other
         self.trivia = trivia
         self.level = level
         self.max = max
@@ -167,6 +188,7 @@ class Share(ActionWithStart):
     def on_stop(self, human: Human):
         human.update_activity(self.previous_activity)
         human.update_knowledge(self.trivia, self.level, self.max)
+        human.update_friend_level(self.other, random() * 0.2)
 
     def on_invoke(self, human: Human, dt: float) -> T:
         self.time -= dt
@@ -179,16 +201,16 @@ class Share(ActionWithStart):
 
 class ShareFrom(Share):
 
-    def __init__(self, time: float, trivia: Trivia, teacher: Human):
+    def __init__(self, time: float, trivia: TriviaChunk, teacher: Human):
         teach_level = randint(2, 5) / 10
-        teacher_level = teacher.knowledge[trivia]
-        super().__init__(time, trivia, level=teach_level, max=teacher_level)
+        teacher_level = teacher.knowledge[trivia.trivia][trivia.id]
+        super().__init__(time, teacher, trivia, level=teach_level, max=teacher_level)
 
 
 class ShareTo(Share):
 
-    def __init__(self, time: float, trivia: Trivia, student: Human):
-        super().__init__(time, trivia, level=0.2, max=1.0)
+    def __init__(self, time: float, trivia: TriviaChunk, student: Human):
+        super().__init__(time, student, trivia, level=0.2, max=1.0)
         self.student = student
 
     def on_stop(self, human: Human):

@@ -3,7 +3,7 @@ from functools import partial
 from itertools import chain
 from random import choice, randint, random
 
-from recomm_town.common import Trivia, Vec
+from recomm_town.common import Trivia, TriviaChunk, Vec
 from recomm_town.human import Activity, Emotion, Human
 from recomm_town.program import Program
 from recomm_town.town import Town, Place, Room, PlaceFunction as PF
@@ -93,7 +93,9 @@ class World:
         return neighbors - {human}
 
     def _forget_trivias(self, human: Human):
-        forgetting_level = self.FORGETTING_FACTOR * len(human.knowledge) * self.FORGETTING_TICK
+        forgetting_level = (
+            self.FORGETTING_FACTOR * len(human.knowledge) * self.FORGETTING_TICK
+        )
         human.forget_trivias(forgetting_level)
 
     def _do_it_human(self, human: Human, dt: float):
@@ -173,7 +175,7 @@ class World:
                         else self._go_home_learn(
                             human=human,
                             activity=Activity.READ,
-                            trivia=choice(human.library).trivia,
+                            trivia=self._choice_chunk(choice(human.library).trivia),
                             learn_level=0.5,
                         )
                     ),
@@ -242,7 +244,7 @@ class World:
         self,
         human: Human,
         activity: Activity,
-        trivia: Trivia,
+        trivia: TriviaChunk,
         learn_level: float,
     ) -> list[Action]:
         return self._go_home(
@@ -275,8 +277,13 @@ class World:
         if room is None:
             return self._make_fail()
         if random() > 0.5 and place.trivias:
+            trivia = choice(place.trivias)
             end_actions.append(
-                actions.LearnTrivia(choice(place.trivias), level=0.2, max_level=0.5)
+                actions.LearnTrivia(
+                    self._choice_trivia(place.trivias),
+                    level=0.2,
+                    max_level=0.5,
+                )
             )
 
         parts = randint(4, 8)
@@ -303,6 +310,14 @@ class World:
             *self._make_move_action_from_room(room),
             actions.FreeRoom(room),
         ]
+
+    @classmethod
+    def _choice_trivia(cls, trivias: list[Trivia]) -> TriviaChunk:
+        return cls._choice_chunk(choice(trivias))
+
+    @staticmethod
+    def _choice_chunk(trivia: Trivia) -> TriviaChunk:
+        return trivia.get_chunk(randint(0, trivia.chunks - 1))
 
     def _make_fail(self):
         return [actions.ChangeActivity(Activity.WTF), actions.Wait(randint(2, 5))]
