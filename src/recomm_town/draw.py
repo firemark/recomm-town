@@ -9,6 +9,7 @@ from pyglet.text import Label
 
 from recomm_town.app import GuiGroup
 from recomm_town.shaders import AnimatedLine, Sprite
+from recomm_town.shaders.human_group import HumanGroup
 from recomm_town.common import Color, Trivia, Vec
 from recomm_town.human import Human, Activity
 from recomm_town.town import PlaceFunction as PF
@@ -77,28 +78,6 @@ ACTIVITY_COLORS = {
     Activity.SHARE_MUSIC: (_c("#D92121"), _c("#FFFFFF"), _c("#000000")),
     Activity.SHARE_WOW: (_c("#D92121"), _c("#FFFFFF"), _c("#000000")),
 }
-
-
-class HumanGroup(Group):
-    x: float
-    y: float
-
-    def __init__(self, window: Window, index: int, human: Human, parent: Group):
-        super().__init__(index, parent)
-        self._window = window
-        self.x = human.position.x
-        self.y = human.position.y
-
-    def update(self, human: Human, _):
-        self.x = human.position.x
-        self.y = human.position.y
-
-    def set_state(self):
-        self._old_view = self._window.view
-        self._window.view = self._window.view.translate((self.x, self.y, 0.0))
-
-    def unset_state(self):
-        self._window.view = self._old_view
 
 
 class Draw:
@@ -300,13 +279,16 @@ class Draw:
         name = f"[{t.category}] {t.name}"
         return f"{i:2}. {name:40}{' ' if len(t.name) <= 40 else '…'} {percent:6.2f} %"
 
-    def _talk_update(self, a: Human, b: Human, trivia: Trivia, state: str):
+    def _talk_update(self, a: Human, b: Human, trivia: Trivia | None, state: str):
         kw = dict(**self.kw, group=self.people_group)
         kw_font = dict(
-            **self.kw_font, font_size=18, bold=True, color=(0x00, 0x22, 0x55, 0xFF)
+            **self.kw_font,
+            font_size=18,
+            bold=True,
+            color=(0x00, 0x22, 0x55, 0xFF),
         )
         key = (a, b)
-        if state == "START" and key not in self.lifeobjs:
+        if state == "START" and trivia and key not in self.lifeobjs:
             c = (a.position + b.position) * 0.5
 
             self.lifeobjs[key] = [

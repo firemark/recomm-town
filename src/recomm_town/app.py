@@ -6,6 +6,7 @@ from pyglet.graphics import Batch, Group
 
 from recomm_town.common import Vec
 from recomm_town.human import Human
+from recomm_town.shaders.human_group import HumanGroup
 
 
 class GuiGroup(Group):
@@ -50,14 +51,37 @@ class App(Window):
         self.recreate_view()
 
     def recreate_view(self):
-        w = self.width / 2
-        h = self.height / 2
+        w = self.width
+        h = self.height
+        wh = w / 2
+        hh = h / 2
         z = self.camera_zoom * h / 4000.0
-        p = self.camera_position * -z + Vec(w, h)
+        p = self.camera_position * -z + Vec(wh, hh)
         view = Mat4()
         view = view.translate((p.x, p.y, 0.0))
         view = view.scale((z, z, 1.0))
         self.view = view
+
+        return
+        # TODO - dont show human outside the area
+        human_groups = self.batch.group_children.get(self.people_group, [])
+        wz = wh / z
+        hz = hh / z
+        px = self.camera_position.x
+        py = self.camera_position.y
+
+        c = 0
+        for group in human_groups:
+            if not isinstance(group, HumanGroup):
+                continue
+            x = abs(px - group.x)
+            y = abs(py - group.y)
+            if x < wz and y < hz:
+                c += 1
+                group.visible = True
+            else:
+                group.visible = False
+        print("count", c)
 
     def run(self):
         pyglet.app.run()

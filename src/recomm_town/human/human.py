@@ -107,11 +107,13 @@ class Human:
         self.friend_levels[other] += value
         if value < 0.0:
             return
-        count = sum(2 for f, l in self.friend_levels.items() if l > 0.0)
+        count = sum(2 for l in self.friend_levels.values() if l > 0.0)
         if count == 0:
             return
         dec_value = value / count
         for friend in self.friend_levels.keys():
+            if other is friend:
+                continue
             self.friend_levels[friend] -= dec_value
 
     def update_knowledge(

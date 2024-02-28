@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 import argparse
 
+import pyglet
+
+pyglet.options["debug_gl"] = False
+
 from recomm_town.app import App
 from recomm_town.draw import Draw
 from importlib import import_module
