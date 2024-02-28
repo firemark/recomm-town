@@ -1,3 +1,5 @@
+from math import ceil
+from typing import NamedTuple
 import pyglet
 from pyglet.gl import gl
 from pyglet.math import Mat4
@@ -23,6 +25,13 @@ class GuiGroup(Group):
         self._window.view = self._old_view
 
 
+class CellRange(NamedTuple):
+    w: int
+    h: int
+    x: int
+    y: int
+
+
 class App(Window):
     batch: Batch
     town_group: Group
@@ -39,6 +48,7 @@ class App(Window):
         self.people_group = Group(order=1)
         self.gui_group = GuiGroup(self, order=2)
         self.move_position = Vec(0.0, 0.0)
+        self.cell_range = CellRange(0, 0, 0, 0)
         self.set_view(Vec(0.0, 0.0))
         self.world = world
         self.place_index = 0
@@ -51,37 +61,52 @@ class App(Window):
         self.recreate_view()
 
     def recreate_view(self):
-        w = self.width
-        h = self.height
-        wh = w / 2
-        hh = h / 2
-        z = self.camera_zoom * h / 4000.0
+        wh = self.width / 2
+        hh = self.height / 2
+        z = self.camera_zoom * hh / 4000.0
         p = self.camera_position * -z + Vec(wh, hh)
         view = Mat4()
         view = view.translate((p.x, p.y, 0.0))
         view = view.scale((z, z, 1.0))
         self.view = view
 
-        return
-        # TODO - dont show human outside the area
-        human_groups = self.batch.group_children.get(self.people_group, [])
-        wz = wh / z
-        hz = hh / z
-        px = self.camera_position.x
-        py = self.camera_position.y
+        is_changed = self.update_cells_range(wh, hh, z)
 
-        c = 0
+        if z < 0.2:
+            self.people_group.visible = False
+            return
+        if not self.people_group.visible:
+            self.people_group.visible = True
+        if not is_changed:
+            return
+
+        human_groups = self.batch.group_children.get(self.people_group, [])
         for group in human_groups:
             if not isinstance(group, HumanGroup):
-                continue
-            x = abs(px - group.x)
-            y = abs(py - group.y)
-            if x < wz and y < hz:
-                c += 1
-                group.visible = True
-            else:
-                group.visible = False
-        print("count", c)
+                continue 
+            self._update_group_visible(group)
+            c += group.visible
+
+    def update_cells_range(self, wh, hh, z) -> bool:
+        cell_size = HumanGroup.CELL_SIZE
+        cell_range = CellRange(
+            w=ceil(((wh / cell_size) + 1) / z),
+            h=ceil(((hh / cell_size) + 1) / z),
+            x=int(self.camera_position.x / cell_size),
+            y=int(self.camera_position.y / cell_size),
+        )
+        is_changed = cell_range != self.cell_range
+        self.cell_range = cell_range
+        return is_changed
+
+    def _update_group_visible(self, group):
+        wz, hz, px, py = self.cell_range
+        x = abs(px - group.cell_x)
+        y = abs(py - group.cell_y)
+        if x <= wz and y <= hz:
+            group.visible = True
+        else:
+            group.visible = False
 
     def run(self):
         pyglet.app.run()
@@ -163,6 +188,16 @@ class App(Window):
 
     def on_refresh(self, dt):
         self.world.do_it(dt)
+        if getattr(self.people_group, "cell_changed", False):
+            self.people_group.cell_changed = False
+            human_groups = self.batch.group_children.get(self.people_group, [])
+            for group in human_groups:
+                if not isinstance(group, HumanGroup):
+                    continue 
+                if group.cell_changed:
+                    self._update_group_visible(group)
+                    group.cell_changed = False
         if self.move_position.length_squared() > 1.0:
             self.camera_position += self.move_position
             self.recreate_view()
+        
