@@ -105,6 +105,14 @@ class Human:
 
     def update_friend_level(self, other: "Human", value: float = 0.1):
         self.friend_levels[other] += value
+        if value < 0.0:
+            return
+        count = sum(2 for f, l in self.friend_levels.items() if l > 0.0)
+        if count == 0:
+            return
+        dec_value = value / count
+        for friend in self.friend_levels.keys():
+            self.friend_levels[friend] -= dec_value
 
     def update_knowledge(
         self, trivia_chunk: TriviaChunk, value: float, max_value: float = 1.0
