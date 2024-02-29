@@ -8,6 +8,7 @@ from pyglet.graphics import Batch, Group
 
 from recomm_town.common import Vec
 from recomm_town.human import Human
+from recomm_town.observer import Observer
 from recomm_town.shaders.human_group import HumanGroup
 
 
@@ -55,6 +56,8 @@ class App(Window):
         self.human_index = 0
         self.tracked_human = None
 
+        self.human_observers: Observer[Human | None] = Observer()
+
     def set_view(self, position, zoom=1.0):
         self.camera_position = position
         self.camera_zoom = zoom
@@ -83,7 +86,7 @@ class App(Window):
         human_groups = self.batch.group_children.get(self.people_group, [])
         for group in human_groups:
             if not isinstance(group, HumanGroup):
-                continue 
+                continue
             self._update_group_visible(group)
 
     def update_cells_range(self, wh, hh, z) -> bool:
@@ -160,11 +163,13 @@ class App(Window):
     def _stop_tracking(self):
         if self.tracked_human:
             self.tracked_human.position_observers.pop("track", None)
+            self.human_observers(None)
             self.tracked_human = None
 
     def _start_tracking(self, human: Human):
         self._stop_tracking()
         self.tracked_human = human
+        self.human_observers(human)
         self.tracked_human.position_observers["track"] = self._track_human
 
     def _track_human(self, human, _):
@@ -192,11 +197,10 @@ class App(Window):
             human_groups = self.batch.group_children.get(self.people_group, [])
             for group in human_groups:
                 if not isinstance(group, HumanGroup):
-                    continue 
+                    continue
                 if group.cell_changed:
                     self._update_group_visible(group)
                     group.cell_changed = False
         if self.move_position.length_squared() > 1.0:
             self.camera_position += self.move_position
             self.recreate_view()
-        

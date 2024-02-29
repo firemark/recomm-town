@@ -1,11 +1,12 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable, Literal, Self
+from typing import TYPE_CHECKING, Self
 
 from recomm_town.common import Book, Vec, Trivia, TriviaChunk
 from recomm_town.human.level import Level
 from recomm_town.human.activity import Activity
 from recomm_town.human.emotion import Emotion
+from recomm_town.observer import Observer
 
 
 if TYPE_CHECKING:
@@ -29,13 +30,6 @@ class Levels:
     fullness: Level = field(default_factory=lambda: Level(1.0))
     money: Level = field(default_factory=lambda: Level(0.0))
     tiredness: Level = field(default_factory=lambda: Level(0.0))
-
-
-class Observer[*Args](dict[str, Callable[[*Args], None]]):
-
-    def __call__(self, *args: *Args) -> None:
-        for callback in self.values():
-            callback(*args)
 
 
 class Human:
@@ -63,6 +57,7 @@ class Human:
         self.activity_observers: Observer[Activity] = Observer()
         self.knowledge_observers: Observer[TriviaChunk, float, float] = Observer()
         self.talk_observers: Observer["Human", "Human", Trivia | None, str] = Observer()
+        self.friend_observers: Observer["Human", "Human", float] = Observer()
 
     def measure_emotion(self) -> Emotion:
         levels = self.levels
@@ -104,6 +99,8 @@ class Human:
         self.level_observers(attr, level.value)
 
     def update_friend_level(self, other: "Human", value: float = 0.1):
+        if other is self:
+            return
         self.friend_levels[other] += value
         if value < 0.0:
             return
@@ -115,6 +112,7 @@ class Human:
             if other is friend:
                 continue
             self.friend_levels[friend] -= dec_value
+        self.friend_observers(self, other, self.friend_levels[other].value)
 
     def update_knowledge(
         self, trivia_chunk: TriviaChunk, value: float, max_value: float = 1.0
@@ -143,8 +141,7 @@ class Human:
             for chunk_id, level in chunks.items():
                 new_level = max(0.0, level - forgetting_level)
                 new_chunks[chunk_id] = new_level
-                for cb in self.knowledge_observers.values():
-                    cb(trivia.get_chunk(chunk_id), new_level, level)
+                self.knowledge_observers(trivia.get_chunk(chunk_id), new_level, level)
             new_knowledge[trivia] = new_chunks
         self.knowledge = new_knowledge
 

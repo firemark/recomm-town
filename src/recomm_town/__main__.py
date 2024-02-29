@@ -21,9 +21,10 @@ if __name__ == "__main__":
     world = module.make_world()
 
     app = App(world)
-    draw = Draw(app.batch, app.people_group)
-    draw.draw_gui(len(world.people), app.gui_group)
+    draw = Draw(app.batch, app.people_group, app.gui_group)
+    draw.draw_gui(len(world.people))
     draw.draw_path(world.town.path, app.town_group)
     draw.draw_places(world.town.places, app.town_group)
     draw.draw_people(app, world.people, app.people_group)
+    app.human_observers["draw"] = draw.track_human
     app.run()
