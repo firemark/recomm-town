@@ -85,7 +85,6 @@ class App(Window):
             if not isinstance(group, HumanGroup):
                 continue 
             self._update_group_visible(group)
-            c += group.visible
 
     def update_cells_range(self, wh, hh, z) -> bool:
         cell_size = HumanGroup.CELL_SIZE
