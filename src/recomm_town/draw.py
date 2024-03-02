@@ -59,18 +59,12 @@ class COLORS:
     dark_skin = Color.from_hex("#805533")
 
 
-LEVELS = ["fridge", "fullness", "money", "tiredness"]
+LEVELS = ["fridge", "satiety", "money", "energy"]
 LEVEL_COLORS = {
     "fridge": _to_color("#D9DAD2"),
-    "fullness": _to_color("#01A638"),
+    "satiety": _to_color("#01A638"),
     "money": _to_color("#F1D651"),
-    "tiredness": _to_color("#2D383A"),
-}
-LEVEL_COLORS_DASHBOARD = {
-    "fridge": _to_color("#D9DAD2"),
-    "fullness": _to_color("#01A638"),
-    "money": _to_color("#F1D651"),
-    "tiredness": _to_color("#C9C0BB"),
+    "energy": _to_color("#FF5349"),
 }
 
 ACTIVITY_COLORS = {
@@ -410,7 +404,7 @@ class TrackHumanDraw:
                         text=f"{level.title()}:",
                         x=x + 20.0,
                         y=y + 240.0 - 30.0 * index,
-                        color=(*LEVEL_COLORS_DASHBOARD[level], 255),
+                        color=(*LEVEL_COLORS[level], 255),
                         **kw_font,
                     )
                     for index, level in enumerate(LEVELS, start=1)
@@ -441,7 +435,7 @@ class TrackHumanDraw:
                 level: Label(
                     x=x + 150.0,
                     y=y + 240.0 - 30.0 * index,
-                    color=(*LEVEL_COLORS_DASHBOARD[level], 255),
+                    color=(*LEVEL_COLORS[level], 255),
                     **kw_font,
                 )
                 for index, level in enumerate(LEVELS, start=1)

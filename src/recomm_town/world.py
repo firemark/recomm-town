@@ -124,8 +124,8 @@ class World:
                     talk_probablity=0.5,
                     levels={
                         "money": +0.5 + random() * 0.3,
-                        "tiredness": +0.5 + random() * 0.2,
-                        "fullness": -0.5 + random() * 0.3,
+                        "energy": -0.5 - random() * 0.2,
+                        "satiety": -0.5 + random() * 0.3,
                     },
                 )
             case Emotion.EMPTY_FRIDGE:
@@ -140,12 +140,12 @@ class World:
                     activity=Activity.SHOP,
                     place=place,
                     time=randint(5, 10),
-                    talk_probablity=0.3,
+                    talk_probablity=0.1,
                     levels={
                         "fridge": 1.0 - random() * 0.2,
                         "money": -0.3 - random() * 0.1,
-                        "tiredness": 0.2 + random() * 0.1,
-                        "fullness": -0.1 - random() * 0.1,
+                        "energy": -0.2 - random() * 0.1,
+                        "satiety": -0.1 - random() * 0.1,
                     },
                     end_actions=end_actions,
                 )
@@ -156,8 +156,8 @@ class World:
                     time=randint(5, 10),
                     levels={
                         "fridge": -0.4 - random() * 0.2,
-                        "fullness": 1.0 - random() * 0.2,
-                        "tiredness": 0.1 + random() * 0.1,
+                        "satiety": 1.0 - random() * 0.2,
+                        "energy": -0.1 - random() * 0.1,
                     },
                 )
             case Emotion.TIRED:
@@ -166,8 +166,8 @@ class World:
                     activity=Activity.SLEEP,
                     time=randint(10, 20),
                     levels={
-                        "fullness": -0.4 - random() * 0.2,
-                        "tiredness": -1.0,
+                        "satiety": -0.4 - random() * 0.2,
+                        "energy": 1.0,
                     },
                 )
             case _:  # otherwise
@@ -217,8 +217,8 @@ class World:
             time=randint(5, 10),
             levels={
                 "money": -0.1 - random() * 0.2,
-                "tiredness": +0.2 + random() * 0.2,
-                "fullness": -0.3 - random() * 0.2,
+                "energy": -0.2 - random() * 0.2,
+                "satiety": -0.3 - random() * 0.2,
             },
             end_actions=end_actions,
         )
@@ -256,8 +256,8 @@ class World:
             activity=activity,
             time=randint(5, 10),
             levels={
-                "fullness": -0.1 - random() * 0.2,
-                "tiredness": -0.3 - random() * 0.2,
+                "satiety": -0.1 - random() * 0.2,
+                "energy": +0.3 + random() * 0.2,
             },
             end_actions=[
                 actions.LearnTrivia(trivia, level=learn_level, max_level=1.0),

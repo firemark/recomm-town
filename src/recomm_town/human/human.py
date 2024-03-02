@@ -27,9 +27,9 @@ class HumanInfo:
 @dataclass
 class Levels:
     fridge: Level = field(default_factory=lambda: Level(1.0))
-    fullness: Level = field(default_factory=lambda: Level(1.0))
+    satiety: Level = field(default_factory=lambda: Level(1.0))
     money: Level = field(default_factory=lambda: Level(0.0))
-    tiredness: Level = field(default_factory=lambda: Level(0.0))
+    energy: Level = field(default_factory=lambda: Level(1.0))
 
 
 class Human:
@@ -65,9 +65,9 @@ class Human:
             return Emotion.POOR
         if levels.fridge < 0.4:
             return Emotion.EMPTY_FRIDGE
-        if levels.fullness < 0.5:
+        if levels.satiety < 0.5:
             return Emotion.HUNGRY
-        if levels.tiredness > 0.6:
+        if levels.energy < 0.4:
             return Emotion.TIRED
 
         return Emotion.HAPPY

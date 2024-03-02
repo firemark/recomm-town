@@ -57,8 +57,8 @@ def generate_people(houses, jobs, books) -> list[Human]:
             )
             human = Human(info.liveroom.position, info)
             human.levels.money += random()
-            human.levels.tiredness += random() * 0.5
-            human.levels.fullness -= random() * 0.3
+            human.levels.energy -= random() * 0.5
+            human.levels.satiety -= random() * 0.3
             human.levels.fridge -= random() * 0.5
             if random() > 0.95:
                 human.library.append(choice(books))
