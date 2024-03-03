@@ -123,7 +123,6 @@ class Book(NamedTuple):
 
 
 class Rotate:
-
     def __init__(self, rotation: float):
         self.rotation = rotation
         self.rotation_rad = radians(rotation)

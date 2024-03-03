@@ -111,7 +111,6 @@ ACTIVITY_LABELS = {
 
 
 class Draw:
-
     def __init__(self, batch: Batch, people_group: Group, gui_group: GuiGroup) -> None:
         self.objs = []
         self.batch = batch
@@ -350,7 +349,6 @@ class Draw:
 
 
 class TrackHumanDraw:
-
     def __init__(self, human: Human, batch: Batch, group: GuiGroup):
         self.batch = batch
         self.group = group

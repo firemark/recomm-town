@@ -15,6 +15,10 @@ class Town:
         self.places = places
         self.path = self.__create_ways_between_places(places)
         self.routes = RoutesFactory(places).make()
+        self.boundaries = (
+            Vec(min(p.box_start.x for p in places), min(p.box_start.y for p in places)),
+            Vec(max(p.box_end.x for p in places), max(p.box_end.y for p in places)),
+        )
 
     def __create_ways_between_places(self, places: list[Place]):
         path: dict[tuple[Place, Place], Way] = {}

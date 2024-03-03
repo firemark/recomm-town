@@ -3,7 +3,6 @@ from recomm_town.creator.helpers import CommonListBuilder
 
 
 class TriviaBuilder(CommonListBuilder[Trivia]):
-
     def __init__(self):
         super().__init__(
             {

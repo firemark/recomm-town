@@ -203,7 +203,6 @@ class Share(ActionWithStart):
 
 
 class ShareFrom(Share):
-
     def __init__(self, time: float, trivia: TriviaChunk, teacher: Human):
         teach_level = randint(2, 5) / 10
         teacher_level = teacher.knowledge[trivia.trivia][trivia.id]
@@ -211,7 +210,6 @@ class ShareFrom(Share):
 
 
 class ShareTo(Share):
-
     def __init__(self, time: float, trivia: TriviaChunk, student: Human):
         super().__init__(time, student, trivia, level=0.2, max=1.0)
         self.student = student

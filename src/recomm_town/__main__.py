@@ -3,6 +3,8 @@ import argparse
 
 import pyglet
 
+from recomm_town.reporter import TriviaReporter
+
 pyglet.options["debug_gl"] = False
 
 from recomm_town.app import App
@@ -26,5 +28,11 @@ if __name__ == "__main__":
     draw.draw_path(world.town.path, app.town_group)
     draw.draw_places(world.town.places, app.town_group)
     draw.draw_people(app, world.people, app.people_group)
+
     app.human_observers["draw"] = draw.track_human
-    app.run()
+    reporter = TriviaReporter(world.town.boundaries)
+    reporter.register(world.people)
+    try:
+        app.run()
+    finally:
+        reporter.write("wtf.json")

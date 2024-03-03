@@ -14,7 +14,6 @@ from recomm_town.creator.helpers import (
 
 
 class JobBuilder(CommonBuilder[Place]):
-
     def __init__(self, trivias: TriviaBuilder):
         super().__init__(
             {
@@ -44,7 +43,6 @@ class JobBuilder(CommonBuilder[Place]):
 
 
 class HousesBuilder(CommonListBuilder[Place]):
-
     def __init__(self) -> None:
         self.center = Vec(-1000.0, -2000.0)
         self.center_left = self.center + Vec(-800.0, 0.0)
@@ -74,7 +72,6 @@ class HousesBuilder(CommonListBuilder[Place]):
 
 
 class CrossBuilder(CommonBuilder[Place]):
-
     def __init__(self, home: HousesBuilder):
         super().__init__(
             {
@@ -92,7 +89,6 @@ class CrossBuilder(CommonBuilder[Place]):
 
 
 class ShopBuilder(CommonBuilder[Place]):
-
     def __init__(self, books: list[Book]):
         super().__init__(
             {
