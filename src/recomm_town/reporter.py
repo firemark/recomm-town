@@ -39,7 +39,6 @@ class TriviaReporter:
         self.height = h
         self.trivia_plot = defaultdict(list)
         self.trivia_heatmap = defaultdict(lambda: np.zeros((h, w), dtype=np.uint32))
-        self.people_count = 0
 
     def write(self, filename: Path | str):
         label = self._trivia_label
@@ -58,7 +57,6 @@ class TriviaReporter:
             self.write(filename)
 
     def register(self, people: list[Human]):
-        self.people_count = len(people)
         for human in people:
             human.knowledge_observers["reporter"] = self._trivia_update
 
@@ -89,10 +87,8 @@ class TriviaReporter:
         heatmap[height - heatmap_y, heatmap_x] += 1.0
 
     def _plot_update(self, trivia: Trivia, diff: float):
-        diff_normal = diff / (trivia.chunks * self.people_count)
-
         timestamp = time.monotonic() - self.start_time
         plot = self.trivia_plot[trivia]
         prev_value = plot[-1][1] if plot else 0.0
-        current_value = max(0.0, prev_value + diff_normal)
+        current_value = max(0.0, prev_value + diff)
         plot.append((timestamp, current_value))

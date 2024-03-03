@@ -134,9 +134,7 @@ class Human:
             return
         new_knowledge: dict[Trivia, dict[int, float]] = {}
         for trivia, chunks in self.knowledge.items():
-            forgetting_level = (
-                trivia.forgetting_level * forgetting_factor / trivia.chunks
-            )
+            forgetting_level = trivia.forgetting_level * forgetting_factor
             new_chunks: dict[int, float] = {}
             for chunk_id, level in chunks.items():
                 new_level = max(0.0, level - forgetting_level)

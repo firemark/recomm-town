@@ -130,7 +130,7 @@ class Draw:
         self.tracked_human: TrackHumanDraw | None = None
         self.lifeobjs = {}
 
-    def draw_gui(self, people_count, match_time):
+    def draw_gui(self, match_time):
         kw = dict(**self.kw, group=self.gui_group)
         kw_font = dict(
             **kw,
@@ -139,7 +139,6 @@ class Draw:
             font_size=14,
             bold=True,
         )
-        self.people_count = people_count
         self.trivia_dashboard = Label(
             multiline=True,
             anchor_x="left",
@@ -315,20 +314,19 @@ class Draw:
         if diff == 0.0:
             return
         trivia, chunk_id = trivia_chunk
-        self.trivias_level[trivia] += diff / trivia.chunks
-        c = self.people_count
+        self.trivias_level[trivia] += diff
         gen = zip(
             range(1, 11),
             sorted(self.trivias_level.items(), key=lambda o: o[1], reverse=True),
         )
         self.trivia_dashboard.text = "\n".join(
-            self._trivia_label(i, t, percent=l / c * 100) for i, (t, l) in gen
+            self._trivia_label(i, trivia, level * 100) for i, (trivia, level) in gen
         )
 
     @staticmethod
-    def _trivia_label(i, t, percent) -> str:
-        name = f"[{t.category}] {t.name}"
-        return f"{i:2}. {_crop_label(name, size=40):40} {percent:6.2f} %"
+    def _trivia_label(index, trivia, points) -> str:
+        name = f"[{trivia.category}] {trivia.name}"
+        return f"{index:2}. {_crop_label(name, size=40):40} {points:6.0f}"
 
     def _talk_update(self, a: Human, b: Human, trivia: Trivia | None, state: str):
         kw = dict(**self.kw, group=self.people_group)
@@ -497,8 +495,7 @@ class TrackHumanDraw:
             for trivia, chunks in self.human.knowledge.items()
         )
         trivias = (
-            f"{index}. {_crop_label(trivia.name, size=25):25} "
-            f"{level / trivia.chunks * 100:3.0f} %"
+            f"{index}. {_crop_label(trivia.name, size=25):25} " f"{level * 100:3.0f}"
             for (trivia, level), index in zip(
                 sorted(gen, key=lambda o: o[1], reverse=True),
                 range(1, 8 + 1),

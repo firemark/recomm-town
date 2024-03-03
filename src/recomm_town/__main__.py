@@ -31,7 +31,7 @@ if __name__ == "__main__":
         screen = display.get_screens()[0]
         app.set_fullscreen(screen=screen)
     draw = Draw(app.batch, app.people_group, app.gui_group)
-    draw.draw_gui(len(world.people), app.match_time)
+    draw.draw_gui(app.match_time)
     draw.draw_path(world.town.path, app.town_group)
     draw.draw_places(world.town.places, app.town_group)
     draw.draw_people(app, world.people, app.people_group)
