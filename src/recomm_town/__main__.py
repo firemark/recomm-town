@@ -11,7 +11,6 @@ pyglet.options["debug_gl"] = False
 from recomm_town.app import App
 from recomm_town.draw import Draw
 from recomm_town.creator.parser import WorldParser
-from importlib import import_module
 
 
 parser = argparse.ArgumentParser()
@@ -22,12 +21,9 @@ parser.add_argument("--fullscreen", action="store_true")
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    # TODO - change importing town to another format (XML?)
-    module = import_module(f"recomm_town.creator.{args.town}")
-    world = module.make_world()
-
-    parser = WorldParser("towns/mixed.yaml")
+    parser = WorldParser(args.town)
     parser.load()
+    world = parser.create_world()
 
     app = App(world, match_time=args.match_time)
     if args.fullscreen:

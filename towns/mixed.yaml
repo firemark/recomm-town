@@ -1,3 +1,18 @@
+---
+trivias:
+  - ./trivias.yaml
+
+world:
+  radio: 
+    program: podcast
+  tv:
+    program: tv
+
+people:
+  - houses: home
+    jobs: job
+    books: book
+
 places:
 - name: job
   function: WORK
@@ -66,20 +81,20 @@ places:
   trivias: painting
 
 - name: museum
-  title: City Musem
+  title: City Museum
   function: ENTERTAIMENT
   position: [0, +500]
   room-size: 50
-  room-padding: 25
+  room-padding: 80
   rooms: grid(2)
   trivias: music
 
 - name: pub
   title: Pub Ugly Dog
   function: ENTERTAIMENT
-  position: [+1000, +1000]
+  position: [0, +2000]
   rotation: 90
-  rooms: flat(4, 2)
+  rooms: grid(2)
 
 - name: cross
   function: CROSSROAD

@@ -1,17 +1,33 @@
+---
+trivias:
+  - ./trivias.yaml
+
+world:
+  tv:
+    program: tv
+
+people:
+  - houses: home.left
+    jobs: job.factory
+    books: book
+  - houses: home.right
+    jobs: job.office
+    books: book
+
 places:
-  job:
-    function: WORK
-    places: 
-    - factory:
-        title: Ceramic factory
-        position: [-2000, +1000]
-        rooms: flat(5, 4)
-        trivias: ceramic
-      office:
-        title: Happy cats office
-        position: [+2000, +1000]
-        rooms: flat(5, 5)
-        trivias: website
+- name: job
+  function: WORK
+  places: 
+  - name: factory
+    title: Ceramic factory
+    position: [-2000, +1000]
+    rooms: flat(5, 4)
+    trivias: ceramic
+  - name: office
+    title: Happy cats office
+    position: [+2000, +1000]
+    rooms: flat(5, 5)
+    trivias: website
 
   home:
     position: [0, -2000]
@@ -180,13 +196,13 @@ connections:
   - name: cross.right
     with:
     - shop.a
-    - entertainment.garden
+    - garden
   - name: cross.center
     with:
     - cross.left
     - cross.right
-    - entertaiment.museum
-    - shop.agata
+    - museum
+    - shop.b
   - name: cross.home
     with:
     - cross.home-left
