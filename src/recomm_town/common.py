@@ -29,6 +29,9 @@ class Vec(NamedTuple):
     def __neg__(self) -> "Vec":
         return Vec(-self.x, -self.y)
 
+    def __abs__(self) -> "Vec":
+        return Vec(abs(self.x), abs(self.y))
+
     def normalize(self) -> "Vec":
         max_abs = max(abs(self.x), abs(self.y))
         assert max_abs != 0.0

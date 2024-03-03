@@ -55,7 +55,7 @@ class Human:
         self.position_observers: Observer["Human", Vec] = Observer()
         self.level_observers: Observer[str, float] = Observer()
         self.activity_observers: Observer[Activity] = Observer()
-        self.knowledge_observers: Observer[TriviaChunk, float, float] = Observer()
+        self.knowledge_observers: Observer[Vec, TriviaChunk, float, float] = Observer()
         self.talk_observers: Observer["Human", "Human", Trivia | None, str] = Observer()
         self.friend_observers: Observer["Human", "Human", float] = Observer()
 
@@ -127,7 +127,7 @@ class Human:
         prev_value = chunks.get(chunk_id, 0.0)
         new_value = prev_value + min(value, max(0.0, max_value - prev_value))
         chunks[chunk_id] = new_value
-        self.knowledge_observers(trivia_chunk, new_value, prev_value)
+        self.knowledge_observers(self.position, trivia_chunk, new_value, prev_value)
 
     def forget_trivias(self, forgetting_factor: float):
         if not self.knowledge:
@@ -141,7 +141,9 @@ class Human:
             for chunk_id, level in chunks.items():
                 new_level = max(0.0, level - forgetting_level)
                 new_chunks[chunk_id] = new_level
-                self.knowledge_observers(trivia.get_chunk(chunk_id), new_level, level)
+                self.knowledge_observers(
+                    self.position, trivia.get_chunk(chunk_id), new_level, level
+                )
             new_knowledge[trivia] = new_chunks
         self.knowledge = new_knowledge
 

@@ -11,23 +11,32 @@ from recomm_town.human import Human
 
 
 class TriviaReporter:
-    HEATMAP_WIDTH = 32
-    HEATMAP_HEIGHT = 32
+    MARGIN = 250.0
+    HEATMAP_SIZE = 32
 
     start_time: float
     trivia_heatmap: defaultdict[Trivia, np.ndarray]
     trivia_plot: defaultdict[Trivia, list[tuple[float, float]]]
 
     def __init__(self, boundaries: tuple[Vec, Vec]):
-        w = self.HEATMAP_WIDTH
-        h = self.HEATMAP_HEIGHT
-
+        margin = self.MARGIN
         self.start_time = time.monotonic()
-        self.start_position = boundaries[0]
-        self.size = boundaries[1] - boundaries[0] + 200.0
+        self.start_position = boundaries[0] - margin
+        self.size = boundaries[1] - boundaries[0] + margin * 2
         assert self.size.x > 0.0
         assert self.size.y > 0.0
 
+        if self.size.x > self.size.y:
+            ratio = self.size.y / self.size.x
+            w = self.HEATMAP_SIZE
+            h = int(self.HEATMAP_SIZE * ratio)
+        else:
+            ratio = self.size.x / self.size.y
+            w = int(self.HEATMAP_SIZE * ratio)
+            h = self.HEATMAP_SIZE
+
+        self.width = w
+        self.height = h
         self.trivia_plot = defaultdict(list)
         self.trivia_heatmap = defaultdict(lambda: np.zeros((h, w), dtype=np.uint32))
         self.people_count = 0
@@ -47,7 +56,7 @@ class TriviaReporter:
     def register(self, people: list[Human]):
         self.people_count = len(people)
         for human in people:
-            human.knowledge_observers["reporter"] = partial(self._trivia_update, human)
+            human.knowledge_observers["reporter"] = self._trivia_update
 
     @staticmethod
     def _trivia_label(trivia: Trivia):
@@ -55,24 +64,23 @@ class TriviaReporter:
 
     def _trivia_update(
         self,
-        human: Human,
+        position: Vec,
         trivia_chunk: TriviaChunk,
         new_value: float,
         old_value: float,
     ):
         trivia, chunk_no = trivia_chunk
-        self._heatmap_update(human, trivia)
+        self._heatmap_update(position - self.start_position, trivia)
         self._plot_update(trivia, new_value - old_value)
 
-    def _heatmap_update(self, human: Human, trivia: Trivia):
-        position = human.position - self.start_position
+    def _heatmap_update(self, position: Vec, trivia: Trivia):
         size = self.size
-        width = self.HEATMAP_WIDTH - 1
-        height = self.HEATMAP_HEIGHT - 1
+        width = self.width - 1
+        height = self.height - 1
         heatmap_x = min(int(position.x / size.x * width), width)
         heatmap_y = min(int(position.y / size.y * height), height)
-        assert heatmap_x >= 0
-        assert heatmap_y >= 0
+        assert heatmap_x >= 0, heatmap_x
+        assert heatmap_y >= 0, heatmap_y
         heatmap = self.trivia_heatmap[trivia]
         heatmap[height - heatmap_y, heatmap_x] += 1.0
 

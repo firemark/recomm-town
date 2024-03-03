@@ -82,11 +82,17 @@ class Place:
             y_min = min(room.local_position.y for room in rooms)
             x_max = max(room.local_position.x for room in rooms)
             y_max = max(room.local_position.y for room in rooms)
-            self.box_start = p + Vec(x_min, y_min) * s - h
-            self.box_end = p + Vec(x_max, y_max) * s + h
+            local_start = Vec(x_min, y_min) * s - h
+            local_end = Vec(x_max, y_max) * s + h
         else:
-            self.box_start = self.position - 100.0
-            self.box_end = self.position + 100.0
+            local_start = -Vec(100.0, 100.0)
+            local_end = Vec(100.0, 100.0)
+        self.box_start = p + local_start
+        self.box_end = p + local_end
+        self.boundaries = (
+            p - abs(rot(local_start)),
+            p + abs(rot(local_end)),
+        )
 
     def __hash__(self):
         return hash(self.name)

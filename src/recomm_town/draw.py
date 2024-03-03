@@ -298,7 +298,7 @@ class Draw:
             return
         self.tracked_human = TrackHumanDraw(human, self.batch, self.gui_group)
 
-    def _trivia_update(self, trivia_chunk, new, old):
+    def _trivia_update(self, position, trivia_chunk, new, old):
         diff = new - old
         if diff == 0.0:
             return

@@ -2,7 +2,7 @@
 name = "recomm_town"
 version = "2024.02.18"
 requires-python = ">= 3.12"
-dependencies = ["pyglet==2.0.10"]
+dependencies = ["pyglet==2.0.10", "numpy"]
 readme = "README.md"
 license = {file = "LICENSE"}
 
