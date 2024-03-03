@@ -41,7 +41,7 @@ class App(Window):
 
     _zoom: float
 
-    def __init__(self, world):
+    def __init__(self, world, match_time: int = 600):
         config = pyglet.gl.Config(alpha_size=8, samples=4)
         super().__init__(config=config, resizable=True)
         self.batch = Batch()
@@ -55,8 +55,10 @@ class App(Window):
         self.place_index = 0
         self.human_index = 0
         self.tracked_human = None
+        self.match_time = match_time
 
         self.human_observers: Observer[Human | None] = Observer()
+        self.time_observers: Observer[int] = Observer()
 
     def set_view(self, position, zoom=1.0):
         self.camera_position = position
@@ -111,7 +113,14 @@ class App(Window):
             group.visible = False
 
     def run(self):
+        pyglet.clock.schedule_interval(self.tick_second, 1)
         pyglet.app.run()
+
+    def tick_second(self, dt):
+        self.match_time -= 1
+        self.time_observers(self.match_time)
+        if self.match_time <= 0:
+            self.close()
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.Q:

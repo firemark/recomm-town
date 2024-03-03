@@ -130,7 +130,7 @@ class Draw:
         self.tracked_human: TrackHumanDraw | None = None
         self.lifeobjs = {}
 
-    def draw_gui(self, people_count):
+    def draw_gui(self, people_count, match_time):
         kw = dict(**self.kw, group=self.gui_group)
         kw_font = dict(
             **kw,
@@ -141,7 +141,6 @@ class Draw:
         )
         self.people_count = people_count
         self.trivia_dashboard = Label(
-            text="",
             multiline=True,
             anchor_x="left",
             anchor_y="top",
@@ -150,6 +149,14 @@ class Draw:
             y=-40.0,
             **kw_font,
         )
+        self.match_time = Label(
+            x=20.0,
+            y=-20.0,
+            anchor_x="left",
+            anchor_y="top",
+            **kw_font,
+        )
+        self.tick_tock(match_time)
         self.objs += [
             Label(
                 text="DASHBOARD",
@@ -297,6 +304,11 @@ class Draw:
         if human is None:
             return
         self.tracked_human = TrackHumanDraw(human, self.batch, self.gui_group)
+
+    def tick_tock(self, match_time: int):
+        minutes = match_time // 60
+        seconds = match_time % 60
+        self.match_time.text = f"{minutes:02d}:{seconds:02d}"
 
     def _trivia_update(self, position, trivia_chunk, new, old):
         diff = new - old

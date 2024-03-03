@@ -53,6 +53,10 @@ class TriviaReporter:
             }
             json.dump(obj, file)
 
+    def write_on_minute(self, filename: Path | str, match_time: int):
+        if match_time % 60 == 0:
+            self.write(filename)
+
     def register(self, people: list[Human]):
         self.people_count = len(people)
         for human in people:
