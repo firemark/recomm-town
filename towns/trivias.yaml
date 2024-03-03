@@ -1,0 +1,82 @@
+---
+ceramic:
+  - category: skill
+    trivias:
+      - Pottery
+      - Wine glass
+      - Ceramic
+      - Stained glass
+
+website:
+  - category: skill
+    trivias:
+      - HTML
+      - CSS
+      - GUI
+ 
+programming:
+  - category: skill
+    trivias:
+      - Python
+      - Javascript
+      - C++
+
+paiting:
+  - category: paiting
+    trivias:
+      - dataism
+      - cubism
+      - watercolor
+      - hypperrealism
+
+music:
+  - category: music
+    trivias:
+      - techno
+      - rock
+      - classic
+      - country
+
+book:
+  - category: book
+    trivias:
+      - Lem - Solaris
+      - Dukaj - Starość aksolotla
+      - Tokarczuk - Księgi Jakubowe
+      - Lem - Eden
+      - Mrożek - Tango
+      - Mrożek - Policja
+      - Piskorski - 40 i 4
+
+tv:
+  - category: movie
+    chunks: 1
+    forgetting-level: 0.005
+    trivias: 
+      - Seksmisja
+      - Miś
+      - Rejs
+      - Vabank
+      - Chłopaki nie płaczą
+      - Dzień świra
+      - Kiler
+      - Nic śmiesznego
+  - category: series
+    chunks: 5
+    forgetting-level: 0.005
+    trivias: 
+      - Klan
+      - M jak miłość
+      - Samo życie
+      - Trudne sprawy
+      - Złotopolscy
+
+podcast:
+  - category: podcast
+    trivias:
+      - Ancient history
+      - Medieval history
+      - WWII history
+      - Asian cooking
+      - Oriental cooking
+      - Mexico cooking

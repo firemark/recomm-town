@@ -1,0 +1,133 @@
+places:
+- name: job
+  function: WORK
+  places: 
+  - name: factory
+    title: Ceramic factory
+    position: [-1000, +1000]
+    rooms: flat(5, 4)
+    trivias: ceramic
+  - name: website
+    title: Polweb office
+    position: [+2300, +2000]
+    rooms: flat(3, 3)
+    trivias: website
+  - name: programming
+    title: Blib blob office
+    position: [+1000, +3000]
+    rooms: flat(3, 3)
+    trivias: programming
+
+- name: home
+  position: [-1000, -2000]
+  function: HOME 
+  rooms: flat(4, 2)
+  room-size: 120
+  places:
+  - name: left
+    position: [-800, 0]
+    places:
+    - name: a
+      title: Flat Andrzej
+      position: [0, +500]
+    - name: b
+      title: Flat Bogdan
+      position: [0, -500]
+  - name: right
+    position: [+800, 0]
+    places:
+    - name: c
+      title: Flat Czesiek
+      position: [0, +500]
+    - name: d
+      title: Flat Dawid
+      position: [0, -500]
+
+- name: shop
+  function: SHOP
+  books: book
+  places:
+  - name: a
+    title: Shop Agata
+    position: [0, -300]
+    rooms: flat(2, 2)
+  - name: b
+    title: Shop Basia
+    position: [+1000, -1500]
+    rooms: flat(4, 2)
+
+- name: garden
+  title: Garden
+  function: ENTERTAIMENT
+  position: [+1000, +2000]
+  room-size: 100
+  room-padding: 80
+  rooms: grid(3)
+  trivias: painting
+
+- name: museum
+  title: City Musem
+  function: ENTERTAIMENT
+  position: [0, +500]
+  room-size: 50
+  room-padding: 25
+  rooms: grid(2)
+  trivias: music
+
+- name: pub
+  title: Pub Ugly Dog
+  function: ENTERTAIMENT
+  position: [+1000, +1000]
+  rotation: 90
+  rooms: flat(4, 2)
+
+- name: cross
+  function: CROSSROAD
+  places:
+  - name: left
+    title: Apple crossway
+    position: [-1000, 0]
+  - name: right
+    title: Cherry crossway
+    position: [+1000, 0]
+  - name: center
+    title: Center crossway
+    position: [0, 0]
+  - name: home
+    title: Coconut crossway
+    position: home
+  - name: home-left
+    title: Pinata crossway
+    position: home.left
+  - name: home-right
+    title: Banana crossway
+    position: home.right
+
+connections:
+  - name: cross.left
+    with:
+    - cross.home
+    - job.factory
+  - name: cross.right
+    with:
+    - shop.b
+    - garden
+  - name: cross.center
+    with:
+    - cross.left
+    - cross.right
+    - museum
+    - shop.a
+  - name: cross.home
+    with:
+    - cross.home-left
+    - cross.home-right
+  - name: cross.home-left
+    with: home.left
+  - name: cross.home-right
+    with: home.right
+  - name: garden
+    with:
+    - job.programming
+    - job.website
+    - pub
