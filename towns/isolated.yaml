@@ -21,7 +21,7 @@ places:
   - name: factory
     title: Ceramic factory
     position: [-2000, +1000]
-    rooms: flat(5, 4)
+    rooms: flat(5, 5)
     trivias: ceramic
   - name: office
     title: Happy cats office
@@ -29,189 +29,198 @@ places:
     rooms: flat(5, 5)
     trivias: website
 
-  home:
-    position: [0, -2000]
-    function: HOME 
-    rooms: flat(1, 3)
-    room-size: 120
+- name:  home
+  position: [0, -2000]
+  function: HOME 
+  rooms: flat(1, 3)
+  room-size: 120
+  places:
+  - name: left
+    position: [-2000, 0]
     places:
-      left:
-        position: [-2000, 0]
-        places:
-          left:
-            position: [-1000, 0]
-            places: 
-              a:
-                title: Müller
-                position: [+400, +400]
-                rotation: 315
-              b:
-                title: Becker
-                position: [-400, +400]
-                rotation: 45
-              c:
-                title: Karl
-                position: [-400, -400]
-                rotation: 135
-              d:
-                title: Fischer
-                position: [+400, -400]
-                rotation: 225
-          right:
-            position: [+1000]
-            places: 
-              a:
-                title: Schmidt
-                position: [+400, +400]
-                rotation: 315
-              b:
-                title: Schulz
-                position: [-400, +400]
-                rotation: 45
-              c:
-                title: Jonas
-                position: [-400, -400]
-                rotation: 135
-              d:
-                title: Weber
-                position: [+400, -400]
-                rotation: 225
-      right:
-        position: [+2000, 0]
-        places:
-          left:
-            position: [-1000, 0]
-            places:
-              a:
-                title: Schneider
-                position: [+400, +400]
-                rotation: 315
-              b:
-                title: Finn
-                position: [-400, +400]
-                rotation: 45
-              c:
-                title: Noah
-                position: [-400, -400]
-                rotation: 135
-              d:
-                title: Meyer
-                position: [+400, -400]
-                rotation: 225
-          right:
-            position: [+1000, 0]
-            places:
-              a:
-                title: Hoffman
-                position: [+400, +400]
-                rotation: 315
-              b:
-                title: Lukas
-                position: [-400, +400]
-                rotation: 45
-              c:
-                title: Frederick
-                position: [-400, -400]
-                rotation: 135
-              d:
-                title: Wagner
-                position: [+400, -400]
-                rotation: 225
+    - name: left
+      position: [-1000, 0]
+      places: 
+      - name: a
+        title: Müller
+        position: [+400, +400]
+        rotation: 315
+      - name: b
+        title: Becker
+        position: [-400, +400]
+        rotation: 45
+      - name: c
+        title: Karl
+        position: [-400, -400]
+        rotation: 135
+      - name: d
+        title: Fischer
+        position: [+400, -400]
+        rotation: 225
+    - name: right
+      position: [+1000, 0]
+      places: 
+      - name: a
+        title: Schmidt
+        position: [+400, +400]
+        rotation: 315
+      - name: b
+        title: Schulz
+        position: [-400, +400]
+        rotation: 45
+      - name: c
+        title: Jonas
+        position: [-400, -400]
+        rotation: 135
+      - name: d
+        title: Weber
+        position: [+400, -400]
+        rotation: 225
+  - name: right
+    position: [+2000, 0]
+    places:
+    - name: left
+      position: [-1000, 0]
+      places:
+      - name: a
+        title: Schneider
+        position: [+400, +400]
+        rotation: 315
+      - name: b
+        title: Finn
+        position: [-400, +400]
+        rotation: 45
+      - name: c
+        title: Noah
+        position: [-400, -400]
+        rotation: 135
+      - name: d
+        title: Meyer
+        position: [+400, -400]
+        rotation: 225
+    - name: right
+      position: [+1000, 0]
+      places:
+      - name: a
+        title: Hoffman
+        position: [+400, +400]
+        rotation: 315
+      - name: b
+        title: Lukas
+        position: [-400, +400]
+        rotation: 45
+      - name: c
+        title: Frederick
+        position: [-400, -400]
+        rotation: 135
+      - name: d
+        title: Wagner
+        position: [+400, -400]
+        rotation: 225
 
-  shop:
-   function: SHOP
-   books: book
-   position: [0, -500]
-   rotation: 90
-   places:
-    a:
-      title: Shop Anastazja
-      position: [-500, 0]
-      rooms: flat(4, 2)
-    b:
-      title: Shop Emeralda
-      position: [+500, 0]
-      rooms: flat(4, 2)
-
-  garden:
-    function: ENTERNAIMENT
-    title: Garden
-    position: [0, +1000]
-    room-size: 100
-    room-padding: 80
-    rooms: grid(3)
-    trivias: painting
-
-  pub:
-    title: Pub Katowice
-    function: ENTERNAIMENT
-    position: [0, -1000]
+- name: shop
+  function: SHOP
+  books: book
+  position: [0, -500]
+  rotation: 90
+  places:
+  - name: a
+    title: Shop Anastazja
+    position: [-500, 0]
+    rooms: flat(4, 2)
+  - name: b
+    title: Shop Emeralda
+    position: [+500, 0]
     rooms: flat(4, 2)
 
-  cross:
-    function: CROSSROAD
+- name: garden
+  function: ENTERTAIMENT
+  title: Garden
+  position: [0, +1000]
+  room-size: 100
+  room-padding: 80
+  rooms: grid(2)
+  trivias: painting
+
+- name: pub
+  title: Pub Katowice
+  function: ENTERTAIMENT
+  position: [0, -1000]
+  rooms: flat(3, 2)
+
+- name: cross
+  function: CROSSROAD
+  places:
+  - name: center
+    title: Cactus crossway
+    position: [0, 0]
+  - name: left
+    title: Abelia crossway
+    position: [-2000, 0]
+  - name: right
+    title: Begonia crossway
+    position: [+2000, 0]
+  - name: shop
+    title: Yarrow crossway
+    position: [0, -500]
+  - name: home
     places:
-      center:
-        title: Cactus crossway
-        position: [0, 0]
-      left:
-        title: Abelia crossway
-        position: [-2000, 0]
-      right:
-        title: Begonia crossway
-        position: [+2000, 0]
-      shop:
-        title: Yarrow crossway
-        position: [0, -500]
-      home:
-        places:
-          left:
-            places:
-              main:
-                title: Daffodil crossway
-                position: home.left
-              left:
-                title: Gasteria crossway
-                position: home.left.left
-              right:
-                title: Palm crossway
-                position: home.left.right
-          right:
-            places:
-              main:
-                title: Dahlia crossway
-                position: home.left
-              left:
-                title: Geraniums crossway
-                position: home.right.left
-              right:
-                title: Magnolia crossway
-                position: home.right.right
+    - name: left
+      places:
+      - name: main
+        title: Daffodil crossway
+        position: home.left
+      - name: left
+        title: Gasteria crossway
+        position: home.left.left
+      - name: right
+        title: Palm crossway
+        position: home.left.right
+    - name: right
+      places:
+      - name: main
+        title: Dahlia crossway
+        position: home.right
+      - name: left
+        title: Geraniums crossway
+        position: home.right.left
+      - name: right
+        title: Magnolia crossway
+        position: home.right.right
 
 connections:
-  - name: cross.left
-    with:
-    - cross.home
-    - job.factory
-  - name: cross.right
-    with:
-    - shop.a
-    - garden
   - name: cross.center
     with:
     - cross.left
     - cross.right
-    - museum
-    - shop.b
-  - name: cross.home
+    - cross.shop
+    - garden
+  - name: cross.left
     with:
-    - cross.home-left
-    - cross.home-right
-  - name: cross.home-left
-    with: home.left
-  - name: cross.home-right
-    with: home.right
-  - name: garden
+    - job.factory
+    - cross.home.left.main
+  - name: cross.right
     with:
-    - job.programming
     - job.office
+    - cross.home.right.main
+  - name: cross.home.left.main
+    with:
+    - cross.home.left.left
+    - cross.home.left.right
+  - name: cross.home.right.main
+    with:
+    - cross.home.right.left
+    - cross.home.right.right
+  - name: cross.home.left.left
+    with: home.left.left
+  - name: cross.home.left.right
+    with: home.left.right
+  - name: cross.home.right.left
+    with: home.right.left
+  - name: cross.home.right.right
+    with: home.right.right
+  - name: cross.shop
+    with:
+    - shop.a
+    - shop.b
+    - pub
