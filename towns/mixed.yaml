@@ -16,22 +16,26 @@ people:
 places:
 - name: job
   function: WORK
+  trivias-to-talk-order: 0.5
   places: 
   - name: factory
     title: Ceramic factory
     position: [-1000, +1000]
     rooms: flat(5, 4)
-    trivias: ceramic
+    trivias-to-learn: ceramic
+    trivias-to-talk: ceramic
   - name: website
     title: Polweb office
     position: [+2300, +2000]
     rooms: flat(3, 3)
-    trivias: website
+    trivias-to-learn: website
+    trivias-to-talk: website
   - name: programming
     title: Blib blob office
     position: [+1000, +3000]
     rooms: flat(3, 3)
-    trivias: programming
+    trivias-to-learn: programming
+    trivias-to-talk: programming
 
 - name: home
   position: [-1000, -2000]

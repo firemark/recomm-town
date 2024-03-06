@@ -41,6 +41,8 @@ class Human:
     levels: Levels
     activity: Activity
     friend_levels: defaultdict["Human", Level]
+    current_place: "Place | None"
+    current_room: "Room | None"
 
     def __init__(self, position: Vec, info: HumanInfo):
         self.position = position
@@ -87,6 +89,14 @@ class Human:
 
     def stop_talk(self, stranger: Self):
         self.talk_observers(self, stranger, None, "STOP")
+
+    def set_place(self, place, room):
+        self.current_place = place
+        self.current_room = room
+
+    def unset_place(self):
+        self.current_place = None
+        self.current_room = None
 
     def update_activity(self, activity: Activity):
         self.activity = activity

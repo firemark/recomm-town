@@ -73,15 +73,15 @@ class WorldParser:
                 group = []
                 self.trivias[group_name] = group
             for category in categories:
-                category_name = category["category"]
-                chunks = category.get("chunks", Trivia.chunks)
-                forgetting_level = category.get(
-                    "forgetting-level", Trivia.forgetting_level
+                args = dict(
+                    category=category["category"],
+                    chunks=category.get("chunks", Trivia.chunks),
+                    forgetting_level=category.get(
+                        "forgetting-level", Trivia.forgetting_level
+                    ),
+                    popularity=category.get("popularity", Trivia.popularity),
                 )
-                group += [
-                    Trivia(category_name, name, chunks, forgetting_level)
-                    for name in category["trivias"]
-                ]
+                group += [Trivia(name=name, **args) for name in category["trivias"]]
 
             self.trivias[group_name] = group
 
@@ -97,7 +97,9 @@ class WorldParser:
             "rooms": place.get("rooms"),
             "room-size": place.get("room-size"),
             "room-padding": place.get("room-padding"),
-            "trivias": place.get("trivias"),
+            "learn_trivias": place.get("trivias-to-learn"),
+            "talk_trivias": place.get("trivias-to-talk"),
+            "talk_trivias_order": place.get("trivias-to-talk-order"),
             "position": position,
         }
         new_params = prev_params | {k: v for k, v in params.items() if v is not None}
@@ -124,7 +126,9 @@ class WorldParser:
             rooms=self._create_rooms(params.get("rooms")),
             room_size=params.get("room-size", 80.0),
             room_padding=params.get("room-padding", 10.0),
-            trivias=self._find_trivias(params.get("trivias")),
+            learn_trivias=self._find_trivias(params.get("learn_trivias")),
+            talk_trivias=self._find_trivias(params.get("talk_trivias")),
+            talk_trivias_order=params.get("talk_trivias_order", 0.0),
             books=self._find_books(params.get("books")),
         )
 

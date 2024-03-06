@@ -39,7 +39,9 @@ class Place:
     room_size: float
     box_start: Vec
     box_end: Vec
-    trivias: list[Trivia]
+    learn_trivias: list[Trivia]
+    talk_trivias: set[Trivia]
+    talk_trivias_order: float
     books: list[Book]
 
     def __init__(
@@ -50,7 +52,9 @@ class Place:
         rooms: Iterable[LocalRoom] | None = None,
         room_size: float = 80.0,
         room_padding: float = 10.0,
-        trivias: list[Trivia] | None = None,
+        learn_trivias: list[Trivia] | None = None,
+        talk_trivias: list[Trivia] | None = None,
+        talk_trivias_order: float = 0.0,
         books: list[Book] | None = None,
         rotation: float = 0.0,
     ):
@@ -60,7 +64,9 @@ class Place:
         self.neighborhood = set()
         self.room_size = room_size
         self.room_padding = room_padding
-        self.trivias = trivias or []
+        self.learn_trivias = learn_trivias or []
+        self.talk_trivias = set(talk_trivias) if talk_trivias else set()
+        self.talk_trivias_order = talk_trivias_order
         self.books = books or []
         self.rotation = rotation
 

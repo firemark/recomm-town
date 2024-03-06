@@ -1,9 +1,8 @@
-from functools import partial
 from typing import Callable, Literal
-from random import choice, randint, random
+from random import choice, choices, randint, random
 
-from recomm_town.common import Book, TriviaChunk, Vec
-from recomm_town.town.place import Room
+from recomm_town.common import Book, Trivia, TriviaChunk, Vec
+from recomm_town.town import Room, Place
 from recomm_town.human import Human, Activity
 
 
@@ -159,9 +158,10 @@ class RandomTalk(ActionWithStart):
         human.update_activity(Activity.TALK)
         return "PASS"
 
-    @staticmethod
-    def _share(teacher: Human, student: Human):
-        trivia = choice(list(teacher.knowledge.keys()))
+    @classmethod
+    def _share(cls, teacher: Human, student: Human):
+        trivia = cls._choice_trivia(teacher)
+
         chunk_id = choice(list(teacher.knowledge[trivia].keys()))
         trivia_chunk = trivia.get_chunk(chunk_id)
 
@@ -170,6 +170,21 @@ class RandomTalk(ActionWithStart):
         student.replace_first_action(ShareFrom(time_to_share, trivia_chunk, teacher))
         teacher.start_talk(student, trivia)
         return "STOP"
+
+    @staticmethod
+    def _choice_trivia(teacher: Human) -> Trivia:
+        available_trivias = list(teacher.knowledge.keys())
+        if (place := teacher.current_place) is not None:
+            talk_trivias = place.talk_trivias
+            order = place.talk_trivias_order
+            trivia_weights = [
+                trivia.popularity * (1 + order * (+1 if trivia in talk_trivias else -1))
+                for trivia in available_trivias
+            ]
+        else:
+            trivia_weights = [trivia.popularity for trivia in available_trivias]
+
+        return choices(available_trivias, trivia_weights)[0]
 
     def on_destroy(self, human: Human):
         if self.previous_activity is not None:
@@ -204,14 +219,14 @@ class Share(ActionWithStart):
 
 class ShareFrom(Share):
     def __init__(self, time: float, trivia: TriviaChunk, teacher: Human):
-        teach_level = randint(2, 5) / 10
+        teach_level = 0.05 + random() * 0.1
         teacher_level = teacher.knowledge[trivia.trivia][trivia.id]
         super().__init__(time, teacher, trivia, level=teach_level, max=teacher_level)
 
 
 class ShareTo(Share):
     def __init__(self, time: float, trivia: TriviaChunk, student: Human):
-        super().__init__(time, student, trivia, level=0.2, max=1.0)
+        super().__init__(time, student, trivia, level=0.1, max=1.0)
         self.student = student
 
     def on_destroy(self, human: Human):
@@ -232,10 +247,12 @@ class Wait(Action):
 
 
 class TakeRoom(Action):
-    def __init__(self, room: Room) -> None:
+    def __init__(self, place: Place, room: Room) -> None:
+        self.place = place
         self.room = room
 
     def do_it(self, human: "Human", dt: float) -> T:
+        human.set_place(self.place, self.room)
         self.room.occupied_by = human
         return "NEXT"
 
@@ -245,5 +262,6 @@ class FreeRoom(Action):
         self.room = room
 
     def do_it(self, human: "Human", dt: float) -> T:
+        human.unset_place()
         self.room.occupied_by = None
         return "NEXT"

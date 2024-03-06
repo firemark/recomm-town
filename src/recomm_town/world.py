@@ -180,7 +180,8 @@ class World:
                             human=human,
                             activity=Activity.READ,
                             trivia=self._choice_chunk(choice(human.library).trivia),
-                            learn_level=0.5,
+                            learn_level=0.25,
+                            max_level=0.8,
                         )
                     ),
                     (trivia := self.radio_program.trivia)
@@ -188,14 +189,16 @@ class World:
                         human=human,
                         activity=Activity.RADIO,
                         trivia=trivia,
-                        learn_level=0.05,
+                        learn_level=0.025,
+                        max_level=0.5,
                     ),
                     (trivia := self.tv_program.trivia)
                     and self._go_home_learn(
                         human=human,
                         activity=Activity.TV,
                         trivia=trivia,
-                        learn_level=0.05,
+                        learn_level=0.025,
+                        max_level=0.5,
                     ),
                 ]
                 filtered_possibilities = [p for p in possibilities if p is not None]
@@ -250,6 +253,7 @@ class World:
         activity: Activity,
         trivia: TriviaChunk,
         learn_level: float,
+        max_level: float,
     ) -> list[Action]:
         return self._go_home(
             human=human,
@@ -260,7 +264,7 @@ class World:
                 "energy": +0.3 + random() * 0.2,
             },
             end_actions=[
-                actions.LearnTrivia(trivia, level=learn_level, max_level=1.0),
+                actions.LearnTrivia(trivia, level=learn_level, max_level=max_level),
             ],
         )
 
@@ -276,34 +280,37 @@ class World:
     ) -> list[Action]:
         if isinstance(activity, list):
             activity = choice(activity)
-        end_actions = end_actions or []
         room = self._find_available_room(place)
         if room is None:
             return self._make_fail()
-        if random() > 0.5 and place.trivias:
-            trivia = choice(place.trivias)
-            end_actions.append(
-                actions.LearnTrivia(
-                    self._choice_trivia(place.trivias),
-                    level=0.2,
-                    max_level=0.5,
-                )
-            )
 
         parts = randint(4, 8)
         ratio = 1 / parts
+
+        if random() > 0.5 and place.learn_trivias:
+            trivia_actions = [
+                actions.LearnTrivia(
+                    self._choice_trivia(place.learn_trivias),
+                    level=0.25 * ratio,
+                    max_level=1.0,
+                )
+            ]
+        else:
+            trivia_actions = []
+
         find = partial(self._find_neighbours, human)
         main_actions = list(
             chain.from_iterable(
                 [
                     actions.UpdateLevelsInTime(time, levels, ratio),
                     actions.RandomTalk(randint(2, 5), find, talk_probablity),
+                    *trivia_actions
                 ]
                 for i in range(parts)
             )
         )
         return [
-            actions.TakeRoom(room),
+            actions.TakeRoom(place, room),
             actions.ChangeActivity(Activity.MOVE),
             *self._make_move_action_to_place(human, place),
             *self._make_move_action_to_room(room),

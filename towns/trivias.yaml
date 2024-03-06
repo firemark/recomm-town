@@ -1,6 +1,7 @@
 ---
 ceramic:
   - category: skill
+    popularity: 0.5
     trivias:
       - Pottery
       - Wine glass
@@ -9,6 +10,7 @@ ceramic:
 
 website:
   - category: skill
+    popularity: 0.5
     trivias:
       - HTML
       - CSS
@@ -16,6 +18,7 @@ website:
  
 programming:
   - category: skill
+    popularity: 0.5
     trivias:
       - Python
       - Javascript

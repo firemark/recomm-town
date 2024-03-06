@@ -17,17 +17,20 @@ people:
 places:
 - name: job
   function: WORK
+  trivias-to-talk-order: 0.5
   places: 
   - name: factory
     title: Ceramic factory
     position: [-2000, +1000]
     rooms: flat(5, 5)
-    trivias: ceramic
+    trivias-to-learn: ceramic
+    trivias-to-talk: ceramic
   - name: office
     title: Happy cats office
     position: [+2000, +1000]
     rooms: flat(5, 5)
-    trivias: website
+    trivias-to-learn: website
+    trivias-to-talk: website
 
 - name:  home
   position: [0, -2000]
@@ -140,7 +143,7 @@ places:
   room-size: 100
   room-padding: 80
   rooms: grid(2)
-  trivias: painting
+  trivias-to-learn: painting
 
 - name: pub
   title: Pub Katowice

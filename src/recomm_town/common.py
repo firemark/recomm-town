@@ -110,6 +110,7 @@ class Trivia:
     category: str
     name: str
     chunks: int = 4
+    popularity: float = 1.0
     forgetting_level: float = 1e-4
 
     def get_chunk(self, id: int) -> "TriviaChunk":
