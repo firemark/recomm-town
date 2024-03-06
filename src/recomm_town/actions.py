@@ -123,10 +123,12 @@ class RandomTalk(ActionWithStart):
         time: float,
         find_neighbours: Callable[[], list[Human]],
         probality: float = 0.75,
+        teach_level: float = 0.1,
     ) -> None:
         super().__init__(time)
         self.find_neighbours = find_neighbours
         self.probality = probality
+        self.teach_level = teach_level
         self.previous_activity = None
 
     def on_start(self, human: Human) -> T:
@@ -158,16 +160,16 @@ class RandomTalk(ActionWithStart):
         human.update_activity(Activity.TALK)
         return "PASS"
 
-    @classmethod
-    def _share(cls, teacher: Human, student: Human):
-        trivia = cls._choice_trivia(teacher)
+    def _share(self, teacher: Human, student: Human):
+        trivia = self._choice_trivia(teacher)
 
         chunk_id = choice(list(teacher.knowledge[trivia].keys()))
         trivia_chunk = trivia.get_chunk(chunk_id)
 
         time_to_share = randint(2, 5)
-        teacher.replace_first_action(ShareTo(time_to_share, trivia_chunk, student))
-        student.replace_first_action(ShareFrom(time_to_share, trivia_chunk, teacher))
+        teach_level = self.teach_level * (0.1 + random() * 0.9)
+        teacher.replace_first_action(ShareTo(time_to_share, trivia_chunk, teach_level / 10, student))
+        student.replace_first_action(ShareFrom(time_to_share, trivia_chunk, teach_level, teacher))
         teacher.start_talk(student, trivia)
         return "STOP"
 
@@ -218,15 +220,14 @@ class Share(ActionWithStart):
 
 
 class ShareFrom(Share):
-    def __init__(self, time: float, trivia: TriviaChunk, teacher: Human):
-        teach_level = 0.05 + random() * 0.1
+    def __init__(self, time: float, trivia: TriviaChunk, teach_level: float, teacher: Human):
         teacher_level = teacher.knowledge[trivia.trivia][trivia.id]
         super().__init__(time, teacher, trivia, level=teach_level, max=teacher_level)
 
 
 class ShareTo(Share):
-    def __init__(self, time: float, trivia: TriviaChunk, student: Human):
-        super().__init__(time, student, trivia, level=0.1, max=1.0)
+    def __init__(self, time: float, trivia: TriviaChunk, teach_level: float, student: Human):
+        super().__init__(time, student, trivia, level=teach_level, max=1.0)
         self.student = student
 
     def on_destroy(self, human: Human):

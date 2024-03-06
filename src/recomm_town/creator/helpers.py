@@ -30,6 +30,9 @@ def make_grid_rooms(n):
         )
     )
 
+def make_round_rooms(n, m):
+    return []
+
 
 vowels = "eiuoa"
 consonants = "tpsdhjklmn"

@@ -5,6 +5,8 @@ trivias:
 world:
   tv:
     program: tv
+    lifetime: 15
+    start-after: 30
 
 people:
   - houses: home.left
@@ -17,7 +19,7 @@ people:
 places:
 - name: job
   function: WORK
-  trivias-to-talk-order: 0.5
+  trivias-to-talk-order: 0.8
   places: 
   - name: factory
     title: Ceramic factory

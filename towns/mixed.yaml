@@ -3,10 +3,25 @@ trivias:
   - ./trivias.yaml
 
 world:
+  forgetting: 
+    tick: 1.0
+    factor: 1.0
+  neighbor-range: 100.0
+  levels:
+    learning: 0.25
+    teaching: 0.2
+    talking: 1.0
+    reading: 0.25
+    program: 0.2
+    
   radio: 
     program: podcast
+    lifetime: 30
+    start-after: 60
   tv:
     program: tv
+    lifetime: 15
+    start-after: 60
 
 people:
   - houses: home
@@ -16,7 +31,7 @@ people:
 places:
 - name: job
   function: WORK
-  trivias-to-talk-order: 0.5
+  trivias-to-talk-order: 0.8
   places: 
   - name: factory
     title: Ceramic factory
@@ -82,7 +97,7 @@ places:
   room-size: 100
   room-padding: 80
   rooms: grid(3)
-  trivias: painting
+  trivias-to-learn: painting
 
 - name: museum
   title: City Museum
@@ -91,7 +106,7 @@ places:
   room-size: 50
   room-padding: 80
   rooms: grid(2)
-  trivias: music
+  trivias-to-learn: music
 
 - name: pub
   title: Pub Ugly Dog

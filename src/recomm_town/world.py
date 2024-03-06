@@ -1,4 +1,5 @@
 from collections import defaultdict
+from dataclasses import dataclass
 from functools import partial
 from itertools import chain
 from random import choice, randint, random
@@ -13,10 +14,19 @@ from recomm_town import actions
 ENJOY_ACTIVITIES = [Activity.ENJOY_DRINK, Activity.ENJOY_MUSIC, Activity.ENJOY_PLAY]
 
 
+@dataclass(frozen=True)
+class WorldLevels:
+    forgetting_tick: float = 1.0
+    forgetting_factor: float = 1.0
+    neighbor_range: float = 100.0
+    learning: float = 0.25
+    teaching: float = 0.1
+    reading: float = 0.25
+    talking: float = 1.0
+    program: float = 0.2
+
+
 class World:
-    FORGETTING_TICK = 1.0
-    FORGETTING_FACTOR = 1.00
-    GRID_CELL_SIZE = 100.0
     NEIGHBOR_CELLS = [(x, y) for x in range(-1, 2) for y in range(-1, 2)]
 
     town: Town
@@ -32,18 +42,18 @@ class World:
         self,
         town: Town,
         people: list[Human],
-        radio_program: list[Trivia] | None = None,
-        tv_program: list[Trivia] | None = None,
+        radio_program: Program,
+        tv_program: Program,
+        levels: WorldLevels,
     ):
         self.town = town
         self.people = people
         self.simulation_speed = 1.0
         self.people_grid = defaultdict(set)
-        self.radio_program = Program(radio_program or [], lifetime=15.0)
-        self.tv_program = Program(tv_program or [], lifetime=30.0)
-        self.tv_program_index = 0
-        self.radio_program_index = 0
-        self.forget_lifetime = self.FORGETTING_TICK
+        self.radio_program = radio_program
+        self.tv_program = tv_program
+        self.levels = levels
+        self.forget_lifetime = self.levels.forgetting_tick
 
         for human in people:
             self._update_human_coords(human, human.position)
@@ -59,12 +69,12 @@ class World:
 
         self.forget_lifetime -= dt
         if self.forget_lifetime < 0.0:
-            self.forget_lifetime = self.FORGETTING_TICK
+            self.forget_lifetime = self.levels.forgetting_tick
             human = choice(self.people)
             self._forget_trivias(human)
 
     def _update_human_coords(self, human: Human, old_position):
-        cell_size = self.GRID_CELL_SIZE
+        cell_size = self.levels.neighbor_range
         old_x = int(old_position.x / cell_size)
         old_y = int(old_position.y / cell_size)
 
@@ -84,7 +94,7 @@ class World:
             self.people_grid[new_x + x, new_y + y].add(human)
 
     def _find_neighbours(self, human: Human) -> set[Human]:
-        cell_size = self.GRID_CELL_SIZE
+        cell_size = self.levels.neighbor_range
         new_x = int(human.position.x / cell_size)
         new_y = int(human.position.y / cell_size)
         neighbors = set()
@@ -93,9 +103,9 @@ class World:
         return neighbors - {human}
 
     def _forget_trivias(self, human: Human):
-        forgetting_level = (
-            self.FORGETTING_FACTOR * len(human.knowledge) * self.FORGETTING_TICK
-        )
+        factor = self.levels.forgetting_factor
+        count = len(human.knowledge)
+        forgetting_level = factor * count * self.levels.forgetting_tick
         human.forget_trivias(forgetting_level)
 
     def _do_it_human(self, human: Human, dt: float):
@@ -180,7 +190,7 @@ class World:
                             human=human,
                             activity=Activity.READ,
                             trivia=self._choice_chunk(choice(human.library).trivia),
-                            learn_level=0.25,
+                            learn_level=self.levels.reading,
                             max_level=0.8,
                         )
                     ),
@@ -189,7 +199,7 @@ class World:
                         human=human,
                         activity=Activity.RADIO,
                         trivia=trivia,
-                        learn_level=0.025,
+                        learn_level=self.levels.program,
                         max_level=0.5,
                     ),
                     (trivia := self.tv_program.trivia)
@@ -197,7 +207,7 @@ class World:
                         human=human,
                         activity=Activity.TV,
                         trivia=trivia,
-                        learn_level=0.025,
+                        learn_level=self.levels.program,
                         max_level=0.5,
                     ),
                 ]
@@ -264,7 +274,11 @@ class World:
                 "energy": +0.3 + random() * 0.2,
             },
             end_actions=[
-                actions.LearnTrivia(trivia, level=learn_level, max_level=max_level),
+                actions.LearnTrivia(
+                    trivia,
+                    level=learn_level * self.levels.learning,
+                    max_level=max_level,
+                ),
             ],
         )
 
@@ -278,6 +292,7 @@ class World:
         end_actions: list[Action] | None = None,
         talk_probablity=0.75,
     ) -> list[Action]:
+        talk_probablity *= self.levels.talking
         if isinstance(activity, list):
             activity = choice(activity)
         room = self._find_available_room(place)
@@ -286,12 +301,13 @@ class World:
 
         parts = randint(4, 8)
         ratio = 1 / parts
+        learn_level = self.levels.learning * ratio * (0.5 + random() * 0.5)
 
-        if random() > 0.5 and place.learn_trivias:
+        if place.learn_trivias:
             trivia_actions = [
                 actions.LearnTrivia(
                     self._choice_trivia(place.learn_trivias),
-                    level=0.25 * ratio,
+                    level=learn_level,
                     max_level=1.0,
                 )
             ]
@@ -303,8 +319,8 @@ class World:
             chain.from_iterable(
                 [
                     actions.UpdateLevelsInTime(time, levels, ratio),
-                    actions.RandomTalk(randint(2, 5), find, talk_probablity),
-                    *trivia_actions
+                    actions.RandomTalk(randint(2, 5), find, talk_probablity, self.levels.teaching),
+                    *trivia_actions,
                 ]
                 for i in range(parts)
             )
@@ -363,9 +379,10 @@ class World:
             actions.ChangeActivity(Activity.TIME_BREAK),
             actions.Wait(random() * 2.0),
         ]
+        talk_probability = 0.9 * self.levels.talking
         for i in range(randint(1, 4)):
             acts += [
-                actions.RandomTalk(randint(10, 15) / 10.0, find, probality=0.9),
+                actions.RandomTalk(randint(10, 15) / 10.0, find, talk_probability, self.levels.teaching),
                 actions.Wait(random() * 2.0),
             ]
 

@@ -13,6 +13,7 @@ class PlaceFunction(Enum):
     WORK = 2
     SHOP = 3
     ENTERTAIMENT = 4
+    COMMUNITY = 5
 
 
 @dataclass
@@ -47,6 +48,7 @@ class Place:
     def __init__(
         self,
         name: str,
+        title: str,
         position: Vec,
         function: PlaceFunction,
         rooms: Iterable[LocalRoom] | None = None,
@@ -59,6 +61,7 @@ class Place:
         rotation: float = 0.0,
     ):
         self.name = name
+        self.title = title
         self.position = position
         self.function = function
         self.neighborhood = set()

@@ -207,7 +207,7 @@ class Draw:
 
             self.objs += [
                 rect,
-                Label(place.name, x=p.x, y=p.y, **kw_font),
+                Label(place.title, x=p.x, y=p.y, **kw_font),
             ]
 
             s = place.room_size

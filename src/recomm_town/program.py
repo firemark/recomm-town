@@ -22,14 +22,16 @@ class Program:
     _lifetime: float
     _index: int
 
-    def __init__(self, trivias: list[Trivia], lifetime: float):
+    def __init__(self, trivias: list[Trivia], lifetime: float, start_after: float):
         self._trivias = [TriviaWithCounter(trivia) for trivia in trivias]
         self._max_lifetime = lifetime
         self._lifetime = lifetime
+        self._start_after = start_after
         self._index = 0
+        self.time = 0.0
 
         shuffle(self._trivias)
-        if not self._trivias:
+        if not self._trivias or self._start_after > 0.0:
             self.trivia = None
         else:
             self._change_trivia()
@@ -37,6 +39,10 @@ class Program:
     def do_it(self, dt: float):
         if not self._trivias:
             return
+        self.time += dt
+        if self.time <= self._start_after:
+            return
+
         self._lifetime -= dt
         if self._lifetime < 0.0:
             self._lifetime = self._max_lifetime

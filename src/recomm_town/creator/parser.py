@@ -1,17 +1,19 @@
 from itertools import chain
 from pathlib import Path
-from random import shuffle
+from random import choices, shuffle
 import re
 import yaml
 
 from recomm_town.common import Book, Trivia, Vec
 from recomm_town.human import Human
+from recomm_town.program import Program
 from recomm_town.town import Town, Place, PlaceFunction, LocalRoom
-from recomm_town.world import World
+from recomm_town.world import World, WorldLevels
 from recomm_town.creator.helpers import (
     generate_people,
     make_flat_rooms,
     make_grid_rooms,
+    make_round_rooms,
 )
 
 
@@ -19,6 +21,7 @@ class WorldParser:
     ROOM_FACTORIES = {
         "flat": make_flat_rooms,
         "grid": make_grid_rooms,
+        "round": make_round_rooms,
     }
 
     def __init__(self, path: Path | str):
@@ -27,8 +30,6 @@ class WorldParser:
         self.place_positions: dict[str, Vec] = {}
         self.trivias: dict[str, list[Trivia]] = {}
         self.people: list[Human] = []
-        self.tv_program = None
-        self.radio_program = None
 
     def load(self):
         with open(self.path) as file:
@@ -46,22 +47,42 @@ class WorldParser:
         for people in config["people"]:
             self._load_people(people)
 
-        world_config = config["world"]
-        self.radio_program = self._find_trivias(
-            world_config.get("radio", {}).get("program")
+        world_config = config.get("world", {})
+        self.radio_program = self._load_program(world_config.get("radio", {}))
+        self.tv_program = self._load_program(world_config.get("tv", {}))
+
+        levels = world_config.get("levels", {})
+        forgetting = world_config.get("forgetting", {})
+        self.levels = WorldLevels(
+            neighbor_range=world_config.get("neighbor-range", WorldLevels.neighbor_range),
+            forgetting_tick=forgetting.get("tick", WorldLevels.forgetting_tick),
+            forgetting_factor=forgetting.get("factor", WorldLevels.forgetting_factor),
+            learning=levels.get("learning", WorldLevels.learning),
+            teaching=levels.get("teaching", WorldLevels.teaching),
+            reading=levels.get("reading", WorldLevels.reading),
+            talking=levels.get("talking", WorldLevels.talking),
+            program=levels.get("program", WorldLevels.program),
         )
-        self.tv_program = self._find_trivias(world_config.get("tv", {}).get("program"))
 
     def create_world(self) -> World:
         shuffle(self.people)
         places = chain.from_iterable(self.places.values())
+        places = list(places)
+        shuffle(places)
 
         return World(
-            town=Town(list(places)),
+            town=Town(places),
             people=self.people,
             tv_program=self.tv_program,
             radio_program=self.radio_program,
+            levels=self.levels,
         )
+
+    def _load_program(self, program) -> Program:
+        trivias = self._find_trivias(program.get("program")) or []
+        lifetime = program.get("lifetime", 15)
+        start_after = program.get("start-after", 0.0)
+        return Program(trivias, lifetime, start_after)
 
     def _load_trivias(self, trivia_path: Path):
         with open(trivia_path) as file:
@@ -81,7 +102,11 @@ class WorldParser:
                     ),
                     popularity=category.get("popularity", Trivia.popularity),
                 )
-                group += [Trivia(name=name, **args) for name in category["trivias"]]
+                raw_trivias = category["trivias"]
+                choice = category.get("choice")
+                if choice is not None:
+                    raw_trivias = choices(raw_trivias, k=choice)
+                group += [Trivia(name=name, **args) for name in raw_trivias]
 
             self.trivias[group_name] = group
 
@@ -108,7 +133,7 @@ class WorldParser:
             self.place_positions[name] = position
 
         if "places" not in place:
-            places = {self._create_place(new_params)}
+            places = {self._create_place(name, new_params)}
         else:
             places = set()
             for child in place["places"]:
@@ -117,9 +142,10 @@ class WorldParser:
         self.places[name] = places
         return places
 
-    def _create_place(self, params) -> Place:
+    def _create_place(self, name, params) -> Place:
         return Place(
-            name=params["title"],
+            name=name,
+            title=params["title"],
             position=params["position"],
             rotation=params.get("rotation", 0.0),
             function=PlaceFunction[params["function"]],

@@ -1,7 +1,8 @@
 ---
 ceramic:
   - category: skill
-    popularity: 0.5
+    popularity: 0.25
+    choice: 2
     trivias:
       - Pottery
       - Wine glass
@@ -10,22 +11,27 @@ ceramic:
 
 website:
   - category: skill
-    popularity: 0.5
+    popularity: 0.33
+    choice: 2
     trivias:
       - HTML
       - CSS
-      - GUI
+      - UX
+      - Blockchain
  
 programming:
   - category: skill
-    popularity: 0.5
+    choice: 2
+    popularity: 0.33
     trivias:
       - Python
       - Javascript
       - C++
+      - PHP
 
 painting:
   - category: painting
+    choice: 2
     trivias:
       - dataism
       - cubism
@@ -34,6 +40,7 @@ painting:
 
 music:
   - category: music
+    choice: 2
     trivias:
       - techno
       - rock
@@ -42,6 +49,7 @@ music:
 
 book:
   - category: book
+    popularity: 2.0
     trivias:
       - Lem - Solaris
       - Dukaj - Starość aksolotla
@@ -54,6 +62,7 @@ book:
 tv:
   - category: movie
     chunks: 1
+    popularity: 2.0
     forgetting-level: 0.005
     trivias: 
       - Seksmisja
@@ -66,6 +75,7 @@ tv:
       - Nic śmiesznego
   - category: series
     chunks: 5
+    popularity: 2.0
     forgetting-level: 0.005
     trivias: 
       - Klan
@@ -76,6 +86,7 @@ tv:
 
 podcast:
   - category: podcast
+    popularity: 3.0
     trivias:
       - Ancient history
       - Medieval history
