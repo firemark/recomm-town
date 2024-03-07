@@ -6,7 +6,7 @@ world:
   tv:
     program: tv
     lifetime: 15
-    start-after: 30
+    start-after: 15
 
 people:
   - houses: home.left

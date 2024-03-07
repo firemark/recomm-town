@@ -11,7 +11,7 @@ ceramic:
 
 website:
   - category: skill
-    popularity: 0.33
+    popularity: 0.25
     choice: 2
     trivias:
       - HTML
@@ -22,21 +22,51 @@ website:
 programming:
   - category: skill
     choice: 2
-    popularity: 0.33
+    popularity: 0.25
     trivias:
       - Python
       - Javascript
       - C++
       - PHP
 
+wood:
+  - category: skill
+    choice: 2
+    popularity: 0.25
+    trivias:
+      - Saw operating
+      - Trees cutting
+      - Cutting trees
+      - Laying wood flooring
+
+eco-gov:
+  - category: gov
+    choice: 2
+    popularity: 0.1
+    trivias:
+      - Bike lanes
+      - Planting trees
+      - Banning cars
+      - Banning plastic
+
+city-gov:
+  - category: gov
+    choice: 2
+    popularity: 0.1
+    trivias:
+      - Taxes
+      - Car parking
+      - Elections
+      - Public transport
+
 painting:
   - category: painting
     choice: 2
     trivias:
-      - dataism
-      - cubism
-      - watercolor
-      - hypperrealism
+      - Dataism
+      - Cubism
+      - Watercolor
+      - Hypperrealism
 
 music:
   - category: music

@@ -18,6 +18,7 @@ ENJOY_ACTIVITIES = [Activity.ENJOY_DRINK, Activity.ENJOY_MUSIC, Activity.ENJOY_P
 class WorldLevels:
     forgetting_tick: float = 1.0
     forgetting_factor: float = 1.0
+    warmup_time: float = 60.0
     neighbor_range: float = 100.0
     learning: float = 0.25
     teaching: float = 0.1
@@ -54,6 +55,7 @@ class World:
         self.tv_program = tv_program
         self.levels = levels
         self.forget_lifetime = self.levels.forgetting_tick
+        self.warmup_lifetime = self.levels.warmup_time
 
         for human in people:
             self._update_human_coords(human, human.position)
@@ -61,6 +63,8 @@ class World:
 
     def do_it(self, dt: float):
         dt *= self.simulation_speed
+        if not self.is_after_warmup:
+            self.warmup_lifetime -= dt
         self.radio_program.do_it(dt)
         self.tv_program.do_it(dt)
 
@@ -302,29 +306,28 @@ class World:
         parts = randint(4, 8)
         ratio = 1 / parts
         learn_level = self.levels.learning * ratio * (0.5 + random() * 0.5)
-
-        if place.learn_trivias:
-            trivia_actions = [
-                actions.LearnTrivia(
-                    self._choice_trivia(place.learn_trivias),
-                    level=learn_level,
-                    max_level=1.0,
-                )
-            ]
-        else:
-            trivia_actions = []
-
         find = partial(self._find_neighbours, human)
-        main_actions = list(
-            chain.from_iterable(
-                [
-                    actions.UpdateLevelsInTime(time, levels, ratio),
-                    actions.RandomTalk(randint(2, 5), find, talk_probablity, self.levels.teaching),
-                    *trivia_actions,
-                ]
-                for i in range(parts)
-            )
-        )
+
+        def part_callback():
+            acts: list[Action] = [actions.UpdateLevelsInTime(time, levels, ratio)]
+            if self.is_after_warmup:
+                talk_time = randint(2, 5)
+                teaching_level = self.levels.teaching
+                acts.append(
+                    actions.RandomTalk(talk_time, find, talk_probablity, teaching_level)
+                )
+            if place.learn_trivias:
+                acts.append(
+                    actions.LearnTrivia(
+                        self._choice_trivia(place.learn_trivias),
+                        level=learn_level,
+                        max_level=1.0,
+                    )
+                )
+
+            return acts
+
+        main_actions = chain.from_iterable(part_callback() for i in range(parts))
         return [
             actions.TakeRoom(place, room),
             actions.ChangeActivity(Activity.MOVE),
@@ -337,6 +340,10 @@ class World:
             *self._make_move_action_from_room(room),
             actions.FreeRoom(room),
         ]
+
+    @property
+    def is_after_warmup(self):
+        return self.warmup_lifetime <= 0.0
 
     @classmethod
     def _choice_trivia(cls, trivias: list[Trivia]) -> TriviaChunk:
@@ -379,12 +386,15 @@ class World:
             actions.ChangeActivity(Activity.TIME_BREAK),
             actions.Wait(random() * 2.0),
         ]
-        talk_probability = 0.9 * self.levels.talking
-        for i in range(randint(1, 4)):
-            acts += [
-                actions.RandomTalk(randint(10, 15) / 10.0, find, talk_probability, self.levels.teaching),
-                actions.Wait(random() * 2.0),
-            ]
+        if self.is_after_warmup:
+            teaching_level = self.levels.teaching
+            talk_prob = 0.9 * self.levels.talking
+            for _ in range(randint(1, 4)):
+                talk_time = randint(10, 15) / 10.0
+                acts += [
+                    actions.RandomTalk(talk_time, find, talk_prob, teaching_level),
+                    actions.Wait(random() * 2.0),
+                ]
 
         acts += [
             actions.ChangeActivity(Activity.MOVE),

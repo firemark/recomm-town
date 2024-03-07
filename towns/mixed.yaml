@@ -17,11 +17,11 @@ world:
   radio: 
     program: podcast
     lifetime: 30
-    start-after: 60
+    start-after: 10
   tv:
     program: tv
     lifetime: 15
-    start-after: 60
+    start-after: 10
 
 people:
   - houses: home

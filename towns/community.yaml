@@ -6,11 +6,13 @@ world:
   tv:
     program: tv
     lifetime: 15
-    start-after: 30
+    start-after: 10
   radio:
     program: podcast
     lifetime: 15
-    start-after: 30
+    start-after: 10
+  levels:
+    warmup-time: 60.0
 
 people:
 - houses: home.up-left

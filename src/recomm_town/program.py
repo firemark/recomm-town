@@ -39,9 +39,11 @@ class Program:
     def do_it(self, dt: float):
         if not self._trivias:
             return
-        self.time += dt
+
         if self.time <= self._start_after:
-            return
+            self.time += dt
+            if self.time <= self._start_after:
+                return
 
         self._lifetime -= dt
         if self._lifetime < 0.0:

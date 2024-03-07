@@ -1,6 +1,7 @@
 from itertools import chain, product
 from random import choice, choices, randint, random, shuffle
 from dataclasses import dataclass
+from typing import Iterable
 
 from recomm_town.common import Book, Trivia, Vec
 from recomm_town.draw import Draw
@@ -30,8 +31,9 @@ def make_grid_rooms(n):
         )
     )
 
+
 def make_round_rooms(n, m):
-    return []
+    return make_grid_rooms(n)
 
 
 vowels = "eiuoa"
@@ -44,8 +46,7 @@ def make_name() -> str:
     return "".join(choice(syllabes) for _ in range(length)).title()
 
 
-def generate_people(houses, jobs, books) -> list[Human]:
-    available_workplaces = AvailableWorkplaces(jobs)
+def generate_people(houses, available_workplaces, books) -> list[Human]:
     people = []
     for home in houses:
         family = []
@@ -91,44 +92,27 @@ class AvailableWorkplace:
 
 class AvailableWorkplaces:
 
-    def __init__(self, jobs) -> None:
-        self.places = [AvailableWorkplace(p, len(p.rooms)) for p in jobs]
+    @classmethod
+    def create(cls, jobs: set[Place]):
+        return cls(AvailableWorkplace(p, len(p.rooms)) for p in jobs)
+
+    def __init__(self, places: Iterable[AvailableWorkplace]) -> None:
+        self.places = list(places)
+
+    def extract(self, jobs: set[Place]) -> "AvailableWorkplaces":
+        cls = type(self)
+        return cls(p for p in self.places if p.place in jobs and p.jobs > 0)
 
     def find(self) -> Place:
+        if not self.places:
+            raise RuntimeError("No jobs here.")
         available_workspaces = choices(
             self.places,
             weights=[w.jobs for w in self.places],
         )
         available_workspace = available_workspaces[0]
         available_workspace.jobs -= 1
-        if available_workspace.jobs == 0:
+        if available_workspace.jobs <= 0:
             index = self.places.index(available_workspace)
             self.places.pop(index)
         return available_workspace.place
-
-
-class CommonListBuilder[T]:
-    __objs: dict[str, list[T]]
-
-    def __init__(self, objs: dict[str, list[T]]) -> None:
-        self.__objs = objs
-
-    def __getattr__(self, attr: str) -> list[T]:
-        return self.__objs[attr]
-
-    def __iter__(self):
-        for obj in self.__objs.values():
-            yield from obj
-
-
-class CommonBuilder[T]:
-    __objs: dict[str, T]
-
-    def __init__(self, objs: dict[str, T]) -> None:
-        self.__objs = objs
-
-    def __getattr__(self, attr: str) -> T:
-        return self.__objs[attr]
-
-    def __iter__(self):
-        yield from self.__objs.values()

@@ -10,6 +10,7 @@ from recomm_town.program import Program
 from recomm_town.town import Town, Place, PlaceFunction, LocalRoom
 from recomm_town.world import World, WorldLevels
 from recomm_town.creator.helpers import (
+    AvailableWorkplaces,
     generate_people,
     make_flat_rooms,
     make_grid_rooms,
@@ -44,8 +45,17 @@ class WorldParser:
         for connection in config["connections"]:
             self._load_connection(connection)
 
+        available_workplaces = AvailableWorkplaces.create(
+            set(
+                chain.from_iterable(
+                    (job for job in self._find_places(people["jobs"]))
+                    for people in config["people"]
+                )
+            )
+        )
+
         for people in config["people"]:
-            self._load_people(people)
+            self._load_people(people, available_workplaces)
 
         world_config = config.get("world", {})
         self.radio_program = self._load_program(world_config.get("radio", {}))
@@ -54,7 +64,9 @@ class WorldParser:
         levels = world_config.get("levels", {})
         forgetting = world_config.get("forgetting", {})
         self.levels = WorldLevels(
-            neighbor_range=world_config.get("neighbor-range", WorldLevels.neighbor_range),
+            neighbor_range=world_config.get(
+                "neighbor-range", WorldLevels.neighbor_range
+            ),
             forgetting_tick=forgetting.get("tick", WorldLevels.forgetting_tick),
             forgetting_factor=forgetting.get("factor", WorldLevels.forgetting_factor),
             learning=levels.get("learning", WorldLevels.learning),
@@ -62,6 +74,7 @@ class WorldParser:
             reading=levels.get("reading", WorldLevels.reading),
             talking=levels.get("talking", WorldLevels.talking),
             program=levels.get("program", WorldLevels.program),
+            warmup_time=levels.get("warmup-time", WorldLevels.warmup_time),
         )
 
     def create_world(self) -> World:
@@ -208,10 +221,11 @@ class WorldParser:
         place = next(iter(places))
         place.connect(*neighborhood)
 
-    def _load_people(self, config):
+    def _load_people(self, config, available_workplaces: AvailableWorkplaces):
+        jobs = self._find_places(config["jobs"])
         self.people += generate_people(
             houses=self._find_places(config["houses"]),
-            jobs=self._find_places(config["jobs"]),
+            available_workplaces=available_workplaces.extract(jobs),
             books=self._find_books(config.get("books")),
         )
 
