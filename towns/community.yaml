@@ -1,0 +1,299 @@
+---
+trivias:
+  - ./trivias.yaml
+
+world:
+  tv:
+    program: tv
+    lifetime: 15
+    start-after: 30
+  radio:
+    program: podcast
+    lifetime: 15
+    start-after: 30
+
+people:
+- houses: home.up-left
+  jobs: job
+  books: book
+  community: community-hall.a
+- houses: home.up-right
+  jobs: job
+  books: book
+  community: community-hall.b
+- houses: home.down-left
+  jobs: job
+  books: book
+  community: community-hall.b
+- houses: home.down-right
+  jobs: job
+  books: book
+  community: community-hall.a
+
+places:
+- name: job
+  function: WORK
+  rooms: flat(3, 3)
+  trivias-to-talk-order: 0.8
+  places: 
+  - name: up-left
+    title: Tadeusz Sawmill
+    position: [-1000, +2000]
+    trivias-to-learn: wood
+    trivias-to-talk: wood
+  - name: up-right
+    title: Happy Dogs office
+    position: [+1000, +2000]
+    trivias-to-learn: programming
+    trivias-to-talk: programming
+  - name: down-left
+    title: Bobo office
+    position: [-1000, -2000]
+    trivias-to-learn: programming
+    trivias-to-talk: programming
+  - name: down-right
+    title: Szyszko Sawmill
+    position: [+1000, -2000]
+    trivias-to-learn: wood
+    trivias-to-talk: wood
+
+- name:  home
+  function: HOME 
+  rooms: flat(1, 2)
+  room-size: 120
+  places:
+  - name: up-left
+    position: [-3000, +2000]
+    places:
+    - name: a
+      title: Müller
+      position: [+400, +400]
+      rotation: 315
+    - name: b
+      title: Becker
+      position: [-400, +400]
+      rotation: 45
+    - name: c
+      title: Karl
+      position: [-400, -400]
+      rotation: 135
+    - name: d
+      title: Fischer
+      position: [+400, -400]
+      rotation: 225
+  - name: up-right
+    position: [+3000, +2000]
+    places: 
+    - name: a
+      title: Schmidt
+      position: [+400, +400]
+      rotation: 315
+    - name: b
+      title: Schulz
+      position: [-400, +400]
+      rotation: 45
+    - name: c
+      title: Jonas
+      position: [-400, -400]
+      rotation: 135
+    - name: d
+      title: Weber
+      position: [+400, -400]
+      rotation: 225
+  - name: down-left
+    position: [-3000, -2000]
+    places:
+    - name: a
+      title: Schneider
+      position: [+400, +400]
+      rotation: 315
+    - name: b
+      title: Finn
+      position: [-400, +400]
+      rotation: 45
+    - name: c
+      title: Noah
+      position: [-400, -400]
+      rotation: 135
+    - name: d
+      title: Meyer
+      position: [+400, -400]
+      rotation: 225
+  - name: down-right
+    position: [+3000, -2000]
+    places:
+    - name: a
+      title: Hoffman
+      position: [+400, +400]
+      rotation: 315
+    - name: b
+      title: Lukas
+      position: [-400, +400]
+      rotation: 45
+    - name: c
+      title: Frederick
+      position: [-400, -400]
+      rotation: 135
+    - name: d
+      title: Wagner
+      position: [+400, -400]
+      rotation: 225
+
+- name: shop
+  function: SHOP
+  books: book
+  position: [0, -500]
+  rotation: 90
+  places:
+  - name: a
+    title: Shop Anastazja
+    position: [-500, 0]
+    rooms: flat(4, 2)
+  - name: b
+    title: Shop Emeralda
+    position: [+500, 0]
+    rooms: flat(4, 2)
+
+- name: garden
+  function: ENTERTAIMENT
+  title: Garden
+  position: [0, +1000]
+  room-size: 100
+  room-padding: 80
+  rooms: grid(2)
+  trivias-to-learn: painting
+
+- name: community-hall
+  function: COMMUNITY
+  room-size: 50
+  room-padding: 20
+  rooms: round(3, 4)
+  trivias-to-talk-order: 0.95
+  invite-every: 150.0
+  invite-priority: 0.8
+  places:
+  - name: a
+    title: ProEarth Community
+    trivias-to-learn: eco-gov
+    trivias-to-talk: eco-gov
+    position: [+1000, +1000]
+  - name: b
+    title: City Community
+    trivias-to-learn: city-gov
+    trivias-to-talk: city-gov
+    position: [-1000, +1000]
+
+- name: pub
+  title: Pub Agnieszka & Maciej
+  function: ENTERTAIMENT
+  position: [0, -1000]
+  rooms: flat(3, 2)
+
+- name: cross
+  function: CROSSROAD
+  places:
+  - name: center
+    title: Cactus crossway
+    position: [0, 0]
+  - name: left
+    title: Abelia crossway
+    position: [-2000, 0]
+  - name: right
+    title: Begonia crossway
+    position: [+2000, 0]
+  - name: shop
+    title: Yarrow crossway
+    position: [0, -500]
+  - name: estate
+    places:
+    - name: up-left
+      places:
+      - name: main
+        title: Daffodil crossway
+        position: [-2000, +2000]
+      - name: home
+        title: Gasteria crossway
+        position: home.up-left
+    - name: up-right
+      places:
+      - name: main
+        title: Dahlia crossway
+        position: [+2000, +2000]
+      - name: home
+        title: Geraniums crossway
+        position: home.up-right
+    - name: down-left
+      places:
+      - name: main
+        title: Daffodil crossway
+        position: [-2000, -2000]
+      - name: home
+        title: Gasteria crossway
+        position: home.down-left
+    - name: down-right
+      places:
+      - name: main
+        title: Dahlia crossway
+        position: [+2000, -2000]
+      - name: home
+        title: Geraniums crossway
+        position: home.down-right
+
+connections:
+  - name: cross.center
+    with:
+    - cross.left
+    - cross.right
+    - cross.shop
+    - garden
+  - name: cross.left
+    with:
+    - cross.estate.up-left.main
+    - cross.estate.down-left.main
+  - name: cross.right
+    with:
+    - cross.estate.up-right.main
+    - cross.estate.down-right.main
+
+  - name: cross.estate.up-left.main
+    with:
+    - cross.estate.up-left.home
+    - job.up-left
+  - name: cross.estate.up-left.home
+    with:
+    - home.up-left
+
+  - name: cross.estate.up-right.main
+    with:
+    - cross.estate.up-right.home
+    - job.up-right
+  - name: cross.estate.up-right.home
+    with:
+    - home.up-right
+
+  - name: cross.estate.down-left.main
+    with:
+    - cross.estate.down-left.home
+    - job.down-left
+  - name: cross.estate.down-left.home
+    with:
+    - home.down-left
+
+  - name: cross.estate.down-right.main
+    with:
+    - cross.estate.down-right.home
+    - job.down-right
+  - name: cross.estate.down-right.home
+    with:
+    - home.down-right
+
+  - name: cross.shop
+    with:
+    - shop.a
+    - shop.b
+    - pub
+
+  - name: garden
+    with:
+    - community-hall.a
+    - community-hall.b
