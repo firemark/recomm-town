@@ -217,7 +217,7 @@ class Draw:
                 r = room.position
                 rect = Rectangle(r.x, r.y, s, s, color=room_color, **kw)
                 rect.anchor_position = h, h
-                rect.rotation = -rot
+                rect.rotation = room.rotation
                 self.objs.append(rect)
 
     def draw_people(self, window: Window, people: list[Human], people_group: Group):

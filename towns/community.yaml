@@ -168,9 +168,9 @@ places:
 - name: community-hall
   function: COMMUNITY
   room-size: 50
-  room-padding: 20
-  rooms: round(3, 4)
-  trivias-to-talk-order: 0.95
+  room-padding: 10
+  rooms: round(3, 2)
+  trivias-to-talk-order: 0.99
   invite:
     period: 300.0
     priority: 0.8

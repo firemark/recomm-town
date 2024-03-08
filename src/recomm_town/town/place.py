@@ -21,6 +21,7 @@ class PlaceFunction(Enum):
 class LocalRoom:
     local_position: Vec
     local_path: list[Vec]
+    rotation: float = 0.0
 
 
 @dataclass
@@ -29,6 +30,7 @@ class Room:
     path: list[Vec]
     occupied_by: "Human | None" = None
     owner: "Human | None" = None
+    rotation: float = 0.0
 
 
 @total_ordering
@@ -84,6 +86,7 @@ class Place:
             Room(
                 position=p + rot(room.local_position * s),
                 path=[p + rot(vec * s) for vec in room.local_path],
+                rotation=self.rotation + room.rotation,
             )
             for room in rooms
         ]

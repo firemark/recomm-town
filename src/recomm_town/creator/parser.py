@@ -10,21 +10,11 @@ from recomm_town.program import Program
 from recomm_town.town import Town, Place, PlaceFunction, LocalRoom
 from recomm_town.town.place import Invite
 from recomm_town.world import World, WorldLevels
-from recomm_town.creator.helpers import (
-    AvailablePlaces,
-    generate_people,
-    make_flat_rooms,
-    make_grid_rooms,
-    make_round_rooms,
-)
+from recomm_town.creator.people_factory import  AvailablePlaces, generate_people
+from recomm_town.creator.room_factories import RoomFactories
 
 
 class WorldParser:
-    ROOM_FACTORIES = {
-        "flat": make_flat_rooms,
-        "grid": make_grid_rooms,
-        "round": make_round_rooms,
-    }
 
     def __init__(self, path: Path | str):
         self.path = Path(path)
@@ -231,7 +221,9 @@ class WorldParser:
         if match is None:
             raise RuntimeError(f"Wrong room format: {room_pattern!r}")
         name, raw_args = match.groups()
-        factory = self.ROOM_FACTORIES[name]
+        factory = getattr(RoomFactories, name, None)
+        if factory is None:
+            raise RuntimeError(f"factory {name!r} not found")
         args = [int(x.strip()) for x in raw_args.strip().split(",")]
         return factory(*args)
 
