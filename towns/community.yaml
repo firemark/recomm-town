@@ -12,25 +12,25 @@ world:
     lifetime: 15
     start-after: 10
   levels:
-    warmup-time: 60.0
+    warmup-time: 30.0
 
 people:
 - houses: home.up-left
   jobs: job
   books: book
-  community: community-hall.a
+  community: community-hall
 - houses: home.up-right
   jobs: job
   books: book
-  community: community-hall.b
+  community: community-hall
 - houses: home.down-left
   jobs: job
   books: book
-  community: community-hall.b
+  community: community-hall
 - houses: home.down-right
   jobs: job
   books: book
-  community: community-hall.a
+  community: community-hall
 
 places:
 - name: job
@@ -171,8 +171,9 @@ places:
   room-padding: 20
   rooms: round(3, 4)
   trivias-to-talk-order: 0.95
-  invite-every: 150.0
-  invite-priority: 0.8
+  invite:
+    period: 300.0
+    priority: 0.8
   places:
   - name: a
     title: ProEarth Community

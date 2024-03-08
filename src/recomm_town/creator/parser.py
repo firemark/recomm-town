@@ -8,9 +8,10 @@ from recomm_town.common import Book, Trivia, Vec
 from recomm_town.human import Human
 from recomm_town.program import Program
 from recomm_town.town import Town, Place, PlaceFunction, LocalRoom
+from recomm_town.town.place import Invite
 from recomm_town.world import World, WorldLevels
 from recomm_town.creator.helpers import (
-    AvailableWorkplaces,
+    AvailablePlaces,
     generate_people,
     make_flat_rooms,
     make_grid_rooms,
@@ -28,6 +29,7 @@ class WorldParser:
     def __init__(self, path: Path | str):
         self.path = Path(path)
         self.places: dict[str, set[Place]] = {}
+        self.invites: dict[str, set[Invite]] = {}
         self.place_positions: dict[str, Vec] = {}
         self.trivias: dict[str, list[Trivia]] = {}
         self.people: list[Human] = []
@@ -45,17 +47,10 @@ class WorldParser:
         for connection in config["connections"]:
             self._load_connection(connection)
 
-        available_workplaces = AvailableWorkplaces.create(
-            set(
-                chain.from_iterable(
-                    (job for job in self._find_places(people["jobs"]))
-                    for people in config["people"]
-                )
-            )
-        )
-
+        available_workplaces = self._find_available_places(config, "jobs")
+        available_comms = self._find_available_places(config, "community")
         for people in config["people"]:
-            self._load_people(people, available_workplaces)
+            self._load_people(people, available_workplaces, available_comms)
 
         world_config = config.get("world", {})
         self.radio_program = self._load_program(world_config.get("radio", {}))
@@ -77,14 +72,27 @@ class WorldParser:
             warmup_time=levels.get("warmup-time", WorldLevels.warmup_time),
         )
 
+    def _find_available_places(self, config, place_key: str) -> AvailablePlaces:
+        return AvailablePlaces.create(
+            set(
+                chain.from_iterable(
+                    (p for p in self._find_places(people[place_key]))
+                    if place_key in people else []
+                    for people in config["people"]
+                )
+            )
+        )
+
     def create_world(self) -> World:
         shuffle(self.people)
-        places = chain.from_iterable(self.places.values())
-        places = list(places)
+        places = list(set(chain.from_iterable(self.places.values())))
+        invites = list(set(chain.from_iterable(self.invites.values())))
+        shuffle(invites)
         shuffle(places)
 
         return World(
             town=Town(places),
+            invites=invites,
             people=self.people,
             tv_program=self.tv_program,
             radio_program=self.radio_program,
@@ -123,10 +131,11 @@ class WorldParser:
 
             self.trivias[group_name] = group
 
-    def _load_place(self, place, prev_params, prefix="") -> set[Place]:
+    def _load_place(self, place, prev_params, prefix="") -> tuple[set[Place], set[Invite]]:
         name = prefix + place["name"]
         prev_position = prev_params.pop("position", None)
         position = self._load_position(place.get("position"), prev_position)
+        invite_params = place.get("invite", {})
 
         params = {
             "function": place.get("function"),
@@ -138,6 +147,8 @@ class WorldParser:
             "learn_trivias": place.get("trivias-to-learn"),
             "talk_trivias": place.get("trivias-to-talk"),
             "talk_trivias_order": place.get("trivias-to-talk-order"),
+            "invite-period": invite_params.get("period"),
+            "invite-priority": invite_params.get("priority"),
             "position": position,
         }
         new_params = prev_params | {k: v for k, v in params.items() if v is not None}
@@ -146,14 +157,31 @@ class WorldParser:
             self.place_positions[name] = position
 
         if "places" not in place:
-            places = {self._create_place(name, new_params)}
+            place = self._create_place(name, new_params)
+            invite = self._create_invite(place, new_params)
+            places = {place}
+            invites = {invite} if invite else set()
         else:
             places = set()
+            invites = set()
             for child in place["places"]:
-                places |= self._load_place(child, new_params.copy(), f"{name}.")
+                new_places, new_invites = self._load_place(child, new_params.copy(), f"{name}.")
+                places |= new_places
+                invites |= new_invites
 
         self.places[name] = places
-        return places
+        self.invites[name] = invites
+        return places, invites
+
+    def _create_invite(self, place: Place, new_params) -> Invite | None:
+        invite_period = new_params.get("invite-period")
+        if invite_period is None:
+            return None
+        return Invite(
+            place=place,
+            period=invite_period,
+            priority=new_params.get("invite-priority", Invite.priority),
+        )
 
     def _create_place(self, name, params) -> Place:
         return Place(
@@ -221,11 +249,13 @@ class WorldParser:
         place = next(iter(places))
         place.connect(*neighborhood)
 
-    def _load_people(self, config, available_workplaces: AvailableWorkplaces):
+    def _load_people(self, config, available_workplaces: AvailablePlaces, available_comms: AvailablePlaces):
         jobs = self._find_places(config["jobs"])
+        comms = self._find_places(config["community"]) if "community" in config else set()
         self.people += generate_people(
             houses=self._find_places(config["houses"]),
             available_workplaces=available_workplaces.extract(jobs),
+            available_comms=available_comms.extract(comms),
             books=self._find_books(config.get("books")),
         )
 

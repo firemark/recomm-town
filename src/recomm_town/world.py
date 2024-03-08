@@ -10,6 +10,7 @@ from recomm_town.program import Program
 from recomm_town.town import Town, Place, Room, PlaceFunction as PF
 from recomm_town.actions import Action
 from recomm_town import actions
+from recomm_town.town.place import Invite
 
 ENJOY_ACTIVITIES = [Activity.ENJOY_DRINK, Activity.ENJOY_MUSIC, Activity.ENJOY_PLAY]
 
@@ -18,19 +19,20 @@ ENJOY_ACTIVITIES = [Activity.ENJOY_DRINK, Activity.ENJOY_MUSIC, Activity.ENJOY_P
 class WorldLevels:
     forgetting_tick: float = 1.0
     forgetting_factor: float = 1.0
-    warmup_time: float = 60.0
+    warmup_time: float = 0.0
     neighbor_range: float = 100.0
-    learning: float = 0.25
-    teaching: float = 0.1
-    reading: float = 0.25
+    learning: float = 0.2
+    teaching: float = 0.8
+    reading: float = 0.8
     talking: float = 1.0
-    program: float = 0.2
+    program: float = 0.6
 
 
 class World:
     NEIGHBOR_CELLS = [(x, y) for x in range(-1, 2) for y in range(-1, 2)]
 
     town: Town
+    invites: list[Invite]
     people: list[Human]
     tracked_human: Human | None
     simulation_speed: float
@@ -42,12 +44,14 @@ class World:
     def __init__(
         self,
         town: Town,
+        invites: list[Invite],
         people: list[Human],
         radio_program: Program,
         tv_program: Program,
         levels: WorldLevels,
     ):
         self.town = town
+        self.invites = invites
         self.people = people
         self.simulation_speed = 1.0
         self.people_grid = defaultdict(set)
@@ -67,6 +71,9 @@ class World:
             self.warmup_lifetime -= dt
         self.radio_program.do_it(dt)
         self.tv_program.do_it(dt)
+
+        for invite in self.invites:
+            invite.do_it(dt)
 
         for human in self.people:
             self._do_it_human(human, dt)
@@ -128,6 +135,20 @@ class World:
                 human.actions.clear()
 
     def _make_new_actions(self, human: Human) -> list[Action]:
+        if human.place_order:
+            place = human.place_order
+            human.cancel_invite()
+            return self._go_to_place(
+                human=human,
+                activity=Activity.READ,
+                place=place,
+                time=randint(20, 30),
+                talk_probablity=1.0,
+                levels={
+                    "money": +0.5 + random() * 0.3,
+                    "satiety": -0.5 + random() * 0.3,
+                },
+            )
         match human.measure_emotion():
             case Emotion.POOR:
                 return self._go_to_place(

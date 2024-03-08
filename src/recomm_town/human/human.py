@@ -41,6 +41,7 @@ class Human:
     levels: Levels
     activity: Activity
     friend_levels: defaultdict["Human", Level]
+    place_order: "Place | None"
     current_place: "Place | None"
     current_room: "Room | None"
 
@@ -53,6 +54,7 @@ class Human:
         self.info = info
         self.levels = Levels()
         self.activity = Activity.NONE
+        self.place_order = None
 
         self.position_observers: Observer["Human", Vec] = Observer()
         self.level_observers: Observer[str, float] = Observer()
@@ -164,3 +166,9 @@ class Human:
         old_position = self.position
         self.position = Vec(x, y)
         self.position_observers(self, old_position)
+
+    def invite_to_place(self, place: "Place"):
+        self.place_order = place
+
+    def cancel_invite(self):
+        self.place_order = None

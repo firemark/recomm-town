@@ -1,6 +1,7 @@
 from enum import Enum
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import total_ordering
+from random import random
 from typing import Iterable, Self
 
 from recomm_town.common import Book, Rotate, Trivia, Vec
@@ -44,6 +45,7 @@ class Place:
     talk_trivias: set[Trivia]
     talk_trivias_order: float
     books: list[Book]
+    members: list[Human]
 
     def __init__(
         self,
@@ -71,6 +73,7 @@ class Place:
         self.talk_trivias = set(talk_trivias) if talk_trivias else set()
         self.talk_trivias_order = talk_trivias_order
         self.books = books or []
+        self.members = []
         self.rotation = rotation
 
         rot = Rotate(self.rotation)
@@ -123,6 +126,37 @@ class Place:
         if not isinstance(other, Place):
             return NotImplemented
         return self.name < other.name
+
+
+@dataclass
+class Invite:
+    place: Place
+    period: float
+    priority: float = 1.0
+    lifetime: float = field(init=False)
+
+    def __post_init__(self):
+        self.lifetime = self.period
+
+    def __hash__(self) -> int:
+        return hash(self.place)
+
+    def __repr__(self):
+        return f"Invite[{self.place.name}]"
+
+    def do_it(self, dt):
+        self.lifetime -= dt
+        if self.lifetime < 0.0:
+            self.lifetime = self.period
+            self._invite()
+
+    def _invite(self):
+        place = self.place
+        prior = self.priority
+        for member in place.members:
+            if random() > prior:
+                continue
+            member.invite_to_place(place)
 
 
 @dataclass

@@ -167,7 +167,7 @@ class RandomTalk(ActionWithStart):
         trivia_chunk = trivia.get_chunk(chunk_id)
 
         time_to_share = randint(2, 5)
-        teach_level = self.teach_level * (0.1 + random() * 0.9)
+        teach_level = self.teach_level * (0.4 + random() * 0.6)
         teacher.replace_first_action(ShareTo(time_to_share, trivia_chunk, teach_level / 10, student))
         student.replace_first_action(ShareFrom(time_to_share, trivia_chunk, teach_level, teacher))
         teacher.start_talk(student, trivia)
