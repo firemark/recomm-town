@@ -1,47 +1,20 @@
 #!/usr/bin/env python3
 import argparse
-from functools import partial
+import os
+from pathlib import Path
 
-import pyglet
-
-from recomm_town.reporter import TriviaReporter
-
-pyglet.options["debug_gl"] = False
-
-from recomm_town.app import App
-from recomm_town.draw import Draw
-from recomm_town.creator.parser import WorldParser
-
-
+os.environ["ASSETS"] = Path(__file__.parent) / "assets"
 parser = argparse.ArgumentParser()
-parser.add_argument("town")
+parser.add_argument("town", type=Path)
 parser.add_argument("--match-time", type=int, default=600)
 parser.add_argument("--fullscreen", action="store_true")
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    parser = WorldParser(args.town)
-    parser.load()
-    world = parser.create_world()
-
-    app = App(world, match_time=args.match_time)
-    if args.fullscreen:
-        display = pyglet.canvas.get_display()
-        screen = display.get_screens()[0]
-        app.set_fullscreen(screen=screen)
-    draw = Draw(app.batch, app.people_group, app.gui_group)
-    draw.draw_gui(app.match_time)
-    draw.draw_path(world.town.path, app.town_group)
-    draw.draw_places(world.town.places, app.town_group)
-    draw.draw_people(app, world.people, app.people_group)
-
-    app.human_observers["draw"] = draw.track_human
-    app.time_observers["draw"] = draw.tick_tock
-    reporter = TriviaReporter(world.town.boundaries)
-    app.time_observers["report"] = partial(reporter.write_on_minute, "wtf.json")
-    reporter.register(world.people)
-    try:
-        app.run()
-    finally:
-        reporter.write("wtf.json")
+    from recomm_town.generic_main import run
+    run(
+        town=args.town,
+        match_time=args.match_time,
+        fullscree=args.fullscreen,
+    )

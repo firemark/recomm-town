@@ -1,6 +1,7 @@
 from itertools import chain
 from pathlib import Path
 from random import choices, shuffle
+import os
 import re
 import yaml
 
@@ -13,7 +14,7 @@ from recomm_town.world import World, WorldLevels
 from recomm_town.creator.people_factory import  AvailablePlaces, generate_people
 from recomm_town.creator.room_factories import RoomFactories
 
-TOWNS = Path(__file__).parent.parent / "assets" / "towns"
+TOWNS = Path(os.environ["ASSETS"]) / "towns"
 
 
 class WorldParser:

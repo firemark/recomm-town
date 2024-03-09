@@ -44,6 +44,7 @@ class App(Window):
     def __init__(self, world, match_time: int = 600):
         config = pyglet.gl.Config(alpha_size=8, samples=4)
         super().__init__(config=config, resizable=True)
+        self.set_caption("Recomm Town")
         self.batch = Batch()
         self.town_group = Group(order=0)
         self.people_group = Group(order=1)
@@ -198,6 +199,7 @@ class App(Window):
         self.clear()
         gl.glClearColor(0.1, 0.5, 0.1, 1.0)
         self.batch.draw()
+        gl.glFlush()
 
     def on_refresh(self, dt):
         self.world.do_it(dt)

@@ -1,6 +1,7 @@
 from collections import defaultdict
 from pathlib import Path
 from random import randint, random
+import os
 
 from pyglet.graphics import Batch, Group
 from pyglet.image import ImageGrid, load as image_load
@@ -17,7 +18,9 @@ from recomm_town.town import PlaceFunction as PF
 from recomm_town.town.place import Place, Way
 
 
-TEXTURES = Path(__file__).parent / "assets" / "textures"
+TEXTURES = Path(os.environ["ASSETS"]) / "textures"
+FONT = "Monospace"
+FONT = "Times New Roman"
 
 
 def _to_color(x: str) -> tuple[int, int, int]:
@@ -121,7 +124,7 @@ class Draw:
         self.gui_group = gui_group
         self.kw = dict(batch=batch)
         self.kw_font = dict(
-            font_name="Monospace",
+            font_name=FONT,
             anchor_x="center",
             anchor_y="center",
             **self.kw,
@@ -139,7 +142,7 @@ class Draw:
         kw_font = dict(
             **kw,
             color=COLORS.dashboard_text.to_pyglet_alpha(),
-            font_name="Monospace",
+            font_name=FONT,
             font_size=14,
             bold=True,
         )
@@ -376,7 +379,7 @@ class TrackHumanDraw:
         kw = dict(batch=batch, group=group)
         kw_font = dict(
             **kw,
-            font_name="Monospace",
+            font_name=FONT,
             font_size=14,
             bold=True,
             anchor_x="left",
