@@ -1,6 +1,7 @@
 from collections import defaultdict
 from pathlib import Path
 from random import randint, random
+from platform import system
 import os
 
 from pyglet.graphics import Batch, Group
@@ -19,8 +20,7 @@ from recomm_town.town.place import Place, Way
 
 
 TEXTURES = Path(os.environ["ASSETS"]) / "textures"
-FONT = "Monospace"
-FONT = "Times New Roman"
+FONT = "Arial" if system() == "Windows" else "Monospace"
 
 
 def _to_color(x: str) -> tuple[int, int, int]:
@@ -118,7 +118,7 @@ ACTIVITY_LABELS = {
 
 
 class Draw:
-    def __init__(self, batch: Batch, people_group: Group, gui_group: GuiGroup) -> None:
+    def __init__(self, batch: Batch, people_group: Group, gui_group: GuiGroup, width: int, height: int) -> None:
         self.objs = []
         self.batch = batch
         self.gui_group = gui_group
@@ -136,6 +136,8 @@ class Draw:
         self.learnbar_image = image_load(TEXTURES / "learnbar.png")
         self.tracked_human: TrackHumanDraw | None = None
         self.lifeobjs = {}
+        self.screen_width = width
+        self.screen_height = height
 
     def draw_gui(self, match_time):
         kw = dict(**self.kw, group=self.gui_group)
@@ -183,6 +185,12 @@ class Draw:
                 **kw,
             ),
         ]
+
+    def on_resize(self, width: int, height: int):
+        self.screen_width = width
+        self.screen_height = height
+        if self.tracked_human:
+            self.tracked_human.on_resize(width)
 
     def draw_path(self, path: dict[tuple[Place, Place], Way], group: Group):
         kw = dict(**self.kw, group=group, width=40.0)
@@ -309,7 +317,7 @@ class Draw:
             self.tracked_human.stop()
         if human is None:
             return
-        self.tracked_human = TrackHumanDraw(human, self.batch, self.gui_group)
+        self.tracked_human = TrackHumanDraw(human, self.batch, self.gui_group, self.screen_width)
 
     def tick_tock(self, match_time: int):
         minutes = match_time // 60
@@ -366,7 +374,7 @@ class Draw:
 
 
 class TrackHumanDraw:
-    def __init__(self, human: Human, batch: Batch, group: GuiGroup):
+    def __init__(self, human: Human, batch: Batch, group: GuiGroup, width: int):
         self.batch = batch
         self.group = group
         self.human = human
@@ -387,7 +395,8 @@ class TrackHumanDraw:
         )
 
         df_color = COLORS.dashboard_text.to_pyglet_alpha()
-        x = 1000.0
+        self.screen_width = width
+        x = width - 850.0
         y = -300.0
         self.objs = {
             "background": BorderedRectangle(
@@ -481,6 +490,17 @@ class TrackHumanDraw:
         self._act_update(human.activity)
         for level in LEVELS:
             self._level_update(level, getattr(human.levels, level).value)
+
+    def on_resize(self, width: int):
+        self._translate(width, self.objs)
+        self.screen_width = width
+
+    def _translate(self, width: int, objs):
+        for obj in objs.values():
+            if isinstance(obj, dict):
+                self._translate(width, obj)
+            else:
+                obj.x += width - self.screen_width
 
     def stop(self):
         self.human.level_observers.pop("draw_track", None)

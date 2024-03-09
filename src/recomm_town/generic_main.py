@@ -20,12 +20,13 @@ def run(town: Path, match_time: int, fullscreen: bool):
         display = pyglet.canvas.get_display()
         screen = display.get_screens()[0]
         app.set_fullscreen(screen=screen)
-    draw = Draw(app.batch, app.people_group, app.gui_group)
+    draw = Draw(app.batch, app.people_group, app.gui_group, app.width, app.height)
     draw.draw_gui(app.match_time)
     draw.draw_path(world.town.path, app.town_group)
     draw.draw_places(world.town.places, app.town_group)
     draw.draw_people(app, world.people, app.people_group)
 
+    app.resize_observers["draw"] = draw.on_resize
     app.human_observers["draw"] = draw.track_human
     app.time_observers["draw"] = draw.tick_tock
     reporter = TriviaReporter(world.town.boundaries)

@@ -60,6 +60,7 @@ class App(Window):
 
         self.human_observers: Observer[Human | None] = Observer()
         self.time_observers: Observer[int] = Observer()
+        self.resize_observers: Observer[int, int] = Observer()
 
     def set_view(self, position, zoom=1.0):
         self.camera_position = position
@@ -193,6 +194,7 @@ class App(Window):
 
     def on_resize(self, width, height):
         super().on_resize(width, height)
+        self.resize_observers(width, height)
         self.recreate_view()
 
     def on_draw(self):
