@@ -1,6 +1,6 @@
 [project]
 name = "recomm_town"
-version = "2024.02.18"
+version = "2024.03.09"
 requires-python = ">= 3.12"
 dependencies = ["pyglet==2.0.10", "numpy", "PyYAML~=6.0"]
 readme = "README.md"
@@ -9,3 +9,6 @@ license = {file = "LICENSE"}
 [build-system]
 requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+recomm_town = ["assets/textures/*.png", "assets/towns/*.yml"]

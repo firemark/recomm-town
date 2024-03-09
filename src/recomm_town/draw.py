@@ -1,4 +1,5 @@
 from collections import defaultdict
+from pathlib import Path
 from random import randint, random
 
 from pyglet.graphics import Batch, Group
@@ -10,10 +11,13 @@ from pyglet.text import Label
 from recomm_town.app import GuiGroup
 from recomm_town.shaders import AnimatedLine, Sprite
 from recomm_town.shaders.human_group import HumanGroup
-from recomm_town.common import Color, Trivia, TriviaChunk, Vec
+from recomm_town.common import Color, Trivia, Vec
 from recomm_town.human import Human, Activity
 from recomm_town.town import PlaceFunction as PF
 from recomm_town.town.place import Place, Way
+
+
+TEXTURES = Path(__file__).parent / "assets" / "textures"
 
 
 def _to_color(x: str) -> tuple[int, int, int]:
@@ -124,9 +128,9 @@ class Draw:
         )
         self.people_group = people_group
         self.trivias_level = defaultdict(float)
-        self.activity_sprites = ImageGrid(image_load("textures/activities.png"), 4, 5)
-        self.human_sprites = ImageGrid(image_load("textures/human.png"), 2, 2)
-        self.learnbar_image = image_load("textures/learnbar.png")
+        self.activity_sprites = ImageGrid(image_load(TEXTURES / "activities.png"), 4, 5)
+        self.human_sprites = ImageGrid(image_load(TEXTURES / "human.png"), 2, 2)
+        self.learnbar_image = image_load(TEXTURES / "learnbar.png")
         self.tracked_human: TrackHumanDraw | None = None
         self.lifeobjs = {}
 
