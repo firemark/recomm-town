@@ -7,7 +7,6 @@ from recomm_town.human import Human, Activity
 
 
 T = Literal["FAIL", "PASS", "STOP", "NEXT"]
-SHARE_ACTIVITIES = [Activity.SHARE_LOVE, Activity.SHARE_MUSIC, Activity.SHARE_WOW]
 
 
 class Action:
@@ -210,7 +209,7 @@ class Share(ActionWithStart):
 
     def on_start(self, human: Human) -> T:
         self.previous_activity = human.activity
-        human.update_activity(choice(SHARE_ACTIVITIES))
+        human.update_activity(Activity.SHARE)
         return "PASS"
 
     def on_destroy(self, human: Human):

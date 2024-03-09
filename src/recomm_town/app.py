@@ -199,7 +199,7 @@ class App(Window):
 
     def on_draw(self):
         self.clear()
-        gl.glClearColor(0.1, 0.5, 0.1, 1.0)
+        gl.glClearColor(0.79, 0.86, 0.70, 1.0)
         self.batch.draw()
         gl.glFlush()
 

@@ -12,8 +12,6 @@ from recomm_town.actions import Action
 from recomm_town import actions
 from recomm_town.town.place import Invite
 
-ENJOY_ACTIVITIES = [Activity.ENJOY_DRINK, Activity.ENJOY_MUSIC, Activity.ENJOY_PLAY]
-
 
 @dataclass(frozen=True)
 class WorldLevels:
@@ -140,7 +138,7 @@ class World:
             human.cancel_invite()
             return self._go_to_place(
                 human=human,
-                activity=Activity.READ,
+                activity=Activity.IDEA,
                 place=place,
                 time=randint(20, 30),
                 talk_probablity=1.0,
@@ -250,7 +248,7 @@ class World:
             end_actions = []
         return self._go_to_place(
             human=human,
-            activity=ENJOY_ACTIVITIES,
+            activity=Activity.ENJOY,
             place=place,
             time=randint(5, 10),
             levels={

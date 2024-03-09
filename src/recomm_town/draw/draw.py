@@ -1,120 +1,37 @@
 from collections import defaultdict
-from pathlib import Path
 from random import randint, random
-from platform import system
-import os
 
 from pyglet.graphics import Batch, Group
-from pyglet.image import ImageGrid, load as image_load
+from pyglet.image import ImageGrid, load as image_load, Texture
+from pyglet.gl import GL_LINEAR
 from pyglet.shapes import Line, Rectangle, BorderedRectangle
 from pyglet.window import Window
 from pyglet.text import Label
 
 from recomm_town.app import GuiGroup
+from recomm_town.draw.utils import crop_label, to_color
 from recomm_town.shaders import AnimatedLine, Sprite
 from recomm_town.shaders.human_group import HumanGroup
-from recomm_town.common import Color, Trivia, Vec
+from recomm_town.common import Trivia, Vec
 from recomm_town.human import Human, Activity
 from recomm_town.town import PlaceFunction as PF
 from recomm_town.town.place import Place, Way
 
+from recomm_town.draw.consts import (
+    ACTIVITY_DARK_COLORS,
+    ACTIVITY_LIGHT_COLORS,
+    PALLETE,
+    TEXTURES,
+    FONT,
+    COLORS,
+    LEVELS,
+    LEVEL_COLORS,
+    ACTIVITY_LABELS,
+    ACTIVITY_TEXTURE_VARIANTS,
+)
 
-TEXTURES = Path(os.environ["ASSETS"]) / "textures"
-FONT = "Arial" if system() == "Windows" else "Monospace"
-
-
-def _to_color(x: str) -> tuple[int, int, int]:
-    assert x[0] == "#"
-    r = int(x[1:3], 16)
-    g = int(x[3:5], 16)
-    b = int(x[5:7], 16)
-    return (r, g, b)
-
-
-def _c(x: str) -> tuple[int, int, int, int]:
-    assert x[0] == "#"
-    r = int(x[1:3], 16)
-    g = int(x[3:5], 16)
-    b = int(x[5:7], 16)
-    a = int(x[7:9] or "FF", 16)
-    return (r, g, b, a)
-
-
-def _n():
-    return (0, 0, 0, 0)
-
-
-def _crop_label(label: str, size: int) -> str:
-    if len(label) <= size:
-        return label
-    else:
-        return label[: size - 1] + "…"
-
-
-class COLORS:
-    dashboard_text = Color.from_hex("#FFFFFF")
-    dashboard_bg = Color.from_hex("#000000")
-    room_a = Color.from_hex("#50BFE6")
-    room_b = Color.from_hex("#01A638")
-    place_a = Color.from_hex("#EED9C4")
-    place_b = Color.from_hex("#C0D5F0")
-    crossroad_a = Color.from_hex("#FDD7E4")
-    crossroad_b = Color.from_hex("#FEBAAD")
-    way_a = Color.from_hex("#AF593E")
-    way_b = Color.from_hex("#E97451")
-    light_skin = Color.from_hex("#FFCBA4")
-    dark_skin = Color.from_hex("#805533")
-
-
-LEVELS = ["fridge", "satiety", "money", "energy"]
-LEVEL_COLORS = {
-    "fridge": _to_color("#D9DAD2"),
-    "satiety": _to_color("#01A638"),
-    "money": _to_color("#F1D651"),
-    "energy": _to_color("#FF5349"),
-}
-
-ACTIVITY_COLORS = {
-    Activity.NONE: (_n(), _n(), _n()),
-    Activity.MOVE: (_c("#E30B5C"), _n(), _n()),
-    Activity.WORK: (_c("#8B8680"), _n(), _n()),
-    Activity.SHOP: (_c("#C9C0BB"), _c("#00000044"), _n()),
-    Activity.TALK: (_c("#0095B7"), _c("#FFFFFF"), _c("#000000")),
-    Activity.READ: (_c("#AF593E"), _c("#CA3435"), _c("#2D383A")),
-    Activity.RADIO: (_c("#805533"), _c("#C9C0BB"), _c("#736A62")),
-    Activity.TV: (_c("#665233"), _c("#C9C0BB"), _c("#FFFFFF")),
-    Activity.WTF: (_c("#FF0000"), _n(), _n()),
-    Activity.EAT: (_c("#87421F"), _c("#CA3435"), _c("#FFFFFF")),
-    Activity.SLEEP: (_c("#0066CC"), _c("#000000"), _n()),
-    Activity.TIME_BREAK: (_c("#FFFFFF"), _c("#FFFF66"), _c("#00000044")),
-    Activity.ENJOY_DRINK: (_c("#02A4D3"), _c("#87421F"), _c("#FFFFFF")),
-    Activity.ENJOY_PLAY: (_c("#02A4D3"), _c("#7A89B8"), _c("#000000")),
-    Activity.ENJOY_MUSIC: (_c("#02A4D3"), _c("#2D383A"), _n()),
-    Activity.SHARE_LOVE: (_c("#D92121"), _c("#FFFFFF"), _c("#000000")),
-    Activity.SHARE_MUSIC: (_c("#D92121"), _c("#FFFFFF"), _c("#000000")),
-    Activity.SHARE_WOW: (_c("#D92121"), _c("#FFFFFF"), _c("#000000")),
-}
-
-ACTIVITY_LABELS = {
-    Activity.NONE: "-",
-    Activity.MOVE: "Moving",
-    Activity.WORK: "Working",
-    Activity.SHOP: "Shopping",
-    Activity.TALK: "Seeking to talk",
-    Activity.READ: "Reading a book",
-    Activity.RADIO: "Listening a radio",
-    Activity.TV: "Watching a TV channel",
-    Activity.WTF: "Little a bit confusing",
-    Activity.EAT: "Eating",
-    Activity.SLEEP: "Sleeping",
-    Activity.TIME_BREAK: "Relaxing",
-    Activity.ENJOY_DRINK: "Enjoy",
-    Activity.ENJOY_PLAY: "Enjoy",
-    Activity.ENJOY_MUSIC: "Enjoy",
-    Activity.SHARE_LOVE: "Talking & Sharing",
-    Activity.SHARE_MUSIC: "Talking & Sharing",
-    Activity.SHARE_WOW: "Talking & Sharing",
-}
+Texture.default_min_filter = GL_LINEAR
+Texture.default_mag_filter = GL_LINEAR
 
 
 class Draw:
@@ -131,8 +48,8 @@ class Draw:
         )
         self.people_group = people_group
         self.trivias_level = defaultdict(float)
-        self.activity_sprites = ImageGrid(image_load(TEXTURES / "activities.png"), 4, 5)
-        self.human_sprites = ImageGrid(image_load(TEXTURES / "human.png"), 2, 2)
+        self.activity_sprites = ImageGrid(image_load(TEXTURES / "activities.png"), len(Activity), 3)
+        self.human_sprite = image_load(TEXTURES / "human.png")
         self.learnbar_image = image_load(TEXTURES / "learnbar.png")
         self.tracked_human: TrackHumanDraw | None = None
         self.lifeobjs = {}
@@ -251,45 +168,52 @@ class Draw:
             group=group,
         )
 
-        level_bars = {
-            level: BorderedRectangle(
-                -size,
-                -size * 1.2 - size / 3.8 * (4 - index),
-                2 * size * getattr(human.levels, level).value,
-                size / 4,
-                color=LEVEL_COLORS[level],
-                border=5,
-                **kw,
-            )
-            for index, level in enumerate(LEVELS, start=1)
-        }
+        # level_bars = {
+        #     level: BorderedRectangle(
+        #         -size,
+        #         -size * 1.2 - size / 3.8 * (4 - index),
+        #         2 * size * getattr(human.levels, level).value,
+        #         size / 4,
+        #         color=LEVEL_COLORS[level],
+        #         border=5,
+        #         **kw,
+        #     )
+        #     for index, level in enumerate(LEVELS, start=1)
+        # }
 
-        a = 2 * act_size - size
+        skin_lightness = random()
+        if skin_lightness > 0.6:
+            activity_colors = ACTIVITY_LIGHT_COLORS  
+        else:
+            activity_colors = ACTIVITY_DARK_COLORS 
+        skin_color = COLORS.light_skin.mix(COLORS.dark_skin, skin_lightness)
+        a = size * 0.8
         act_sprite = Sprite(
             img=self.activity_sprites[0],
-            p0=Vec(-size, -size),
+            p0=Vec(-a, -a),
             p1=Vec(a, a),
             **kw,
         )
 
-        def level_update(attr, value):
-            bar = level_bars[attr]
-            bar.width = 2 * size * value
-            bar.visible = bar.width > 0.05
+        # def level_update(attr, value):
+        #     bar = level_bars[attr]
+        #     bar.width = 2 * size * value
+        #     bar.visible = bar.width > 0.05
 
         def act_update(activity):
-            act_sprite.set_img(self.activity_sprites[activity])
-            r, g, b = ACTIVITY_COLORS[activity]
+            variants_count = ACTIVITY_TEXTURE_VARIANTS[activity]
+            variant = randint(1, variants_count) - 1
+            act_sprite.set_img(self.activity_sprites[activity * 3 + variant])
+            r = activity_colors[activity]
             act_sprite.set_color_r(r)
-            act_sprite.set_color_g(g)
-            act_sprite.set_color_b(b)
+            # act_sprite.set_color_g(g)
+            # act_sprite.set_color_b(b)
 
         body = Sprite(
-            self.human_sprites[randint(0, 3)],
+            self.human_sprite,
             p0=Vec(-size, -size),
             p1=Vec(size, size),
-            color_r=COLORS.dark_skin.mix(COLORS.light_skin, random()).to_pyglet_alpha(),
-            color_g=COLORS.dark_skin.mix(COLORS.light_skin, random()).to_pyglet_alpha(),
+            color_r=skin_color.to_pyglet_alpha(),
             **kw,
         )
 
@@ -299,15 +223,15 @@ class Draw:
                 x=0,
                 y=size * 2.5,
                 font_size=14,
-                color=_to_color("#2D383A") + (255,),
+                color=to_color("#2D383A") + (255,),
                 **kw_font,
             ),
             body,
-            level_bars,
+            # level_bars,
             act_sprite,
         ]
 
-        human.level_observers["draw"] = level_update
+        # human.level_observers["draw"] = level_update
         human.activity_observers["draw"] = act_update
         human.knowledge_observers["draw"] = self._trivia_update
         human.talk_observers["draw"] = self._talk_update
@@ -341,7 +265,7 @@ class Draw:
     @staticmethod
     def _trivia_label(index, trivia, points) -> str:
         name = f"[{trivia.category}] {trivia.name}"
-        return f"{index:2}. {_crop_label(name, size=40):40} {points:6.0f}"
+        return f"{index:2}. {crop_label(name, size=40):40} {points:6.0f}"
 
     def _talk_update(self, a: Human, b: Human, trivia: Trivia | None, state: str):
         kw = dict(**self.kw, group=self.people_group)
@@ -349,7 +273,7 @@ class Draw:
             **self.kw_font,
             font_size=18,
             bold=True,
-            color=(0x00, 0x22, 0x55, 0xFF),
+            color=PALLETE.white.to_pyglet_alpha(),
         )
         key = (a, b)
         if state == "START" and trivia and key not in self.lifeobjs:
@@ -361,7 +285,7 @@ class Draw:
                     self.learnbar_image,
                     a.position,
                     b.position,
-                    color=(0x33, 0xCC, 0xFF, 0x80),
+                    color=PALLETE.l_red.to_pyglet_alpha(0.5),
                     speed=Vec(0.0, 2.0),
                     width=32.0,
                     **kw,
@@ -522,7 +446,7 @@ class TrackHumanDraw:
             for trivia, chunks in self.human.knowledge.items()
         )
         trivias = (
-            f"{index}. {_crop_label(trivia.name, size=25):25} " f"{level * 100:3.0f}"
+            f"{index}. {crop_label(trivia.name, size=25):25} " f"{level * 100:3.0f}"
             for (trivia, level), index in zip(
                 sorted(gen, key=lambda o: o[1], reverse=True),
                 range(1, 8 + 1),
