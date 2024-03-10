@@ -134,6 +134,7 @@ class WorldParser:
 
         params = {
             "function": place.get("function"),
+            "look": place.get("look"),
             "rotation": place.get("rotation"),
             "title": place.get("title"),
             "rooms": place.get("rooms"),
@@ -192,6 +193,7 @@ class WorldParser:
             talk_trivias=self._find_trivias(params.get("talk_trivias")),
             talk_trivias_order=params.get("talk_trivias_order", 0.0),
             books=self._find_books(params.get("books")),
+            look=params.get("look", "default"),
         )
 
     def _find_trivias(self, trivias_group_name: str | None) -> list[Trivia] | None:

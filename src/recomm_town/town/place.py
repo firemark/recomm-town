@@ -48,6 +48,7 @@ class Place:
     talk_trivias_order: float
     books: list[Book]
     members: list[Human]
+    look: str
 
     def __init__(
         self,
@@ -63,6 +64,7 @@ class Place:
         talk_trivias_order: float = 0.0,
         books: list[Book] | None = None,
         rotation: float = 0.0,
+        look: str = "default",
     ):
         self.name = name
         self.title = title
@@ -77,6 +79,7 @@ class Place:
         self.books = books or []
         self.members = []
         self.rotation = rotation
+        self.look = look
 
         rot = Rotate(self.rotation)
         s = room_size + room_padding

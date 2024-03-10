@@ -21,6 +21,9 @@ from recomm_town.draw.consts import (
     ACTIVITY_DARK_COLORS,
     ACTIVITY_LIGHT_COLORS,
     PALLETE,
+    PLACE_COLORS,
+    ROOM_COLORS,
+    ROOM_TEXTURES,
     TEXTURES,
     FONT,
     COLORS,
@@ -49,6 +52,7 @@ class Draw:
         self.people_group = people_group
         self.trivias_level = defaultdict(float)
         self.activity_sprites = ImageGrid(image_load(TEXTURES / "activities.png"), len(Activity), 3)
+        self.room_sprites = ImageGrid(image_load(TEXTURES / "rooms.png"), 8, 3)
         self.human_sprite = image_load(TEXTURES / "human.png")
         self.learnbar_image = image_load(TEXTURES / "learnbar.png")
         self.tracked_human: TrackHumanDraw | None = None
@@ -123,10 +127,7 @@ class Draw:
         kw_font = dict(**self.kw_font, color=(0, 0, 0, 255), font_size=36, group=group)
 
         for place in places:
-            if place.function == PF.CROSSROAD:
-                color = COLORS.crossroad_a.mix(COLORS.crossroad_b, random()).to_pyglet()
-            else:
-                color = COLORS.place_a.mix(COLORS.place_b, random()).to_pyglet()
+            color = PLACE_COLORS[place.look]
             p = place.position
             rot = place.rotation
             size = place.box_end - place.box_start
@@ -144,13 +145,22 @@ class Draw:
 
             s = place.room_size
             h = s / 2
-            room_color = COLORS.room_a.mix(COLORS.room_b, random()).to_pyglet()
+            cr, cg, cb = ROOM_COLORS[place.look]
+            index = ROOM_TEXTURES[place.look]
             for room in place.rooms:
                 r = room.position
-                rect = Rectangle(r.x, r.y, s, s, color=room_color, **kw)
-                rect.anchor_position = h, h
-                rect.rotation = room.rotation
-                self.objs.append(rect)
+                room_body = Sprite(
+                    self.room_sprites[index * 3],
+                    p0=Vec(r.x - h, r.y - h),
+                    p1=Vec(r.x + h, r.y + h),
+                    color_r=cr,
+                    color_g=cg,
+                    color_b=cb,
+                    **kw,
+                )
+                # rect.anchor_position = h, h
+                # rect.rotation = room.rotation
+                self.objs.append(room_body)
 
     def draw_people(self, window: Window, people: list[Human], people_group: Group):
         for index, human in enumerate(people):
@@ -160,7 +170,6 @@ class Draw:
 
     def _draw_human(self, human: Human, group: HumanGroup):
         size = 20
-        act_size = size * 1.33
         kw = dict(**self.kw, group=group)
         kw_font = dict(
             **self.kw_font,

@@ -92,6 +92,7 @@ places:
 
 - name: garden
   title: Garden
+  look: garden
   function: ENTERTAIMENT
   position: [+1000, +2000]
   room-size: 100
@@ -101,6 +102,7 @@ places:
 
 - name: museum
   title: City Museum
+  look: museum
   function: ENTERTAIMENT
   position: [0, +500]
   room-size: 50

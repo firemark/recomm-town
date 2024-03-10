@@ -5,6 +5,7 @@ from pathlib import Path
 from recomm_town.common import Color
 from recomm_town.human import Activity
 from recomm_town.draw.utils import to_color, c, n
+from recomm_town.town.place import PlaceFunction
 
 
 TEXTURES = Path(os.environ["ASSETS"]) / "textures"
@@ -50,6 +51,25 @@ class COLORS:
     way_b = PALLETE.road
     light_skin = PALLETE.l_skin
     dark_skin = PALLETE.d_skin
+
+
+ROOM_TEXTURES = {
+    "default": 0,
+    "garden": 1,
+    "museum": 2,
+}
+
+PLACE_COLORS = {
+    "default": PALLETE.l_grey.to_pyglet_alpha(),
+    "garden": PALLETE.road.to_pyglet_alpha(),
+    "museum": c("#D0BDE3"),
+}
+
+ROOM_COLORS = {
+    "default": (PALLETE.white.to_pyglet_alpha(), n(), n()),
+    "garden": (PALLETE.d_grass.to_pyglet_alpha(), PALLETE.l_grass.to_pyglet_alpha(), n()),
+    "museum": (c("#7A58A0"), c("#D686D4"), c("#CE6EC8")),
+}
 
 
 LEVELS = ["fridge", "satiety", "money", "energy"]
