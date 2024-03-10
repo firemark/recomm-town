@@ -1,4 +1,5 @@
 from math import ceil
+from queue import Empty, Queue
 from typing import NamedTuple
 import pyglet
 from pyglet.gl import gl
@@ -41,7 +42,7 @@ class App(Window):
 
     _zoom: float
 
-    def __init__(self, world, match_time: int = 600):
+    def __init__(self, world, queue: Queue, match_time: int = 600):
         config = pyglet.gl.Config(alpha_size=8, samples=4)
         super().__init__(config=config, resizable=True)
         self.set_caption("Recomm Town")
@@ -61,6 +62,11 @@ class App(Window):
         self.human_observers: Observer[Human | None] = Observer()
         self.time_observers: Observer[int] = Observer()
         self.resize_observers: Observer[int, int] = Observer()
+
+        self.__queue = queue
+
+        self.register_event_type('on_change_place')
+        self.register_event_type('on_change_human')
 
     def set_view(self, position, zoom=1.0):
         self.camera_position = position
@@ -126,20 +132,9 @@ class App(Window):
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.Q:
-            places = self.world.town.places
-            position = places[self.place_index].position
-            self._stop_tracking()
-            self.set_view(position, zoom=8.0)
-            self.place_index += 1
-            if self.place_index >= len(places):
-                self.place_index = 0
+            self.dispatch_event('on_change_place')
         if symbol == key.W:
-            human = self.world.people[self.human_index]
-            self._start_tracking(human)
-            self.set_view(human.position, zoom=8.0)
-            self.human_index += 1
-            if self.human_index >= len(self.world.people):
-                self.human_index = 0
+            self.dispatch_event('on_change_human')
         if symbol == key.UP:
             self.move_position += Vec(0.0, +20.0)
         elif symbol == key.DOWN:
@@ -150,6 +145,24 @@ class App(Window):
             self.move_position += Vec(+20.0, 0.0)
         else:
             return super().on_key_press(symbol, modifiers)
+
+    def on_change_place(self):
+        self.dispatch_event('on_change_place')
+        places = self.world.town.places
+        position = places[self.place_index].position
+        self._stop_tracking()
+        self.set_view(position, zoom=8.0)
+        self.place_index += 1
+        if self.place_index >= len(places):
+            self.place_index = 0
+
+    def on_change_human(self):
+        human = self.world.people[self.human_index]
+        self._start_tracking(human)
+        self.set_view(human.position, zoom=8.0)
+        self.human_index += 1
+        if self.human_index >= len(self.world.people):
+            self.human_index = 0
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.UP:
@@ -204,6 +217,13 @@ class App(Window):
         gl.glFlush()
 
     def on_refresh(self, dt):
+        try:
+            event = self.__queue.get(block=False)
+        except Empty:
+            pass
+        else:
+            self.dispatch_event(event)
+
         self.world.do_it(dt)
         if getattr(self.people_group, "cell_changed", False):
             self.people_group.cell_changed = False
