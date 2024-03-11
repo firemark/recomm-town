@@ -133,8 +133,8 @@ ACTIVITY_LIGHT_COLORS = {
     Activity.NONE: n(),
     Activity.MOVE: PALLETE.l_red.to_pyglet_alpha(),
     Activity.WORK: PALLETE.d_grey.to_pyglet_alpha(),
-    Activity.SHOP: PALLETE.d_grey.to_pyglet_alpha(),
-    Activity.TALK: PALLETE.d_blue.to_pyglet_alpha(),
+    Activity.SHOP: PALLETE.l_grey.to_pyglet_alpha(),
+    Activity.TALK: PALLETE.l_blue.to_pyglet_alpha(),
     Activity.READ: PALLETE.l_yellow.to_pyglet_alpha(),
     Activity.RADIO: PALLETE.l_yellow.to_pyglet_alpha(),
     Activity.TV: PALLETE.l_yellow.to_pyglet_alpha(),
@@ -159,8 +159,15 @@ ACTIVITY_DARK_COLORS |= {
 
 DASHBOARD_BG = c("#00000072")
 DASHBOARD_FG = c("#89917E4C")
+DASHBOARD_INPUT = c("#545454")
 DASHBOARD_WHITE = c("#F2F3ED")
 DASHBOARD_MILK = c("#E0CCB8")
+DASHBOARD_FULL = Color.from_hex("#9CE256")
+DASHBOARD_EMPTY = Color.from_hex("#E28856")
+
+
+def dashboard_bar_color(v: float = 0.0):
+    return DASHBOARD_FULL.mix(DASHBOARD_EMPTY, v)
 
 
 class DASHBOARD_FONTS:

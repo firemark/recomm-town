@@ -1,5 +1,4 @@
 from pyglet.graphics import Batch
-from pyglet.shapes import BorderedRectangle
 from pyglet.text import Label
 from pyglet.text import Label
 from recomm_town.draw.utils import crop_label
@@ -10,19 +9,20 @@ from recomm_town.app import GuiGroup
 from recomm_town.draw.consts import (
     ACTIVITY_LABELS,
     ACTIVITY_LIGHT_COLORS,
-    COLORS,
     DASHBOARD_BG,
     DASHBOARD_FG,
     DASHBOARD_FONTS,
+    DASHBOARD_INPUT,
     DASHBOARD_WHITE,
-    FONT,
     LEVELS,
     LEVELS,
     LEVEL_COLORS,
     ACTIVITY_LABELS,
+    dashboard_bar_color,
 )
 from recomm_town.human.activity import Activity
 from recomm_town.shaders.rounded_rectangle import RoundedRectangle
+from recomm_town.shaders.arc import Arc
 
 
 class TrackHumanDraw:
@@ -71,16 +71,16 @@ class TrackHumanDraw:
                 ),
                 "levels": RoundedRectangle(
                     x=x + 10.0,
-                    y=y + 10.0,
+                    y=y + 40.0,
                     round=18,
-                    width=210.0,
-                    height=230.0,
+                    width=820.0,
+                    height=200.0,
                     color=DASHBOARD_FG,
                     **kw,
                 ),
                 "knowledge": RoundedRectangle(
-                    x=x + 230.0,
-                    y=y + 10.0,
+                    x=x + 10.0,
+                    y=y - 200.0,
                     round=18,
                     width=400.0,
                     height=230.0,
@@ -89,7 +89,7 @@ class TrackHumanDraw:
                 ),
                 "friends": RoundedRectangle(
                     x=x + 640.0,
-                    y=y + 10.0,
+                    y=y - 200.0,
                     round=18,
                     width=200.0,
                     height=230.0,
@@ -108,21 +108,10 @@ class TrackHumanDraw:
                 "level": Label(
                     text=f"LEVELS:",
                     x=x + 20.0,
-                    y=y + 240.0,
+                    y=y + 230.0,
                     **DASHBOARD_FONTS.LABEL,
                     **kw,
                 ),
-                "levels": {
-                    level: Label(
-                        text=f"{level.title()}:",
-                        x=x + 20.0,
-                        y=y + 240.0 - 30.0 * index,
-                        color=(*LEVEL_COLORS[level], 255),
-                        **DASHBOARD_FONTS.TEXT,
-                        **kw,
-                    )
-                    for index, level in enumerate(LEVELS, start=1)
-                },
                 "activity": Label(
                     text="ACTIVITY:",
                     x=x + 250.0,
@@ -132,25 +121,50 @@ class TrackHumanDraw:
                 ),
                 "knowledge": Label(
                     text="KNOWLEDGE:",
-                    x=x + 250.0,
-                    y=y + 240.0,
+                    x=x + 30.0,
+                    y=y + 20.0,
                     **DASHBOARD_FONTS.LABEL,
                     **kw,
                 ),
                 "friend": Label(
                     text="FRIENDS:",
                     x=x + 650.0,
-                    y=y + 240.0,
+                    y=y + 20.0,
                     **DASHBOARD_FONTS.LABEL,
                     **kw,
                 ),
+                "levels": {
+                    level: Label(
+                        text=f"{level.title()}",
+                        x=x - 40.0 + 120.0 * index,
+                        y=y + 80.0,
+                        color=(*LEVEL_COLORS[level], 255),
+                        **(DASHBOARD_FONTS.TEXT | dict(anchor_x="center")),
+                        **kw,
+                    )
+                    for index, level in enumerate(LEVELS, start=1)
+                },
             },
-            "levels": {
-                level: Label(
-                    x=x + 150.0,
-                    y=y + 240.0 - 30.0 * index,
+            "arcs": {
+                level: Arc(
+                    x=x - 40.0 + 120 * index,
+                    y=y + 150.0,
+                    inner_radius=40,
+                    outer_radius=50,
+                    angle=360.0,
+                    color=DASHBOARD_INPUT,
+                    **kw,
+                )
+                for index, level in enumerate(LEVELS, start=1)
+            },
+            "level_arcs": {
+                level: Arc(
+                    x=x - 40 + 120 * index,
+                    y=y + 150.0,
+                    inner_radius=35,
+                    outer_radius=50,
+                    angle=180.0,
                     color=(*LEVEL_COLORS[level], 255),
-                    **DASHBOARD_FONTS.TEXT,
                     **kw,
                 )
                 for index, level in enumerate(LEVELS, start=1)
@@ -163,8 +177,8 @@ class TrackHumanDraw:
                 **kw,
             ),
             "knowledge": Label(
-                x=x + 250.0,
-                y=y + 210.0,
+                x=x + 10.0,
+                y=y - 10.0,
                 multiline=True,
                 width=400.0,
                 color=DASHBOARD_WHITE,
@@ -173,7 +187,7 @@ class TrackHumanDraw:
             ),
             "friends": Label(
                 x=x + 650.0,
-                y=y + 210.0,
+                y=y - 10.0,
                 multiline=True,
                 width=200.0,
                 color=DASHBOARD_WHITE,
@@ -208,7 +222,9 @@ class TrackHumanDraw:
         self.objs.clear()
 
     def _level_update(self, attr: str, value: float):
-        self.objs["levels"][attr].text = f"{value * 100.0:3.0f} %"
+        obj = self.objs["level_arcs"][attr]
+        obj.angle = 360.0 * value
+        obj.color = dashboard_bar_color(value).to_pyglet_alpha()
 
     def _act_update(self, activity: Activity):
         obj = self.objs["activity"]
