@@ -53,7 +53,7 @@ fragment_source = """#version 150 core
         final_colors = (
             t.r * vertex_colors_r + 
             t.g * vertex_colors_g +
-            t.b * vertex_colors_b);
+            t.b * vertex_colors_b) * vec4(1.0, 1.0, 1.0, t.a);
     }
 """
 
