@@ -38,22 +38,22 @@ class TrackHumanDraw:
 
         kw = dict(batch=batch, group=group)
         self.screen_width = width
-        x = width - 850.0 - 10
-        y = -310.0
+        x = width - 620.0 - 10
+        y = -510.0
         self.objs = {
             "backgrounds": {
                 "main": RoundedRectangle(
                     x=x,
                     y=y,
                     round=18,
-                    width=850.0,
-                    height=300.0,
+                    width=610.0,
+                    height=500.0,
                     color=DASHBOARD_BG,
                     **kw,
                 ),
                 "name": RoundedRectangle(
                     x=x + 10.0,
-                    y=y + 245.0,
+                    y=y + 445.0,
                     round=18,
                     width=210.0,
                     height=50.0,
@@ -62,34 +62,34 @@ class TrackHumanDraw:
                 ),
                 "activity": RoundedRectangle(
                     x=x + 230.0,
-                    y=y + 245.0,
+                    y=y + 445.0,
                     round=18,
-                    width=600.0,
+                    width=370.0,
                     height=50.0,
                     color=DASHBOARD_FG,
                     **kw,
                 ),
                 "levels": RoundedRectangle(
                     x=x + 10.0,
-                    y=y + 40.0,
+                    y=y + 240.0,
                     round=18,
-                    width=820.0,
+                    width=590.0,
                     height=200.0,
                     color=DASHBOARD_FG,
                     **kw,
                 ),
                 "knowledge": RoundedRectangle(
                     x=x + 10.0,
-                    y=y - 200.0,
+                    y=y - 0.0,
                     round=18,
-                    width=400.0,
+                    width=380.0,
                     height=230.0,
                     color=DASHBOARD_FG,
                     **kw,
                 ),
                 "friends": RoundedRectangle(
-                    x=x + 640.0,
-                    y=y - 200.0,
+                    x=x + 400.0,
+                    y=y - 0.0,
                     round=18,
                     width=200.0,
                     height=230.0,
@@ -101,43 +101,43 @@ class TrackHumanDraw:
                 "name": Label(
                     text=human.info.name.upper(),
                     x=x + 20.0,
-                    y=y + 285.0,
+                    y=y + 485.0,
                     **DASHBOARD_FONTS.NAME,
                     **kw,
                 ),
                 "level": Label(
                     text=f"LEVELS:",
                     x=x + 20.0,
-                    y=y + 230.0,
+                    y=y + 430.0,
                     **DASHBOARD_FONTS.LABEL,
                     **kw,
                 ),
                 "activity": Label(
                     text="ACTIVITY:",
                     x=x + 250.0,
-                    y=y + 280.0,
+                    y=y + 480.0,
                     **DASHBOARD_FONTS.LABEL,
                     **kw,
                 ),
                 "knowledge": Label(
                     text="KNOWLEDGE:",
                     x=x + 30.0,
-                    y=y + 20.0,
+                    y=y + 220.0,
                     **DASHBOARD_FONTS.LABEL,
                     **kw,
                 ),
                 "friend": Label(
                     text="FRIENDS:",
-                    x=x + 650.0,
-                    y=y + 20.0,
+                    x=x + 430.0,
+                    y=y + 220.0,
                     **DASHBOARD_FONTS.LABEL,
                     **kw,
                 ),
                 "levels": {
                     level: Label(
                         text=f"{level.title()}",
-                        x=x - 40.0 + 120.0 * index,
-                        y=y + 80.0,
+                        x=x - 40.0 + 140.0 * index,
+                        y=y + 280.0,
                         color=(*LEVEL_COLORS[level], 255),
                         **(DASHBOARD_FONTS.TEXT | dict(anchor_x="center")),
                         **kw,
@@ -147,8 +147,8 @@ class TrackHumanDraw:
             },
             "arcs": {
                 level: Arc(
-                    x=x - 40.0 + 120 * index,
-                    y=y + 150.0,
+                    x=x - 40.0 + 140 * index,
+                    y=y + 350.0,
                     inner_radius=40,
                     outer_radius=50,
                     angle=360.0,
@@ -159,8 +159,8 @@ class TrackHumanDraw:
             },
             "level_arcs": {
                 level: Arc(
-                    x=x - 40 + 120 * index,
-                    y=y + 150.0,
+                    x=x - 40 + 140 * index,
+                    y=y + 350.0,
                     inner_radius=35,
                     outer_radius=50,
                     angle=180.0,
@@ -171,14 +171,14 @@ class TrackHumanDraw:
             },
             "activity": Label(
                 x=x + 360.0,
-                y=y + 280.0,
+                y=y + 480.0,
                 color=DASHBOARD_WHITE,
                 **DASHBOARD_FONTS.TEXT,
                 **kw,
             ),
             "knowledge": Label(
                 x=x + 10.0,
-                y=y - 10.0,
+                y=y + 190.0,
                 multiline=True,
                 width=400.0,
                 color=DASHBOARD_WHITE,
@@ -186,8 +186,8 @@ class TrackHumanDraw:
                 **kw,
             ),
             "friends": Label(
-                x=x + 650.0,
-                y=y - 10.0,
+                x=x + 420.0,
+                y=y + 190.0,
                 multiline=True,
                 width=200.0,
                 color=DASHBOARD_WHITE,
