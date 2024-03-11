@@ -65,6 +65,7 @@ class PlaceColors:
     icon_color_b: tuple[int, int, int, int] = n()
     room_color_bg: tuple[int, int, int, int] = n()
 
+
 PLACE_COLORS = {
     "default": PlaceColors(),
     "garden": PlaceColors(
@@ -154,6 +155,39 @@ ACTIVITY_DARK_COLORS |= {
     Activity.SHOP: PALLETE.white.to_pyglet_alpha(),
     Activity.TALK: PALLETE.i_blue.to_pyglet_alpha(),
 }
+
+
+DASHBOARD_BG = c("#00000072")
+DASHBOARD_FG = c("#89917E4C")
+DASHBOARD_WHITE = c("#F2F3ED")
+DASHBOARD_MILK = c("#E0CCB8")
+
+
+class DASHBOARD_FONTS:
+    NAME = dict(
+        font_name=FONT,
+        font_size=18,
+        bold=True,
+        color=DASHBOARD_WHITE,
+        anchor_x="left",
+        anchor_y="top",
+    )
+    TEXT = dict(
+        font_name=FONT,
+        font_size=14,
+        bold=True,
+        anchor_x="left",
+        anchor_y="top",
+    )
+    LABEL = dict(
+        font_name=FONT,
+        font_size=14,
+        bold=True,
+        color=DASHBOARD_MILK,
+        anchor_x="left",
+        anchor_y="top",
+    )
+
 
 # ACTIVITY_COLORS = {
 #     Activity.NONE: (n(), n(), n()),

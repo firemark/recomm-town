@@ -9,7 +9,12 @@ from recomm_town.app import GuiGroup
 
 from recomm_town.draw.consts import (
     ACTIVITY_LABELS,
+    ACTIVITY_LIGHT_COLORS,
     COLORS,
+    DASHBOARD_BG,
+    DASHBOARD_FG,
+    DASHBOARD_FONTS,
+    DASHBOARD_WHITE,
     FONT,
     LEVELS,
     LEVELS,
@@ -32,44 +37,80 @@ class TrackHumanDraw:
         human.friend_observers["draw_track"] = lambda *a: self._friend_update()
 
         kw = dict(batch=batch, group=group)
-        kw_font = dict(
-            **kw,
-            font_name=FONT,
-            font_size=14,
-            bold=True,
-            anchor_x="left",
-            anchor_y="top",
-        )
-
-        df_color = COLORS.dashboard_text.to_pyglet_alpha()
         self.screen_width = width
-        x = width - 850.0
-        y = -300.0
+        x = width - 850.0 - 10
+        y = -310.0
         self.objs = {
-            "background": RoundedRectangle(
-                x=x,
-                y=y,
-                round=32,
-                width=850.0,
-                height=300.0,
-                # border=10,
-                color=COLORS.dashboard_bg.to_pyglet_alpha(0.5),
-                # border_color=COLORS.dashboard_text.to_pyglet(),
-                **kw,
-            ),
+            "backgrounds": {
+                "main": RoundedRectangle(
+                    x=x,
+                    y=y,
+                    round=18,
+                    width=850.0,
+                    height=300.0,
+                    color=DASHBOARD_BG,
+                    **kw,
+                ),
+                "name": RoundedRectangle(
+                    x=x + 10.0,
+                    y=y + 245.0,
+                    round=18,
+                    width=210.0,
+                    height=50.0,
+                    color=DASHBOARD_FG,
+                    **kw,
+                ),
+                "activity": RoundedRectangle(
+                    x=x + 230.0,
+                    y=y + 245.0,
+                    round=18,
+                    width=600.0,
+                    height=50.0,
+                    color=DASHBOARD_FG,
+                    **kw,
+                ),
+                "levels": RoundedRectangle(
+                    x=x + 10.0,
+                    y=y + 10.0,
+                    round=18,
+                    width=210.0,
+                    height=230.0,
+                    color=DASHBOARD_FG,
+                    **kw,
+                ),
+                "knowledge": RoundedRectangle(
+                    x=x + 230.0,
+                    y=y + 10.0,
+                    round=18,
+                    width=400.0,
+                    height=230.0,
+                    color=DASHBOARD_FG,
+                    **kw,
+                ),
+                "friends": RoundedRectangle(
+                    x=x + 640.0,
+                    y=y + 10.0,
+                    round=18,
+                    width=200.0,
+                    height=230.0,
+                    color=DASHBOARD_FG,
+                    **kw,
+                ),
+            },
             "labels": {
                 "name": Label(
-                    text=f"Name: {human.info.name}",
+                    text=human.info.name.upper(),
                     x=x + 20.0,
-                    y=y + 280.0,
-                    color=df_color,
-                    **kw_font,
+                    y=y + 285.0,
+                    **DASHBOARD_FONTS.NAME,
+                    **kw,
                 ),
                 "level": Label(
-                    text=f"Levels:",
+                    text=f"LEVELS:",
                     x=x + 20.0,
                     y=y + 240.0,
-                    **kw_font,
+                    **DASHBOARD_FONTS.LABEL,
+                    **kw,
                 ),
                 "levels": {
                     level: Label(
@@ -77,30 +118,31 @@ class TrackHumanDraw:
                         x=x + 20.0,
                         y=y + 240.0 - 30.0 * index,
                         color=(*LEVEL_COLORS[level], 255),
-                        **kw_font,
+                        **DASHBOARD_FONTS.TEXT,
+                        **kw,
                     )
                     for index, level in enumerate(LEVELS, start=1)
                 },
                 "activity": Label(
-                    text="Activity:",
+                    text="ACTIVITY:",
                     x=x + 250.0,
                     y=y + 280.0,
-                    color=df_color,
-                    **kw_font,
+                    **DASHBOARD_FONTS.LABEL,
+                    **kw,
                 ),
                 "knowledge": Label(
-                    text="Knowledge:",
+                    text="KNOWLEDGE:",
                     x=x + 250.0,
                     y=y + 240.0,
-                    color=df_color,
-                    **kw_font,
+                    **DASHBOARD_FONTS.LABEL,
+                    **kw,
                 ),
                 "friend": Label(
-                    text="Friends:",
+                    text="FRIENDS:",
                     x=x + 650.0,
                     y=y + 240.0,
-                    color=df_color,
-                    **kw_font,
+                    **DASHBOARD_FONTS.LABEL,
+                    **kw,
                 ),
             },
             "levels": {
@@ -108,28 +150,35 @@ class TrackHumanDraw:
                     x=x + 150.0,
                     y=y + 240.0 - 30.0 * index,
                     color=(*LEVEL_COLORS[level], 255),
-                    **kw_font,
+                    **DASHBOARD_FONTS.TEXT,
+                    **kw,
                 )
                 for index, level in enumerate(LEVELS, start=1)
             },
             "activity": Label(
                 x=x + 360.0,
                 y=y + 280.0,
-                **kw_font,
+                color=DASHBOARD_WHITE,
+                **DASHBOARD_FONTS.TEXT,
+                **kw,
             ),
             "knowledge": Label(
                 x=x + 250.0,
                 y=y + 210.0,
                 multiline=True,
                 width=400.0,
-                **kw_font,
+                color=DASHBOARD_WHITE,
+                **DASHBOARD_FONTS.TEXT,
+                **kw,
             ),
             "friends": Label(
                 x=x + 650.0,
                 y=y + 210.0,
                 multiline=True,
                 width=200.0,
-                **kw_font,
+                color=DASHBOARD_WHITE,
+                **DASHBOARD_FONTS.TEXT,
+                **kw,
             ),
         }
 
@@ -162,7 +211,9 @@ class TrackHumanDraw:
         self.objs["levels"][attr].text = f"{value * 100.0:3.0f} %"
 
     def _act_update(self, activity: Activity):
-        self.objs["activity"].text = ACTIVITY_LABELS[activity].format()
+        obj = self.objs["activity"]
+        obj.text = ACTIVITY_LABELS[activity]
+        obj.color = ACTIVITY_LIGHT_COLORS[activity]
 
     def _trivia_update(self):
         gen = (

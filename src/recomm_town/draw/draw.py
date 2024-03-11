@@ -23,6 +23,9 @@ from recomm_town.town.place import Place, Way
 from recomm_town.draw.consts import (
     ACTIVITY_DARK_COLORS,
     ACTIVITY_LIGHT_COLORS,
+    DASHBOARD_BG,
+    DASHBOARD_FONTS,
+    DASHBOARD_WHITE,
     PALLETE,
     PLACE_COLORS,
     TEXTURES,
@@ -60,28 +63,20 @@ class Draw:
 
     def draw_gui(self, match_time):
         kw = dict(**self.kw, group=self.gui_group)
-        kw_font = dict(
-            **kw,
-            color=COLORS.dashboard_text.to_pyglet_alpha(),
-            font_name=FONT,
-            font_size=14,
-            bold=True,
-        )
         self.trivia_dashboard = Label(
             multiline=True,
-            anchor_x="left",
-            anchor_y="top",
             width=600.0,
             x=30.0,
-            y=-40.0,
-            **kw_font,
+            y=-50.0,
+            color=DASHBOARD_WHITE,
+            **DASHBOARD_FONTS.TEXT,
+            **kw,
         )
         self.match_time = Label(
             x=20.0,
             y=-20.0,
-            anchor_x="left",
-            anchor_y="top",
-            **kw_font,
+            **DASHBOARD_FONTS.LABEL,
+            **kw,
         )
         self.tick_tock(match_time)
         self.objs += [
@@ -89,17 +84,16 @@ class Draw:
                 text="DASHBOARD",
                 x=325.0,
                 y=-20.0,
-                anchor_x="center",
-                anchor_y="top",
-                **kw_font,
+                **(DASHBOARD_FONTS.NAME | dict(anchor_x="center", anchor_y="top")),
+                **kw,
             ),
             RoundedRectangle(
-                x=0.0,
-                y=-300.0,
+                x=10.0,
+                y=-310.0,
                 width=650.0,
                 height=300.0,
-                round=32,
-                color=COLORS.dashboard_bg.to_pyglet_alpha(0.5),
+                round=18,
+                color=DASHBOARD_BG,
                 **kw,
             ),
         ]
