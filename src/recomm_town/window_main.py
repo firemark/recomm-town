@@ -80,4 +80,5 @@ if __name__ == "__main__":
             town=Path(app.town.get()),
             match_time=app.match_time.get(),
             fullscreen=app.fullscreen.get(),
+            output_filename="out.json",
         )

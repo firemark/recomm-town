@@ -105,12 +105,13 @@ places:
   look: museum
   function: ENTERTAIMENT
   position: [0, +500]
-  room-size: 50
-  room-padding: 80
+  room-size: 80
+  room-padding: 50
   rooms: grid(2)
   trivias-to-learn: music
 
 - name: pub
+  look: pub
   title: Pub Ugly Dog
   function: ENTERTAIMENT
   position: [0, +2000]

@@ -1,4 +1,5 @@
 from collections import defaultdict
+from itertools import cycle
 from random import randint, random
 
 from pyglet.graphics import Batch, Group
@@ -24,8 +25,6 @@ from recomm_town.draw.consts import (
     ACTIVITY_LIGHT_COLORS,
     PALLETE,
     PLACE_COLORS,
-    ROOM_COLORS,
-    ROOM_TEXTURES,
     TEXTURES,
     FONT,
     COLORS,
@@ -125,40 +124,47 @@ class Draw:
         kw_font = dict(**self.kw_font, color=(0, 0, 0, 255), font_size=36, group=group)
 
         for place in places:
-            color = PLACE_COLORS[place.look]
+            place_colors = PLACE_COLORS.get(place.look, PLACE_COLORS["default"])
             p = place.position
             rot = place.rotation
             size = place.box_end - place.box_start
             center = p - place.box_start
             start = center + place.box_start
 
-            rect = Rectangle(start.x, start.y, size.x, size.y, color=color, **kw)
-            rect.anchor_position = center
-            rect.rotation = -rot
+            place_rect = RoundedRectangle(start.x, start.y, size.x, size.y, round=32, color=place_colors.place_color_bg, **kw)
+            place_rect.anchor_position = center
+            place_rect.rotation = -rot
 
             self.objs += [
-                rect,
+                place_rect,
                 Label(place.title, x=p.x, y=p.y, **kw_font),
             ]
 
             s = place.room_size
+            si = s * place_colors.icon_size
+            hi = si / 2
             h = s / 2
-            cr, cg, cb = ROOM_COLORS[place.look]
-            index = ROOM_TEXTURES[place.look]
-            for room in place.rooms:
+            index = place_colors.room_texture_id * 3
+            for room, index_shift in zip(place.rooms, cycle(list(range(place_colors.textures_len)))):
                 r = room.position
                 room_body = Sprite(
-                    self.room_sprites[index * 3],
-                    p0=Vec(r.x - h, r.y - h),
-                    p1=Vec(r.x + h, r.y + h),
-                    color_r=cr,
-                    color_g=cg,
-                    color_b=cb,
+                    self.room_sprites[index + index_shift],
+                    p0=Vec(r.x - hi, r.y - hi),
+                    p1=Vec(r.x + hi, r.y + hi),
+                    color_r=place_colors.icon_color_r,
+                    color_g=place_colors.icon_color_g,
+                    color_b=place_colors.icon_color_b,
                     **kw,
                 )
-                # rect.anchor_position = h, h
-                # rect.rotation = room.rotation
-                self.objs.append(room_body)
+                room_rect = RoundedRectangle(
+                    r.x, r.y, s, s,
+                    color=place_colors.room_color_bg,
+                    round=16,
+                    **kw,
+                )
+                room_rect.anchor_position = h, h
+                room_rect.rotation = room.rotation
+                self.objs += [room_body, room_rect]
 
     def draw_people(self, window: Window, people: list[Human], people_group: Group):
         for index, human in enumerate(people):
@@ -194,7 +200,7 @@ class Draw:
         else:
             activity_colors = ACTIVITY_DARK_COLORS 
         skin_color = COLORS.light_skin.mix(COLORS.dark_skin, skin_lightness)
-        a = size * 0.8
+        a = size * 0.6
         act_sprite = Sprite(
             img=self.activity_sprites[0],
             p0=Vec(-a, -a),

@@ -140,6 +140,7 @@ places:
 
 - name: garden
   function: ENTERTAIMENT
+  look: garden
   title: Garden
   position: [0, +1000]
   room-size: 100
@@ -149,6 +150,7 @@ places:
 
 - name: pub
   title: Pub Katowice
+  look: pub
   function: ENTERTAIMENT
   position: [0, -1000]
   rooms: flat(3, 2)

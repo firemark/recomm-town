@@ -147,7 +147,6 @@ class App(Window):
             return super().on_key_press(symbol, modifiers)
 
     def on_change_place(self):
-        self.dispatch_event('on_change_place')
         places = self.world.town.places
         position = places[self.place_index].position
         self._stop_tracking()

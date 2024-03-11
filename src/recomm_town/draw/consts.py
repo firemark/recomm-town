@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import os
 import platform
 from pathlib import Path
@@ -53,24 +54,71 @@ class COLORS:
     dark_skin = PALLETE.d_skin
 
 
-ROOM_TEXTURES = {
-    "default": 0,
-    "garden": 1,
-    "museum": 2,
-}
+@dataclass(frozen=True)
+class PlaceColors:
+    room_texture_id: int = 0
+    textures_len: int = 1
+    place_color_bg: tuple[int, int, int, int] = PALLETE.road.to_pyglet_alpha()
+    icon_size: float = 1.0
+    icon_color_r: tuple[int, int, int, int] = n()
+    icon_color_g: tuple[int, int, int, int] = n()
+    icon_color_b: tuple[int, int, int, int] = n()
+    room_color_bg: tuple[int, int, int, int] = n()
 
 PLACE_COLORS = {
-    "default": PALLETE.l_grey.to_pyglet_alpha(),
-    "garden": PALLETE.road.to_pyglet_alpha(),
-    "museum": c("#D0BDE3"),
+    "default": PlaceColors(),
+    "garden": PlaceColors(
+        room_texture_id=1,
+        textures_len=2,
+        place_color_bg=PALLETE.road.to_pyglet_alpha(),
+        icon_color_r=PALLETE.d_grass.to_pyglet_alpha(),
+        icon_color_g=PALLETE.l_grass.to_pyglet_alpha(),
+    ),
+    "museum": PlaceColors(
+        room_texture_id=2,
+        icon_size=0.6,
+        place_color_bg=c("#D0BDE3"),
+        icon_color_g=c("#D686D4"),
+        icon_color_b=c("#CE6EC8"),
+        room_color_bg=c("#7A58A0"),
+    ),
+    "pub": PlaceColors(
+        room_texture_id=3,
+        textures_len=2,
+        icon_size=0.6,
+        place_color_bg=c("#EFE4C8"),
+        icon_color_r=c("#D68663"),
+        icon_color_g=c("#FDC362"),
+        icon_color_b=c("#FFD199"),
+        room_color_bg=c("#ECA756"),
+    ),
+    "work": PlaceColors(
+        place_color_bg=PALLETE.l_grey.to_pyglet_alpha(),
+        room_color_bg=PALLETE.d_grey.to_pyglet_alpha(),
+    ),
+    "home": PlaceColors(
+        room_texture_id=4,
+        textures_len=1,
+        place_color_bg=PALLETE.i_blue.to_pyglet_alpha(),
+        room_color_bg=PALLETE.l_blue.to_pyglet_alpha(),
+        icon_color_r=c("#DAF4FF"),
+        icon_color_g=c("#3F768C"),
+        icon_color_b=c("#F2F3ED"),
+    ),
+    "shop": PlaceColors(
+        place_color_bg=PALLETE.i_purple.to_pyglet_alpha(),
+        room_color_bg=PALLETE.l_purple.to_pyglet_alpha(),
+    ),
+    "entertainment": PlaceColors(
+        place_color_bg=PALLETE.l_blue.to_pyglet_alpha(),
+        room_color_bg=PALLETE.d_blue.to_pyglet_alpha(),
+    ),
+    "community": PlaceColors(
+        room_texture_id=2,
+        place_color_bg=PALLETE.l_blue.to_pyglet_alpha(),
+        room_color_bg=PALLETE.d_blue.to_pyglet_alpha(),
+    ),
 }
-
-ROOM_COLORS = {
-    "default": (PALLETE.white.to_pyglet_alpha(), n(), n()),
-    "garden": (PALLETE.d_grass.to_pyglet_alpha(), PALLETE.l_grass.to_pyglet_alpha(), n()),
-    "museum": (c("#7A58A0"), c("#D686D4"), c("#CE6EC8")),
-}
-
 
 LEVELS = ["fridge", "satiety", "money", "energy"]
 LEVEL_COLORS = {

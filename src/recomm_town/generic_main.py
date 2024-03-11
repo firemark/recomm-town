@@ -16,7 +16,7 @@ from recomm_town.creator.parser import WorldParser
 from recomm_town.reporter import TriviaReporter
 
 
-def run(town: Path, match_time: int, fullscreen: bool):
+def run(town: Path, match_time: int, fullscreen: bool, output_filename: str):
     parser = WorldParser(town)
     parser.load()
     world = parser.create_world()
@@ -44,13 +44,13 @@ def run(town: Path, match_time: int, fullscreen: bool):
     app.human_observers["draw"] = draw.track_human
     app.time_observers["draw"] = draw.tick_tock
     reporter = TriviaReporter(world.town.boundaries)
-    app.time_observers["report"] = partial(reporter.write_on_minute, "wtf.json")
+    app.time_observers["report"] = partial(reporter.write_on_minute, output_filename)
     reporter.register(world.people)
     try:
         app.run()
     finally:
         serial_thread_event.set()
-        reporter.write("wtf.json")
+        reporter.write(output_filename)
 
 
 def _serial(event_queue: Queue, event: Event):
