@@ -73,12 +73,15 @@ class Sprite:
         img,
         p0: Vec,
         p1: Vec,
+        anchor: Vec = Vec(0, 0),
         color_r=(255, 255, 255, 255),
         color_b=(0, 0, 0, 0),
         color_g=(0, 0, 0, 0),
         batch=None,
         group=None,
     ):
+        p0 -= anchor
+        p1 -= anchor
         # fmt: off
         self._v = (
             p0.x, p0.y,

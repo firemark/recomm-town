@@ -1,6 +1,7 @@
 from pyglet.graphics import Batch
 from pyglet.text import Label
 from pyglet.text import Label
+from recomm_town.common import Vec
 from recomm_town.draw.utils import crop_label
 
 from recomm_town.human import Human
@@ -18,14 +19,21 @@ from recomm_town.draw.consts import (
     LEVELS,
     LEVEL_COLORS,
     ACTIVITY_LABELS,
+    TEXTURES,
     dashboard_bar_color,
 )
 from recomm_town.human.activity import Activity
 from recomm_town.shaders.rounded_rectangle import RoundedRectangle
 from recomm_town.shaders.arc import Arc
+from recomm_town.shaders.sprite import Sprite
+
+from pyglet.image import ImageGrid, load as image_load
 
 
 class TrackHumanDraw:
+    level_sprites = ImageGrid(image_load(TEXTURES / "levels.png"), 4, 1)
+    human_sprite = image_load(TEXTURES / "human.png")
+
     def __init__(self, human: Human, batch: Batch, group: GuiGroup, width: int):
         self.batch = batch
         self.group = group
@@ -137,7 +145,7 @@ class TrackHumanDraw:
                     level: Label(
                         text=f"{level.title()}",
                         x=x - 40.0 + 140.0 * index,
-                        y=y + 280.0,
+                        y=y + 270.0,
                         color=(*LEVEL_COLORS[level], 255),
                         **(DASHBOARD_FONTS.TEXT | dict(anchor_x="center")),
                         **kw,
@@ -148,9 +156,9 @@ class TrackHumanDraw:
             "arcs": {
                 level: Arc(
                     x=x - 40.0 + 140 * index,
-                    y=y + 350.0,
-                    inner_radius=40,
-                    outer_radius=50,
+                    y=y + 340.0,
+                    inner_radius=55,
+                    outer_radius=65,
                     angle=360.0,
                     color=DASHBOARD_INPUT,
                     **kw,
@@ -160,11 +168,22 @@ class TrackHumanDraw:
             "level_arcs": {
                 level: Arc(
                     x=x - 40 + 140 * index,
-                    y=y + 350.0,
-                    inner_radius=35,
-                    outer_radius=50,
+                    y=y + 340.0,
+                    inner_radius=45,
+                    outer_radius=65,
                     angle=180.0,
                     color=(*LEVEL_COLORS[level], 255),
+                    **kw,
+                )
+                for index, level in enumerate(LEVELS, start=1)
+            },
+            "level_symbols": {
+                level: Sprite(
+                    self.level_sprites[index - 1],
+                    p0=Vec(x - 40 + 140 * index, y + 340.0),
+                    p1=Vec(x - 40 + 60 + 140 * index, y + 340.0 + 60),
+                    anchor=Vec(30, 30),
+                    color_r=(*LEVEL_COLORS[level], 255),
                     **kw,
                 )
                 for index, level in enumerate(LEVELS, start=1)

@@ -124,7 +124,7 @@ PLACE_COLORS = {
 LEVELS = ["fridge", "satiety", "money", "energy"]
 LEVEL_COLORS = {
     "fridge": to_color("#D9DAD2"),
-    "satiety": to_color("#01A638"),
+    "satiety": to_color("#9CE256"),
     "money": to_color("#F1D651"),
     "energy": to_color("#FF5349"),
 }
@@ -163,11 +163,15 @@ DASHBOARD_INPUT = c("#545454")
 DASHBOARD_WHITE = c("#F2F3ED")
 DASHBOARD_MILK = c("#E0CCB8")
 DASHBOARD_FULL = Color.from_hex("#9CE256")
+DASHBOARD_MID = Color.from_hex("#E2BB56")
 DASHBOARD_EMPTY = Color.from_hex("#E28856")
 
 
 def dashboard_bar_color(v: float = 0.0):
-    return DASHBOARD_FULL.mix(DASHBOARD_EMPTY, v)
+    if v > 0.5:
+        return DASHBOARD_FULL.mix(DASHBOARD_MID, 3 * (v - 0.5))
+    else:
+        return DASHBOARD_EMPTY.mix(DASHBOARD_MID, 3 * (0.5 - v))
 
 
 class DASHBOARD_FONTS:
