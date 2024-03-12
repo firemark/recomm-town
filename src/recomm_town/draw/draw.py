@@ -3,19 +3,20 @@ from itertools import cycle
 from random import randint, random
 
 from pyglet.graphics import Batch, Group
-from pyglet.image import ImageGrid, load as image_load, Texture
+from pyglet.image import Texture
 from pyglet.gl import GL_LINEAR
-from pyglet.shapes import Line, Rectangle, BorderedRectangle
+from pyglet.shapes import Line
 from pyglet.window import Window
 from pyglet.text import Label
 
 from recomm_town.app import GuiGroup
+from recomm_town.draw.textures import ACTIVITY_SPRITES, HUMAN_SPRITE, LEARNBAR_IMAGE, ROOM_SPRITES
 from recomm_town.draw.track_human import TrackHumanDraw
 from recomm_town.draw.utils import crop_label, to_color
 from recomm_town.shaders import AnimatedLine, Sprite
 from recomm_town.shaders.human_group import HumanGroup
 from recomm_town.common import Trivia, Vec
-from recomm_town.human import Human, Activity
+from recomm_town.human import Human
 from recomm_town.shaders.rounded_rectangle import RoundedRectangle
 from recomm_town.town import PlaceFunction as PF
 from recomm_town.town.place import Place, Way
@@ -28,7 +29,6 @@ from recomm_town.draw.consts import (
     DASHBOARD_WHITE,
     PALLETE,
     PLACE_COLORS,
-    TEXTURES,
     FONT,
     COLORS,
     ACTIVITY_TEXTURE_VARIANTS,
@@ -52,10 +52,6 @@ class Draw:
         )
         self.people_group = people_group
         self.trivias_level = defaultdict(float)
-        self.activity_sprites = ImageGrid(image_load(TEXTURES / "activities.png"), len(Activity), 3)
-        self.room_sprites = ImageGrid(image_load(TEXTURES / "rooms.png"), 8, 3)
-        self.human_sprite = image_load(TEXTURES / "human.png")
-        self.learnbar_image = image_load(TEXTURES / "learnbar.png")
         self.tracked_human: TrackHumanDraw | None = None
         self.lifeobjs = {}
         self.screen_width = width
@@ -142,7 +138,7 @@ class Draw:
             for room, index_shift in zip(place.rooms, cycle(list(range(place_colors.textures_len)))):
                 r = room.position
                 room_body = Sprite(
-                    self.room_sprites[index + index_shift],
+                    ROOM_SPRITES[index + index_shift],
                     p0=Vec(r.x - hi, r.y - hi),
                     p1=Vec(r.x + hi, r.y + hi),
                     color_r=place_colors.icon_color_r,
@@ -196,7 +192,7 @@ class Draw:
         skin_color = COLORS.light_skin.mix(COLORS.dark_skin, skin_lightness)
         a = size * 0.6
         act_sprite = Sprite(
-            img=self.activity_sprites[0],
+            img=ACTIVITY_SPRITES[0],
             p0=Vec(-a, -a),
             p1=Vec(a, a),
             **kw,
@@ -210,14 +206,14 @@ class Draw:
         def act_update(activity):
             variants_count = ACTIVITY_TEXTURE_VARIANTS[activity]
             variant = randint(1, variants_count) - 1
-            act_sprite.set_img(self.activity_sprites[activity * 3 + variant])
+            act_sprite.set_img(ACTIVITY_SPRITES[activity * 3 + variant])
             r = activity_colors[activity]
             act_sprite.set_color_r(r)
             # act_sprite.set_color_g(g)
             # act_sprite.set_color_b(b)
 
         body = Sprite(
-            self.human_sprite,
+            HUMAN_SPRITE,
             p0=Vec(-size, -size),
             p1=Vec(size, size),
             color_r=skin_color.to_pyglet_alpha(),
@@ -289,7 +285,7 @@ class Draw:
             self.lifeobjs[key] = [
                 Label(trivia.name, x=c.x, y=c.y, **kw_font),
                 AnimatedLine(
-                    self.learnbar_image,
+                    LEARNBAR_IMAGE,
                     a.position,
                     b.position,
                     color=PALLETE.l_red.to_pyglet_alpha(0.5),

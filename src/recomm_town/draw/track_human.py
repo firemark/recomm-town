@@ -1,39 +1,27 @@
 from pyglet.graphics import Batch
 from pyglet.text import Label
 from pyglet.text import Label
-from recomm_town.common import Vec
 from recomm_town.draw.utils import crop_label
+from recomm_town.draw.widgets.activity import ActivityWidget
+from recomm_town.draw.widgets.level_arc import LevelArcWidget
 
 from recomm_town.human import Human
 from recomm_town.app import GuiGroup
 
-from recomm_town.draw.consts import (
-    ACTIVITY_LABELS,
-    ACTIVITY_LIGHT_COLORS,
-    DASHBOARD_BG,
-    DASHBOARD_FG,
-    DASHBOARD_FONTS,
-    DASHBOARD_INPUT,
-    DASHBOARD_WHITE,
-    LEVELS,
-    LEVELS,
-    LEVEL_COLORS,
-    ACTIVITY_LABELS,
-    TEXTURES,
-    dashboard_bar_color,
-)
 from recomm_town.human.activity import Activity
 from recomm_town.shaders.rounded_rectangle import RoundedRectangle
-from recomm_town.shaders.arc import Arc
-from recomm_town.shaders.sprite import Sprite
 
-from pyglet.image import ImageGrid, load as image_load
+from recomm_town.draw.consts import (
+    DASHBOARD_BG,
+    DASHBOARD_FG,
+    DASHBOARD_WHITE,
+    DASHBOARD_FONTS,
+    LEVELS,
+    LEVEL_COLORS,
+)
 
 
 class TrackHumanDraw:
-    level_sprites = ImageGrid(image_load(TEXTURES / "levels.png"), 4, 1)
-    human_sprite = image_load(TEXTURES / "human.png")
-
     def __init__(self, human: Human, batch: Batch, group: GuiGroup, width: int):
         self.batch = batch
         self.group = group
@@ -141,58 +129,21 @@ class TrackHumanDraw:
                     **DASHBOARD_FONTS.LABEL,
                     **kw,
                 ),
-                "levels": {
-                    level: Label(
-                        text=f"{level.title()}",
-                        x=x - 40.0 + 140.0 * index,
-                        y=y + 270.0,
-                        color=(*LEVEL_COLORS[level], 255),
-                        **(DASHBOARD_FONTS.TEXT | dict(anchor_x="center")),
-                        **kw,
-                    )
-                    for index, level in enumerate(LEVELS, start=1)
-                },
             },
-            "arcs": {
-                level: Arc(
+            "levels": {
+                level: LevelArcWidget(
                     x=x - 40.0 + 140 * index,
                     y=y + 340.0,
-                    inner_radius=55,
-                    outer_radius=65,
-                    angle=360.0,
-                    color=DASHBOARD_INPUT,
-                    **kw,
-                )
-                for index, level in enumerate(LEVELS, start=1)
-            },
-            "level_arcs": {
-                level: Arc(
-                    x=x - 40 + 140 * index,
-                    y=y + 340.0,
-                    inner_radius=45,
-                    outer_radius=65,
-                    angle=180.0,
+                    title=level.title(),
                     color=(*LEVEL_COLORS[level], 255),
+                    texture_index=index - 1,
                     **kw,
                 )
                 for index, level in enumerate(LEVELS, start=1)
             },
-            "level_symbols": {
-                level: Sprite(
-                    self.level_sprites[index - 1],
-                    p0=Vec(x - 40 + 140 * index, y + 340.0),
-                    p1=Vec(x - 40 + 60 + 140 * index, y + 340.0 + 60),
-                    anchor=Vec(30, 30),
-                    color_r=(*LEVEL_COLORS[level], 255),
-                    **kw,
-                )
-                for index, level in enumerate(LEVELS, start=1)
-            },
-            "activity": Label(
+            "activity": ActivityWidget(
                 x=x + 360.0,
                 y=y + 480.0,
-                color=DASHBOARD_WHITE,
-                **DASHBOARD_FONTS.TEXT,
                 **kw,
             ),
             "knowledge": Label(
@@ -241,14 +192,10 @@ class TrackHumanDraw:
         self.objs.clear()
 
     def _level_update(self, attr: str, value: float):
-        obj = self.objs["level_arcs"][attr]
-        obj.angle = 360.0 * value
-        obj.color = dashboard_bar_color(value).to_pyglet_alpha()
+        self.objs["levels"][attr].update(value)
 
     def _act_update(self, activity: Activity):
-        obj = self.objs["activity"]
-        obj.text = ACTIVITY_LABELS[activity]
-        obj.color = ACTIVITY_LIGHT_COLORS[activity]
+        self.objs["activity"].update(activity)
 
     def _trivia_update(self):
         gen = (
@@ -268,10 +215,10 @@ class TrackHumanDraw:
     def _friend_update(self):
         gen = self.human.friend_levels.items()
         friends = (
-            f"{index}. {friend.info.name}"
-            for (friend, level), index in zip(
+            friend.info.name
+            for (friend, level), _ in zip(
                 sorted(gen, key=lambda o: o[1], reverse=True),
-                range(1, 8 + 1),
+                range(8),
             )
             if level > 1e-2
         )

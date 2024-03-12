@@ -8,11 +8,7 @@ world:
     factor: 1.0
   neighbor-range: 100.0
   levels:
-    learning: 0.2
-    teaching: 0.8
-    talking: 1.0
-    reading: 0.8
-    program: 0.6
+    warmup-time: 30.0
     
   radio: 
     program: podcast
