@@ -67,6 +67,7 @@ class App(Window):
 
         self.register_event_type('on_change_place')
         self.register_event_type('on_change_human')
+        self.register_event_type('on_city_zoom')
 
     def set_view(self, position, zoom=1.0):
         self.camera_position = position
@@ -135,6 +136,8 @@ class App(Window):
             self.dispatch_event('on_change_place')
         if symbol == key.W:
             self.dispatch_event('on_change_human')
+        if symbol == key.E:
+            self.dispatch_event('on_city_zoom')
         if symbol == key.UP:
             self.move_position += Vec(0.0, +20.0)
         elif symbol == key.DOWN:
@@ -162,6 +165,9 @@ class App(Window):
         self.human_index += 1
         if self.human_index >= len(self.world.people):
             self.human_index = 0
+
+    def on_city_zoom(self):
+        self.set_view(Vec(0.0, 0.0))
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.UP:

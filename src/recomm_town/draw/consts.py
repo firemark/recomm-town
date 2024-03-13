@@ -144,28 +144,42 @@ LEVEL_COLORS = {
 ACTIVITY_LIGHT_COLORS = {
     Activity.NONE: n(),
     Activity.MOVE: PALLETE.l_red.to_pyglet_alpha(),
-    Activity.WORK: PALLETE.d_grey.to_pyglet_alpha(),
+    Activity.WORK: PALLETE.l_grey.to_pyglet_alpha(),
     Activity.SHOP: PALLETE.l_grey.to_pyglet_alpha(),
-    Activity.TALK: PALLETE.l_blue.to_pyglet_alpha(),
+    Activity.TALK: [
+        PALLETE.l_blue.to_pyglet_alpha(),
+        c("#FFFFFF"),
+        c("#000000"),
+    ],
     Activity.READ: PALLETE.l_yellow.to_pyglet_alpha(),
     Activity.RADIO: PALLETE.l_yellow.to_pyglet_alpha(),
     Activity.TV: PALLETE.l_yellow.to_pyglet_alpha(),
     Activity.WTF: PALLETE.l_red.to_pyglet_alpha(),
     Activity.EAT: PALLETE.l_green.to_pyglet_alpha(),
-    Activity.SLEEP: PALLETE.l_blue.to_pyglet_alpha(),
+    Activity.SLEEP: [
+        PALLETE.l_blue.to_pyglet_alpha(),
+        PALLETE.d_blue.to_pyglet_alpha(),
+    ],
     Activity.TIME_BREAK: PALLETE.white.to_pyglet_alpha(),
     Activity.ENJOY: PALLETE.l_blue.to_pyglet_alpha(),
-    Activity.SHARE: PALLETE.l_red.to_pyglet_alpha(),
+    Activity.SHARE: [
+        PALLETE.l_red.to_pyglet_alpha(),
+        c("#FFFFFF"),
+        c("#000000"),
+    ],
     Activity.IDEA: PALLETE.l_purple.to_pyglet_alpha(),
 }
 
 ACTIVITY_DARK_COLORS = ACTIVITY_LIGHT_COLORS.copy()
 ACTIVITY_DARK_COLORS |= {
-    Activity.SLEEP: PALLETE.l_blue.to_pyglet_alpha(),
     Activity.EAT: PALLETE.i_green.to_pyglet_alpha(),
     Activity.WORK: PALLETE.white.to_pyglet_alpha(),
     Activity.SHOP: PALLETE.white.to_pyglet_alpha(),
-    Activity.TALK: PALLETE.i_blue.to_pyglet_alpha(),
+    Activity.TALK: [
+        PALLETE.i_blue.to_pyglet_alpha(),
+        c("#FFFFFF"),
+        c("#000000"),
+    ]
 }
 
 
@@ -212,25 +226,6 @@ class DASHBOARD_FONTS:
     )
 
 
-# ACTIVITY_COLORS = {
-#     Activity.NONE: (n(), n(), n()),
-#     Activity.MOVE: (c("#E30B5C"), n(), n()),
-#     Activity.WORK: (c("#8B8680"), n(), n()),
-#     Activity.SHOP: (c("#C9C0BB"), c("#00000044"), n()),
-#     Activity.TALK: (c("#0095B7"), c("#FFFFFF"), c("#000000")),
-#     Activity.READ: (c("#AF593E"), c("#CA3435"), c("#2D383A")),
-#     Activity.RADIO: (c("#805533"), c("#C9C0BB"), c("#736A62")),
-#     Activity.TV: (c("#665233"), c("#C9C0BB"), c("#FFFFFF")),
-#     Activity.WTF: (c("#FF0000"), n(), n()),
-#     Activity.EAT: (c("#87421F"), c("#CA3435"), c("#FFFFFF")),
-#     Activity.SLEEP: (c("#0066CC"), c("#000000"), n()),
-#     Activity.TIME_BREAK: (c("#FFFFFF"), c("#FFFF66"), c("#00000044")),
-#     Activity.ENJOY: (c("#02A4D3"), c("#87421F"), c("#FFFFFF")),
-#     Activity.SHARE: (c("#D92121"), c("#FFFFFF"), c("#000000")),
-#     Activity.IDEA: (c("#D92121"), c("#FFFFFF"), c("#000000")),
-# }
-
-
 ACTIVITY_TEXTURE_VARIANTS = {
     Activity.NONE: 1,
     Activity.MOVE: 1,
@@ -244,7 +239,7 @@ ACTIVITY_TEXTURE_VARIANTS = {
     Activity.EAT: 3,
     Activity.SLEEP: 1,
     Activity.TIME_BREAK: 1,
-    Activity.SHARE: 1,
+    Activity.SHARE: 3,
     Activity.ENJOY: 2,
     Activity.IDEA: 1,
 }
@@ -257,7 +252,7 @@ ACTIVITY_LABELS = {
     Activity.TALK: "Seeking to talk",
     Activity.READ: "Reading a book",
     Activity.RADIO: "Listening a radio",
-    Activity.TV: "Watching a TV channel",
+    Activity.TV: "Watching a TV",
     Activity.WTF: "Little a bit confusing",
     Activity.EAT: "Eating",
     Activity.SLEEP: "Sleeping",

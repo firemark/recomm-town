@@ -1,5 +1,6 @@
 from collections import defaultdict
 from itertools import cycle
+from math import atan2, degrees
 from random import randint, random
 
 from pyglet.graphics import Batch, Group
@@ -292,14 +293,21 @@ class Draw:
         #     bar.width = 2 * size * value
         #     bar.visible = bar.width > 0.05
 
+        act_sprite_callbacks = [
+            act_sprite.set_color_r,
+            act_sprite.set_color_g,
+            act_sprite.set_color_b,
+        ]
+
         def act_update(activity):
             variants_count = ACTIVITY_TEXTURE_VARIANTS[activity]
             variant = randint(1, variants_count) - 1
             act_sprite.set_img(ACTIVITY_SPRITES[activity * 3 + variant])
-            r = activity_colors[activity]
-            act_sprite.set_color_r(r)
-            # act_sprite.set_color_g(g)
-            # act_sprite.set_color_b(b)
+            colors = activity_colors[activity]
+            if isinstance(colors, tuple):
+                colors = [colors]
+            for cb, color in zip(act_sprite_callbacks, colors):
+                cb(color)
 
         body = Sprite(
             HUMAN_SPRITE,
@@ -313,7 +321,7 @@ class Draw:
             Label(  # Name
                 human.info.name,
                 x=0,
-                y=size * 2.5,
+                y=size * 1.5,
                 font_size=14,
                 color=to_color("#2D383A") + (255,),
                 **kw_font,
@@ -372,19 +380,34 @@ class Draw:
         key = (a, b)
         if state == "START" and trivia and key not in self.lifeobjs:
             c = (a.position + b.position) * 0.5
+            diff = b.position - a.position
+            if diff.x < 0:
+                diff = -diff
 
-            self.lifeobjs[key] = [
-                Label(trivia.name, x=c.x, y=c.y, **kw_font),
+            label = Label(trivia.name, x=c.x, y=c.y, **kw_font)
+            label.rotation = -degrees(atan2(diff.y, diff.x))
+            line_length = diff.length() - 32
+
+            objs = [
                 AnimatedLine(
                     LEARNBAR_IMAGE,
                     a.position,
                     b.position,
-                    color=PALLETE.l_red.to_pyglet_alpha(0.5),
+                    color=PALLETE.l_red.to_pyglet_alpha(),
                     speed=Vec(0.0, 2.0),
                     width=32.0,
                     **kw,
                 ),
             ]
+
+            if line_length > 0:
+                while label.font_size > 8 and label.content_width > line_length:
+                    label.font_size -= 2
+
+                if label.font_size > 8:
+                    objs.append(label)
+
+            self.lifeobjs[key] = objs
         else:
             objs = self.lifeobjs.pop(key, [])
             for obj in objs:

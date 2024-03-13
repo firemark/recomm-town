@@ -46,6 +46,8 @@ class ActivityWidget:
 
     def update(self, activity: Activity):
         color = ACTIVITY_LIGHT_COLORS[activity]
+        if isinstance(color, list):
+            color = color[0]
         self.label.text = ACTIVITY_LABELS[activity]
         self.label.color = color
         self.symbol.set_img(ACTIVITY_SPRITES[activity * 3])
