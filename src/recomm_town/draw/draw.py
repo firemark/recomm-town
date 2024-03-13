@@ -39,6 +39,7 @@ from recomm_town.draw.consts import (
     FONT,
     COLORS,
     ACTIVITY_TEXTURE_VARIANTS,
+    PLACE_LABEL_BG,
 )
 
 Texture.default_min_filter = GL_LINEAR
@@ -143,7 +144,7 @@ class Draw:
 
     def draw_places(self, places: list[Place], group: Group):
         kw = dict(**self.kw, group=group)
-        kw_font = dict(**self.kw_font, color=(0, 0, 0, 255), font_size=36, group=group)
+        kw_font = dict(**self.kw_font, color=DASHBOARD_WHITE, font_size=28, bold=True, group=group)
         margin = 20
         gate_width = 85
 
@@ -206,13 +207,25 @@ class Draw:
                 **border_kw,
             )
 
+            label_bg = RoundedRectangle(x=p.x, y=p.y, color=PLACE_LABEL_BG, round=16, width=100, height=100, **kw)
+            label = Label(place.title, x=p.x, y=p.y, **kw_font)
+            place_width = abs(place.boundaries[1].x - place.boundaries[0].x)
+
+            while label.font_size > 8 and label.content_width > place_width - 16:
+                label.font_size -= 4
+
+            label_bg.width = label.content_width + 16
+            label_bg.height = label.content_height + 16
+            label_bg.anchor_position = (label_bg.width // 2, label_bg.height // 2)
+
             self.objs += [
                 place_rect,
+                label_bg,
+                label,
                 border_ld,
                 border_lu,
                 border_ru,
                 border_rd,
-                Label(place.title, x=p.x, y=p.y, **kw_font),
             ]
 
             s = place.room_size

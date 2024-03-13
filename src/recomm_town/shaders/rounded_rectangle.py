@@ -127,3 +127,21 @@ class RoundedRectangle(ShapeBase):
         ]
         # fmt: on
         self._vertex_list.position[:] = position
+
+    @property
+    def width(self):
+        return self._width
+
+    @width.setter
+    def width(self, value):
+        self._width = value
+        self._update_vertices()
+
+    @property
+    def height(self):
+        return self._height
+
+    @height.setter
+    def height(self, value):
+        self._height = value
+        self._update_vertices()
