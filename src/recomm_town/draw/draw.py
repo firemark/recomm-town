@@ -10,7 +10,13 @@ from pyglet.window import Window
 from pyglet.text import Label
 
 from recomm_town.app import GuiGroup
-from recomm_town.draw.textures import ACTIVITY_SPRITES, HUMAN_SPRITE, LEARNBAR_IMAGE, ROOM_SPRITES
+from recomm_town.draw.textures import (
+    ACTIVITY_SPRITES,
+    BLOB_SPRITES,
+    HUMAN_SPRITE,
+    LEARNBAR_IMAGE,
+    ROOM_SPRITES,
+)
 from recomm_town.draw.track_human import TrackHumanDraw
 from recomm_town.draw.utils import crop_label, to_color
 from recomm_town.shaders import AnimatedLine, Sprite
@@ -39,7 +45,14 @@ Texture.default_mag_filter = GL_LINEAR
 
 
 class Draw:
-    def __init__(self, batch: Batch, people_group: Group, gui_group: GuiGroup, width: int, height: int) -> None:
+    def __init__(
+        self,
+        batch: Batch,
+        people_group: Group,
+        gui_group: GuiGroup,
+        width: int,
+        height: int,
+    ) -> None:
         self.objs = []
         self.batch = batch
         self.gui_group = gui_group
@@ -109,6 +122,24 @@ class Draw:
                 color = COLORS.way_a.mix(COLORS.way_b, random()).to_pyglet()
                 self.objs.append(Line(a.x, a.y, b.x, b.y, color=color, **kw))
 
+    def draw_blobs(self, boundaries, group: Group):
+        start = boundaries[0]
+        diff = boundaries[1] - boundaries[0]
+        kw = dict(**self.kw, group=group)
+        for i in range(20):
+            position = Vec(start.x + random() * diff.x, start.y + random() * diff.y)
+            half_size = 256.0 + random() * 256.0
+            color = PALLETE.d_grass.mix(PALLETE.l_grass, 0.6 + random() * 0.4)
+            self.objs.append(
+                Sprite(
+                    BLOB_SPRITES[randint(0, 3)],
+                    p0=position - half_size,
+                    p1=position + half_size,
+                    color_r=color.to_pyglet_alpha(),
+                    **kw,
+                )
+            )
+
     def draw_places(self, places: list[Place], group: Group):
         kw = dict(**self.kw, group=group)
         kw_font = dict(**self.kw_font, color=(0, 0, 0, 255), font_size=36, group=group)
@@ -124,7 +155,15 @@ class Draw:
             size = box_end - box_start
             center = p - box_start
 
-            place_rect = RoundedRectangle(p.x, p.y, size.x, size.y, round=32, color=place_colors.place_color_bg, **kw)
+            place_rect = RoundedRectangle(
+                p.x,
+                p.y,
+                size.x,
+                size.y,
+                round=32,
+                color=place_colors.place_color_bg,
+                **kw,
+            )
             place_rect.anchor_position = center
             place_rect.rotation = -rot
 
@@ -148,21 +187,21 @@ class Draw:
             border_lu = CurveLine(
                 width=center.x - gate_width,
                 height=center.y - size.y + gate_width,
-                anchor_position=Vec(center.x, center.y-size.y),
+                anchor_position=Vec(center.x, center.y - size.y),
                 **border_kw,
             )
 
             border_ru = CurveLine(
                 width=center.x - size.x + gate_width,
                 height=center.y - size.y + gate_width,
-                anchor_position=Vec(center.x-size.x, center.y-size.y),
+                anchor_position=Vec(center.x - size.x, center.y - size.y),
                 **border_kw,
             )
 
             border_rd = CurveLine(
                 width=center.x - size.x + gate_width,
                 height=center.y - gate_width,
-                anchor_position=Vec(center.x-size.x, center.y),
+                anchor_position=Vec(center.x - size.x, center.y),
                 **border_kw,
             )
 
@@ -180,7 +219,9 @@ class Draw:
             hi = si / 2
             h = s / 2
             index = place_colors.room_texture_id * 3
-            for room, index_shift in zip(place.rooms, cycle(list(range(place_colors.textures_len)))):
+            for room, index_shift in zip(
+                place.rooms, cycle(list(range(place_colors.textures_len)))
+            ):
                 r = room.position
                 room_body = Sprite(
                     ROOM_SPRITES[index + index_shift],
@@ -192,7 +233,10 @@ class Draw:
                     **kw,
                 )
                 room_rect = RoundedRectangle(
-                    r.x, r.y, s, s,
+                    r.x,
+                    r.y,
+                    s,
+                    s,
                     color=place_colors.room_color_bg,
                     round=16,
                     **kw,
@@ -231,9 +275,9 @@ class Draw:
 
         skin_lightness = random()
         if skin_lightness > 0.6:
-            activity_colors = ACTIVITY_LIGHT_COLORS  
+            activity_colors = ACTIVITY_LIGHT_COLORS
         else:
-            activity_colors = ACTIVITY_DARK_COLORS 
+            activity_colors = ACTIVITY_DARK_COLORS
         skin_color = COLORS.light_skin.mix(COLORS.dark_skin, skin_lightness)
         a = size * 0.6
         act_sprite = Sprite(
@@ -289,7 +333,9 @@ class Draw:
             self.tracked_human.stop()
         if human is None:
             return
-        self.tracked_human = TrackHumanDraw(human, self.batch, self.gui_group, self.screen_width)
+        self.tracked_human = TrackHumanDraw(
+            human, self.batch, self.gui_group, self.screen_width
+        )
 
     def tick_tock(self, match_time: int):
         minutes = match_time // 60
@@ -343,4 +389,3 @@ class Draw:
             objs = self.lifeobjs.pop(key, [])
             for obj in objs:
                 obj.delete()
-

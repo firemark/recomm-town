@@ -29,6 +29,7 @@ def run(town: Path, match_time: int, fullscreen: bool, output_filename: str):
         app.set_fullscreen(screen=screen)
     draw = Draw(app.batch, app.people_group, app.gui_group, app.width, app.height)
     draw.draw_gui(app.match_time)
+    draw.draw_blobs(world.town.boundaries, app.town_group)
     draw.draw_path(world.town.path, app.town_group)
     draw.draw_places(world.town.places, app.town_group)
     draw.draw_people(app, world.people, app.people_group)
