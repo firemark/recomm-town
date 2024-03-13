@@ -37,6 +37,7 @@ class CellRange(NamedTuple):
 class App(Window):
     batch: Batch
     town_group: Group
+    label_group: Group
     people_group: Group
     gui_group: GuiGroup
 
@@ -49,7 +50,8 @@ class App(Window):
         self.batch = Batch()
         self.town_group = Group(order=0)
         self.people_group = Group(order=1)
-        self.gui_group = GuiGroup(self, order=2)
+        self.label_group = Group(order=2)
+        self.gui_group = GuiGroup(self, order=3)
         self.move_position = Vec(0.0, 0.0)
         self.cell_range = CellRange(0, 0, 0, 0)
         self.set_view(Vec(0.0, 0.0))
@@ -62,6 +64,7 @@ class App(Window):
         self.human_observers: Observer[Human | None] = Observer()
         self.time_observers: Observer[int] = Observer()
         self.resize_observers: Observer[int, int] = Observer()
+        self.zoom_observers: Observer[float] = Observer()
 
         self.__queue = queue
 
@@ -88,11 +91,14 @@ class App(Window):
 
         if z < 0.2:
             self.people_group.visible = False
+            self.label_group.visible = False
             return
         if not self.people_group.visible:
             self.people_group.visible = True
+            self.label_group.visible = True
         if not is_changed:
             return
+        self.zoom_observers(z)
 
         human_groups = self.batch.group_children.get(self.people_group, [])
         for group in human_groups:

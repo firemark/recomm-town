@@ -90,6 +90,8 @@ class Draw:
             **kw,
         )
         self.tick_tock(match_time)
+        self.place_labels = []
+        self.old_zz = 0
         self.objs += [
             Label(
                 text="DASHBOARD",
@@ -114,6 +116,19 @@ class Draw:
         self.screen_height = height
         if self.tracked_human:
             self.tracked_human.on_resize(width)
+
+    def zoom(self, z: float):
+        zz = int(z * 5)
+        if self.old_zz == zz:
+            return
+        self.old_zz = zz
+        for label, label_bg in self.place_labels:
+            label.font_size = max(label.default_font_size / z, 12)
+            label.visible = True
+            label_bg.visible = True
+            label_bg.width = label.content_width + 16
+            label_bg.height = label.content_height + 16
+            label_bg.anchor_position = (label_bg.width // 2, label_bg.height // 2)
 
     def draw_path(self, path: dict[tuple[Place, Place], Way], group: Group):
         kw = dict(**self.kw, group=group, width=50.0)
@@ -142,9 +157,16 @@ class Draw:
                 )
             )
 
-    def draw_places(self, places: list[Place], group: Group):
+    def draw_places(self, places: list[Place], group: Group, label_group: Group):
         kw = dict(**self.kw, group=group)
-        kw_font = dict(**self.kw_font, color=DASHBOARD_WHITE, font_size=28, bold=True, group=group)
+        kw_label = dict(**self.kw, group=label_group)
+        kw_font = dict(
+            **self.kw_font,
+            color=DASHBOARD_WHITE,
+            font_size=28,
+            bold=True,
+            group=label_group,
+        )
         margin = 20
         gate_width = 85
 
@@ -207,7 +229,15 @@ class Draw:
                 **border_kw,
             )
 
-            label_bg = RoundedRectangle(x=p.x, y=p.y, color=PLACE_LABEL_BG, round=16, width=100, height=100, **kw)
+            label_bg = RoundedRectangle(
+                x=p.x,
+                y=p.y,
+                color=PLACE_LABEL_BG,
+                round=16,
+                width=100,
+                height=100,
+                **kw_label,
+            )
             label = Label(place.title, x=p.x, y=p.y, **kw_font)
             place_width = abs(place.boundaries[1].x - place.boundaries[0].x)
 
@@ -217,11 +247,14 @@ class Draw:
             label_bg.width = label.content_width + 16
             label_bg.height = label.content_height + 16
             label_bg.anchor_position = (label_bg.width // 2, label_bg.height // 2)
+            label.default_font_size = label.font_size
+
+            self.place_labels.append(
+                (label, label_bg),
+            )
 
             self.objs += [
                 place_rect,
-                label_bg,
-                label,
                 border_ld,
                 border_lu,
                 border_ru,
