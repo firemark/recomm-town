@@ -19,7 +19,7 @@ class LevelArcWidget:
     def __init__(self, x, y, title, color, texture_index, batch, group):
         kw = dict(batch=batch, group=group)
         self.label = Label(
-            text=f"{title}",
+            text=title,
             x=x,
             y=y - 65.0,
             color=color,

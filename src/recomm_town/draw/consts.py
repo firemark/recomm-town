@@ -60,6 +60,7 @@ class PlaceColors:
     textures_len: int = 1
     place_color_bg: tuple[int, int, int, int] = PALLETE.road.to_pyglet_alpha()
     icon_size: float = 1.0
+    border_color: tuple[int, int, int, int] = n()
     icon_color_r: tuple[int, int, int, int] = n()
     icon_color_g: tuple[int, int, int, int] = n()
     icon_color_b: tuple[int, int, int, int] = n()
@@ -74,6 +75,7 @@ PLACE_COLORS = {
         place_color_bg=PALLETE.road.to_pyglet_alpha(),
         icon_color_r=PALLETE.d_grass.to_pyglet_alpha(),
         icon_color_g=PALLETE.l_grass.to_pyglet_alpha(),
+        border_color=PALLETE.d_grass.to_pyglet_alpha(),
     ),
     "museum": PlaceColors(
         room_texture_id=2,
@@ -82,12 +84,14 @@ PLACE_COLORS = {
         icon_color_g=c("#D686D4"),
         icon_color_b=c("#CE6EC8"),
         room_color_bg=c("#7A58A0"),
+        border_color=c("#6C4691"),
     ),
     "pub": PlaceColors(
         room_texture_id=3,
         textures_len=2,
         icon_size=0.6,
         place_color_bg=c("#EFE4C8"),
+        border_color=c("#ECA756"),
         icon_color_r=c("#D68663"),
         icon_color_g=c("#FDC362"),
         icon_color_b=c("#FFD199"),
@@ -96,12 +100,14 @@ PLACE_COLORS = {
     "work": PlaceColors(
         place_color_bg=PALLETE.l_grey.to_pyglet_alpha(),
         room_color_bg=PALLETE.d_grey.to_pyglet_alpha(),
+        border_color=PALLETE.d_grey.to_pyglet_alpha(),
     ),
     "home": PlaceColors(
         room_texture_id=4,
         textures_len=1,
         place_color_bg=PALLETE.i_blue.to_pyglet_alpha(),
         room_color_bg=PALLETE.l_blue.to_pyglet_alpha(),
+        border_color=PALLETE.l_blue.to_pyglet_alpha(),
         icon_color_r=c("#DAF4FF"),
         icon_color_g=c("#3F768C"),
         icon_color_b=c("#F2F3ED"),
@@ -109,15 +115,21 @@ PLACE_COLORS = {
     "shop": PlaceColors(
         place_color_bg=PALLETE.i_purple.to_pyglet_alpha(),
         room_color_bg=PALLETE.l_purple.to_pyglet_alpha(),
+        border_color=PALLETE.l_purple.to_pyglet_alpha(),
     ),
     "entertainment": PlaceColors(
         place_color_bg=PALLETE.l_blue.to_pyglet_alpha(),
         room_color_bg=PALLETE.d_blue.to_pyglet_alpha(),
+        border_color=PALLETE.d_blue.to_pyglet_alpha(),
     ),
     "community": PlaceColors(
         room_texture_id=2,
+        icon_size=0.6,
         place_color_bg=PALLETE.l_blue.to_pyglet_alpha(),
         room_color_bg=PALLETE.d_blue.to_pyglet_alpha(),
+        border_color=PALLETE.d_blue.to_pyglet_alpha(),
+        icon_color_g=c("#869DD6"),
+        icon_color_b=c("#6E89CE"),
     ),
 }
 

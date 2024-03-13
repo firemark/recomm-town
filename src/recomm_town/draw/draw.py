@@ -14,11 +14,11 @@ from recomm_town.draw.textures import ACTIVITY_SPRITES, HUMAN_SPRITE, LEARNBAR_I
 from recomm_town.draw.track_human import TrackHumanDraw
 from recomm_town.draw.utils import crop_label, to_color
 from recomm_town.shaders import AnimatedLine, Sprite
+from recomm_town.shaders.curve_line import CurveLine
 from recomm_town.shaders.human_group import HumanGroup
 from recomm_town.common import Trivia, Vec
 from recomm_town.human import Human
 from recomm_town.shaders.rounded_rectangle import RoundedRectangle
-from recomm_town.town import PlaceFunction as PF
 from recomm_town.town.place import Place, Way
 
 from recomm_town.draw.consts import (
@@ -101,7 +101,7 @@ class Draw:
             self.tracked_human.on_resize(width)
 
     def draw_path(self, path: dict[tuple[Place, Place], Way], group: Group):
-        kw = dict(**self.kw, group=group, width=40.0)
+        kw = dict(**self.kw, group=group, width=50.0)
         for way in path.values():
             for i in range(len(way.points) - 1):
                 a = way.points[i]
@@ -112,21 +112,66 @@ class Draw:
     def draw_places(self, places: list[Place], group: Group):
         kw = dict(**self.kw, group=group)
         kw_font = dict(**self.kw_font, color=(0, 0, 0, 255), font_size=36, group=group)
+        margin = 20
+        gate_width = 85
 
         for place in places:
             place_colors = PLACE_COLORS.get(place.look, PLACE_COLORS["default"])
             p = place.position
             rot = place.rotation
-            size = place.box_end - place.box_start
-            center = p - place.box_start
-            start = center + place.box_start
+            box_start = place.box_start - margin
+            box_end = place.box_end + margin
+            size = box_end - box_start
+            center = p - box_start
 
-            place_rect = RoundedRectangle(start.x, start.y, size.x, size.y, round=32, color=place_colors.place_color_bg, **kw)
+            place_rect = RoundedRectangle(p.x, p.y, size.x, size.y, round=32, color=place_colors.place_color_bg, **kw)
             place_rect.anchor_position = center
             place_rect.rotation = -rot
 
+            border_kw = dict(
+                x=p.x,
+                y=p.y,
+                thickness=10,
+                round=32,
+                color=place_colors.border_color,
+                rotation=-rot,
+                **kw,
+            )
+
+            border_ld = CurveLine(
+                width=center.x - gate_width,
+                height=center.y - gate_width,
+                anchor_position=Vec(center.x, center.y),
+                **border_kw,
+            )
+
+            border_lu = CurveLine(
+                width=center.x - gate_width,
+                height=center.y - size.y + gate_width,
+                anchor_position=Vec(center.x, center.y-size.y),
+                **border_kw,
+            )
+
+            border_ru = CurveLine(
+                width=center.x - size.x + gate_width,
+                height=center.y - size.y + gate_width,
+                anchor_position=Vec(center.x-size.x, center.y-size.y),
+                **border_kw,
+            )
+
+            border_rd = CurveLine(
+                width=center.x - size.x + gate_width,
+                height=center.y - gate_width,
+                anchor_position=Vec(center.x-size.x, center.y),
+                **border_kw,
+            )
+
             self.objs += [
                 place_rect,
+                border_ld,
+                border_lu,
+                border_ru,
+                border_rd,
                 Label(place.title, x=p.x, y=p.y, **kw_font),
             ]
 
