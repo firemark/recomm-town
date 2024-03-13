@@ -1,11 +1,12 @@
 from math import ceil
 from queue import Empty, Queue
-from typing import NamedTuple
+from typing import Literal, NamedTuple
 import pyglet
 from pyglet.gl import gl
 from pyglet.math import Mat4
 from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group
+from pyglet.image import load as image_load
 
 from recomm_town.common import Vec
 from recomm_town.human import Human
@@ -42,10 +43,16 @@ class App(Window):
     gui_group: GuiGroup
 
     _zoom: float
+    _page: Literal['world', 'graph', 'heatmap']
 
     def __init__(self, world, queue: Queue, match_time: int = 600):
         config = pyglet.gl.Config(alpha_size=8, samples=4)
         super().__init__(config=config, resizable=True)
+
+        self._page = 'world'
+        self._page_image = None
+        self._page_timer = None
+
         self.set_caption("Recomm Town")
         self.batch = Batch()
         self.town_group = Group(order=0)
@@ -70,6 +77,7 @@ class App(Window):
 
         self.register_event_type('on_change_place')
         self.register_event_type('on_change_human')
+        self.register_event_type('on_change_page')
         self.register_event_type('on_city_zoom')
 
     def set_view(self, position, zoom=1.0):
@@ -78,6 +86,8 @@ class App(Window):
         self.recreate_view()
 
     def recreate_view(self):
+        if self._page != 'world':
+            return
         wh = self.width / 2
         hh = self.height / 2
         z = self.camera_zoom * hh / 4000.0
@@ -144,6 +154,8 @@ class App(Window):
             self.dispatch_event('on_change_human')
         if symbol == key.E:
             self.dispatch_event('on_city_zoom')
+        if symbol == key.R:
+            self.dispatch_event('on_change_page')
         if symbol == key.UP:
             self.move_position += Vec(0.0, +20.0)
         elif symbol == key.DOWN:
@@ -154,6 +166,42 @@ class App(Window):
             self.move_position += Vec(+20.0, 0.0)
         else:
             return super().on_key_press(symbol, modifiers)
+
+    def on_change_page(self):
+        match self._page:
+            case 'world':
+                self.view = Mat4()
+                self._page = 'graph'
+                self._load_graph_image()
+                pyglet.clock.schedule_interval(self._load_graph_image, 60)
+            case 'graph':
+                self.view = Mat4()
+                self._page = 'heatmap'
+                self._load_heatmap_image()
+                pyglet.clock.unschedule(self._load_graph_image)
+                pyglet.clock.schedule_interval(self._load_heatmap_image, 60)
+            case 'heatmap':
+                self._page = 'world'
+                self._page_image = None
+                pyglet.clock.unschedule(self._load_heatmap_image)
+                self.recreate_view()
+
+    def _load_graph_image(self, dt=0.0):
+        self._load_page_image("graph.png")
+
+    def _load_heatmap_image(self, dt=0.0):
+        self._load_page_image("heatmap.png")
+
+    def _load_page_image(self, path):
+        try:
+            img = image_load(path)
+        except OSError:
+            self._page_image = None
+            return
+
+        img.anchor_x = img.width // 2
+        img.anchor_y = img.height // 2
+        self._page_image = img
 
     def on_change_place(self):
         places = self.world.town.places
@@ -173,6 +221,7 @@ class App(Window):
             self.human_index = 0
 
     def on_city_zoom(self):
+        self._stop_tracking()
         self.set_view(Vec(0.0, 0.0))
 
     def on_key_release(self, symbol, modifiers):
@@ -224,7 +273,12 @@ class App(Window):
     def on_draw(self):
         self.clear()
         gl.glClearColor(0.79, 0.86, 0.70, 1.0)
-        self.batch.draw()
+        match self._page:
+            case 'world':
+                self.batch.draw()
+            case 'heatmap' | 'graph':
+                if self._page_image is not None:
+                    self._page_image.blit(self.width // 2, self.height // 2, 0)
         gl.glFlush()
 
     def on_refresh(self, dt):

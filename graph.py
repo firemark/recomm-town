@@ -16,8 +16,8 @@ FILES = [
 ]
 
 fig, axes = plt.subplots(2, 2)
-fig.set_size_inches(16, 9)
-fig.tight_layout()
+fig.set_size_inches(20, 12)
+fig.suptitle("Graphs")
 
 for title, filename, coords in FILES:
     ax = axes[*coords]
@@ -29,7 +29,10 @@ for title, filename, coords in FILES:
     except FileNotFoundError:
         continue
 
-    sorted_trivias = [t for t, v in sorted(data["last_values"].items(), key=lambda o: -o[1])]
+    last_values = data["last_values"]
+    if not last_values:
+        continue
+    sorted_trivias = [t for t, v in sorted(last_values.items(), key=lambda o: -o[1])]
     highscore = sorted_trivias[:10]
 
     for index, trivia in enumerate(highscore, start=1):
@@ -44,4 +47,4 @@ for title, filename, coords in FILES:
     ax.get_yaxis().set_major_formatter(EngFormatter())
     ax.get_xaxis().set_major_formatter(FuncFormatter(to_time))
 
-fig.savefig("output.png")
+fig.savefig("graph.png")

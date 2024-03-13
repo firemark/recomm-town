@@ -1,5 +1,7 @@
 out*.json
 output.png
+heatmap.png
+graph.png
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -6,7 +6,8 @@ trap "kill 0" EXIT
 function draw() {
   while true
   do
-    python3 ./graph.py
+    python3 ./graph.py&
+    python3 ./heatmap.py&
     sleep 60
   done
 }

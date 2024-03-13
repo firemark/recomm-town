@@ -7,8 +7,8 @@ world:
     tick: 1.0
     factor: 1.0
   neighbor-range: 100.0
-  # levels:
-  #   warmup-time: 30.0
+  levels:
+    warmup-time: 30.0
     
   radio: 
     program: podcast
