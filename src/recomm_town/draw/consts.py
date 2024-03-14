@@ -34,8 +34,8 @@ class PALLETE:
     d_blue = Color.from_hex("#328EB3")
     l_grey = Color.from_hex("#C4C4C4")
     d_grey = Color.from_hex("#999999")
-    l_skin = Color.from_hex("#E0CCB8")
-    d_skin = Color.from_hex("#362617")
+    l_skin = Color.from_hex("#FFF5D1")
+    d_skin = Color.from_hex("#6B4C2E")
     white = Color.from_hex("#FFFFFF")
     black = Color.from_hex("#000000")
 
@@ -90,7 +90,7 @@ class ActCfg:
             object.__setattr__(self, "dashboard_color", self.light_icon_color.r)
 
     def find_icon_color(self, skin_lightness: float) -> IconColor:
-        if skin_lightness > 0.6:
+        if skin_lightness > 0.5:
             return self.light_icon_color
         else:
             return self.dark_icon_color  # type: ignore
@@ -203,6 +203,8 @@ ACTIVITY_CFG = {
     ),
     Activity.TALK: ActCfg(
         label="Seeking to talk",
+        icon_size=1.0,
+        icon_shift=Vec(0.0, -0.25),
         light_icon_color=IconColor(
             r=PALLETE.l_blue.to_pyglet_alpha(),
             g=PALLETE.white.to_pyglet_alpha(),
@@ -211,18 +213,25 @@ ACTIVITY_CFG = {
     ),
     Activity.READ: ActCfg(
         label="Reading a book",
-        light_icon_color=IconColor(PALLETE.l_yellow.to_pyglet_alpha()),
+        dashboard_color=PALLETE.l_yellow.to_pyglet_alpha(),
+        light_icon_color=IconColor(PALLETE.d_yellow.to_pyglet_alpha()),
+        dark_icon_color=IconColor(PALLETE.l_yellow.to_pyglet_alpha()),
     ),
     Activity.RADIO: ActCfg(
         label="Listening a radio",
-        light_icon_color=IconColor(PALLETE.l_yellow.to_pyglet_alpha()),
+        dashboard_color=PALLETE.l_yellow.to_pyglet_alpha(),
+        light_icon_color=IconColor(PALLETE.d_yellow.to_pyglet_alpha()),
+        dark_icon_color=IconColor(PALLETE.l_yellow.to_pyglet_alpha()),
     ),
     Activity.TV: ActCfg(
         label="Watching a TV",
-        light_icon_color=IconColor(PALLETE.l_yellow.to_pyglet_alpha()),
+        dashboard_color=PALLETE.l_yellow.to_pyglet_alpha(),
+        light_icon_color=IconColor(PALLETE.d_yellow.to_pyglet_alpha()),
+        dark_icon_color=IconColor(PALLETE.l_yellow.to_pyglet_alpha()),
     ),
     Activity.WTF: ActCfg(
         label="Confused",
+        icon_size=1.0,
         variants=3,
         light_icon_color=IconColor(PALLETE.l_red.to_pyglet_alpha()),
     ),
@@ -235,22 +244,34 @@ ACTIVITY_CFG = {
     ),
     Activity.SLEEP: ActCfg(
         label="Sleeping",
+        icon_size=1.0,
+        icon_shift=Vec(0.0, -0.20),
         light_icon_color=IconColor(
             r=PALLETE.l_blue.to_pyglet_alpha(),
-            g=PALLETE.d_blue.to_pyglet_alpha(),
+            g=PALLETE.black.to_pyglet_alpha(),
+        ),
+        dark_icon_color=IconColor(
+            r=PALLETE.l_blue.to_pyglet_alpha(),
+            g=PALLETE.white.to_pyglet_alpha(),
         ),
     ),
     Activity.TIME_BREAK: ActCfg(
         label="Waiting",
-        light_icon_color=IconColor(PALLETE.white.to_pyglet_alpha()),
+        dashboard_color=PALLETE.white.to_pyglet_alpha(),
+        light_icon_color=IconColor(PALLETE.black.to_pyglet_alpha()),
+        dark_icon_color=IconColor(PALLETE.white.to_pyglet_alpha()),
     ),
     Activity.ENJOY: ActCfg(
         label="Enjoy",
         variants=2,
-        light_icon_color=IconColor(PALLETE.l_blue.to_pyglet_alpha()),
+        dashboard_color=PALLETE.l_blue.to_pyglet_alpha(),
+        light_icon_color=IconColor(PALLETE.d_blue.to_pyglet_alpha()),
+        dark_icon_color=IconColor(PALLETE.l_blue.to_pyglet_alpha()),
     ),
     Activity.SHARE: ActCfg(
         label="Talking & Sharing",
+        icon_size=1.0,
+        icon_shift=Vec(0.0, -0.25),
         variants=3,
         light_icon_color=IconColor(
             r=PALLETE.l_red.to_pyglet_alpha(),

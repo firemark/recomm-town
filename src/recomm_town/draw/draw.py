@@ -341,7 +341,7 @@ class Draw:
             act_sprite.resize(
                 p0=Vec(-act_size, -act_size),
                 p1=Vec(act_size, act_size),
-                anchor=act_cfg.icon_shift,
+                anchor=act_cfg.icon_shift * size,
             )
 
             icon_color = act_cfg.find_icon_color(skin_lightness)

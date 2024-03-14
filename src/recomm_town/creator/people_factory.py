@@ -69,7 +69,7 @@ def generate_people(
                 human,
                 [workplace, available_comms.find()],
             )
-            if books and random() > 0.95:
+            if books and random() > 0.7:
                 human.library.append(choice(books))
             room.occupied_by = human
             family.append(human)
