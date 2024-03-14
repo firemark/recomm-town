@@ -5,7 +5,7 @@ from queue import Queue
 from threading import Thread, Event
 from time import sleep
 
-import serial
+#import serial
 import pyglet
 
 pyglet.options["debug_gl"] = False
@@ -34,12 +34,12 @@ def run(town: Path, match_time: int, fullscreen: bool, output_filename: str):
     draw.draw_places(world.town.places, app.town_group, app.label_group)
     draw.draw_people(app, world.people, app.people_group)
 
-    serial_thread_event = Event()
-    serial_thread = Thread(
-        target=_serial,
-        args=(event_queue, serial_thread_event),
-    )
-    serial_thread.start()
+    # serial_thread_event = Event()
+    # serial_thread = Thread(
+    #     target=_serial,
+    #     args=(event_queue, serial_thread_event),
+    # )
+    # serial_thread.start()
 
     app.resize_observers["draw"] = draw.on_resize
     app.human_observers["draw"] = draw.track_human
@@ -51,7 +51,7 @@ def run(town: Path, match_time: int, fullscreen: bool, output_filename: str):
     try:
         app.run()
     finally:
-        serial_thread_event.set()
+        # serial_thread_event.set()
         reporter.write(output_filename)
 
 

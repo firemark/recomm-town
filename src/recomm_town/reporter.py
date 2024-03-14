@@ -4,7 +4,13 @@ from pathlib import Path
 from collections import defaultdict
 from functools import partial
 
-import numpy as np
+try:
+    import numpy as np
+except ImportError:
+    NUMPY_FOUND = False
+else:
+    NUMPY_FOUND = True
+
 
 from recomm_town.common import Trivia, TriviaChunk, Vec
 from recomm_town.human import Human
@@ -15,7 +21,7 @@ class TriviaReporter:
     HEATMAP_SIZE = 32
 
     start_time: float
-    trivia_heatmap: defaultdict[Trivia, np.ndarray]
+    trivia_heatmap: defaultdict[Trivia, "np.ndarray"]
     trivia_plot: defaultdict[Trivia, list[tuple[float, float]]]
 
     def __init__(self, boundaries: tuple[Vec, Vec]):
@@ -38,12 +44,16 @@ class TriviaReporter:
         self.width = w
         self.height = h
         self.trivia_plot = defaultdict(list)
-        self.trivia_heatmap = defaultdict(lambda: np.zeros((h, w), dtype=np.uint32))
+        if NUMPY_FOUND:
+            self.trivia_heatmap = defaultdict(lambda: np.zeros((h, w), dtype=np.uint32))
 
     def write(self, filename: Path | str):
         label = self._trivia_label
         with open(filename, "w") as file:
-            heatmap = self.trivia_heatmap
+            if NUMPY_FOUND:
+                heatmap = self.trivia_heatmap
+            else:
+                heatmap = []
             plot = self.trivia_plot
             obj = {
                 "heatmap": {label(t): v.tolist() for t, v in heatmap.items()},
@@ -71,8 +81,9 @@ class TriviaReporter:
         new_value: float,
         old_value: float,
     ):
-        trivia, chunk_no = trivia_chunk
-        self._heatmap_update(position - self.start_position, trivia)
+        trivia, _ = trivia_chunk
+        if NUMPY_FOUND:
+            self._heatmap_update(position - self.start_position, trivia)
         self._plot_update(trivia, new_value - old_value)
 
     def _heatmap_update(self, position: Vec, trivia: Trivia):
