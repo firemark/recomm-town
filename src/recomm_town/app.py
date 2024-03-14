@@ -13,6 +13,13 @@ from recomm_town.human import Human
 from recomm_town.observer import Observer
 from recomm_town.shaders.human_group import HumanGroup
 
+SPECIAL_A = 0xad00000000
+SPECIAL_B = 0xac00000000
+SPECIAL_C = 0xab00000000
+SPECIAL_D = 0x7900000000 
+SPECIAL_UP = 0x7b00000000
+SPECIAL_DOWN = 0x7a00000000
+
 
 class GuiGroup(Group):
     def __init__(self, window: Window, order: int = 0, parent=None):
@@ -148,14 +155,20 @@ class App(Window):
             self.close()
 
     def on_key_press(self, symbol, modifiers):
-        if symbol == key.Q:
+        if symbol in (key.Q, SPECIAL_A):
             self.dispatch_event('on_change_place')
-        if symbol == key.W:
+        if symbol in (key.W, SPECIAL_D):
             self.dispatch_event('on_change_human')
-        if symbol == key.E:
+        if symbol in (key.E, SPECIAL_B):
             self.dispatch_event('on_city_zoom')
-        if symbol == key.R:
+        if symbol in (key.R, SPECIAL_C):
             self.dispatch_event('on_change_page')
+        if symbol == SPECIAL_UP:
+            self.camera_zoom = min(10.0, self.camera_zoom * 1.05) 
+            self.recreate_view()
+        if symbol == SPECIAL_DOWN:
+            self.camera_zoom = max(1.0, self.camera_zoom * 0.95) 
+            self.recreate_view()
         if symbol == key.UP:
             self.move_position += Vec(0.0, +20.0)
         elif symbol == key.DOWN:
