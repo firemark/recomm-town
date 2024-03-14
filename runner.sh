@@ -14,7 +14,7 @@ function draw() {
 
 function run() {
   python -m recomm_town $1.yaml \
-    --match-time 600 \
+    --match-time 3000 \
     --output "out_$1.json" \
     --fullscreen
 }

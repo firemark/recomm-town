@@ -26,8 +26,8 @@ COLORS = ['tab:blue', 'tab:red', 'tab:green', 'gold', 'deepskyblue', 'violet']
 
 mpl.rcParams['hatch.linewidth'] = 2.0
 fig, axes = plt.subplots(2, 2)
-fig.suptitle("Heatmaps")
-fig.set_size_inches(20, 12)
+fig.set_size_inches(20, 11)
+fig.suptitle("Heatmaps", fontsize=42)
 
 for title, filename, coords in FILES:
     ax = axes[*coords]

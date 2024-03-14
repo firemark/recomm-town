@@ -16,8 +16,8 @@ FILES = [
 ]
 
 fig, axes = plt.subplots(2, 2)
-fig.set_size_inches(20, 12)
-fig.suptitle("Graphs")
+fig.set_size_inches(20, 11)
+fig.suptitle("Graphs", fontsize=42)
 
 for title, filename, coords in FILES:
     ax = axes[*coords]
