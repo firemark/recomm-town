@@ -17,7 +17,6 @@ from recomm_town.draw.consts import (
     DASHBOARD_WHITE,
     DASHBOARD_FONTS,
     LEVELS,
-    LEVEL_COLORS,
 )
 
 
@@ -131,15 +130,13 @@ class TrackHumanDraw:
                 ),
             },
             "levels": {
-                level: LevelArcWidget(
+                cfg.attr: LevelArcWidget(
                     x=x - 40.0 + 140 * index,
                     y=y + 340.0,
-                    title=level.title(),
-                    color=(*LEVEL_COLORS[level], 255),
-                    texture_index=index - 1,
+                    cfg=cfg,
                     **kw,
                 )
-                for index, level in enumerate(LEVELS, start=1)
+                for index, cfg in enumerate(LEVELS, start=1)
             },
             "activity": ActivityWidget(
                 x=x + 360.0,
@@ -170,7 +167,9 @@ class TrackHumanDraw:
         self._friend_update()
         self._act_update(human.activity)
         for level in LEVELS:
-            self._level_update(level, getattr(human.levels, level).value)
+            attr = level.attr
+            value = getattr(human.levels, attr).value
+            self._level_update(attr, value)
 
     def on_resize(self, width: int):
         self._translate(width, self.objs)

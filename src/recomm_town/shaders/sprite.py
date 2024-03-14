@@ -80,16 +80,7 @@ class Sprite:
         batch=None,
         group=None,
     ):
-        p0 -= anchor
-        p1 -= anchor
-        # fmt: off
-        self._v = (
-            p0.x, p0.y,
-            p1.x, p0.y,
-            p1.x, p1.y,
-            p0.x, p1.y,
-        )
-        # fmt: on
+        self.resize(p0, p1, anchor)
         self._texture = img.get_texture()
         self._program = create_program()
         self._color_r = color_r
@@ -101,6 +92,20 @@ class Sprite:
             self._texture, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, self._program, group
         )
         self._create_vertex_list()
+
+    def resize(self, p0: Vec, p1: Vec, anchor: Vec = Vec(0, 0)):
+        p0 -= anchor
+        p1 -= anchor
+        # fmt: off
+        self._v = (
+            p0.x, p0.y,
+            p1.x, p0.y,
+            p1.x, p1.y,
+            p0.x, p1.y,
+        )
+        # fmt: on
+        if self._vertex_list:
+            self._vertex_list.position[:] = self._v
 
     def set_img(self, img):
         texture = img.get_texture()

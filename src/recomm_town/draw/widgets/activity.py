@@ -3,11 +3,9 @@ from pyglet.text import Label
 from recomm_town.common import Vec
 
 from recomm_town.draw.consts import (
-    ACTIVITY_LABELS,
-    ACTIVITY_LIGHT_COLORS,
+    ACTIVITY_CFG,
     DASHBOARD_FONTS,
     DASHBOARD_WHITE,
-    ACTIVITY_LABELS,
 )
 from recomm_town.human.activity import Activity
 from recomm_town.shaders.arc import Arc
@@ -45,10 +43,9 @@ class ActivityWidget:
         )
 
     def update(self, activity: Activity):
-        color = ACTIVITY_LIGHT_COLORS[activity]
-        if isinstance(color, list):
-            color = color[0]
-        self.label.text = ACTIVITY_LABELS[activity]
+        cfg = ACTIVITY_CFG[activity]
+        color = cfg.dashboard_color
+        self.label.text = cfg.label
         self.label.color = color
         self.symbol.set_img(ACTIVITY_SPRITES[activity * 3])
         self.bg.set_color_r(color)

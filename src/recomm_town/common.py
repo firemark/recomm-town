@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import cache
 from math import sin, cos, radians
 from typing import NamedTuple, Self
 
@@ -87,6 +88,7 @@ class Color(NamedTuple):
         level = min(max(level, 0.0), 1.0)
         return self * level + other * (1.0 - level)
 
+    @cache
     def to_pyglet(self):
         r, g, b = self
         return (
@@ -95,6 +97,7 @@ class Color(NamedTuple):
             int(min(max(b, 0.0), 1.0) * 255),
         )
 
+    @cache
     def to_pyglet_alpha(self, a=1.0):
         r, g, b = self
         return (

@@ -29,16 +29,14 @@ from recomm_town.shaders.rounded_rectangle import RoundedRectangle
 from recomm_town.town.place import Place, Way
 
 from recomm_town.draw.consts import (
-    ACTIVITY_DARK_COLORS,
-    ACTIVITY_LIGHT_COLORS,
     DASHBOARD_BG,
     DASHBOARD_FONTS,
     DASHBOARD_WHITE,
     PALLETE,
-    PLACE_COLORS,
+    PLACE_CFG,
+    ACTIVITY_CFG,
     FONT,
     COLORS,
-    ACTIVITY_TEXTURE_VARIANTS,
     PLACE_LABEL_BG,
 )
 
@@ -169,9 +167,10 @@ class Draw:
         )
         margin = 20
         gate_width = 85
+        place_cfg_default = PLACE_CFG["default"]
 
         for place in places:
-            place_colors = PLACE_COLORS.get(place.look, PLACE_COLORS["default"])
+            place_cfg = PLACE_CFG.get(place.look, place_cfg_default)
             p = place.position
             rot = place.rotation
             box_start = place.box_start - margin
@@ -185,7 +184,7 @@ class Draw:
                 size.x,
                 size.y,
                 round=32,
-                color=place_colors.place_color_bg,
+                color=place_cfg.place_color_bg,
                 **kw,
             )
             place_rect.anchor_position = center
@@ -196,7 +195,7 @@ class Draw:
                 y=p.y,
                 thickness=10,
                 round=32,
-                color=place_colors.border_color,
+                color=place_cfg.border_color,
                 rotation=-rot,
                 **kw,
             )
@@ -262,21 +261,21 @@ class Draw:
             ]
 
             s = place.room_size
-            si = s * place_colors.icon_size
+            si = s * place_cfg.icon_size
             hi = si / 2
             h = s / 2
-            index = place_colors.room_texture_id * 3
+            index = place_cfg.room_texture_id * 3
             for room, index_shift in zip(
-                place.rooms, cycle(list(range(place_colors.textures_len)))
+                place.rooms, cycle(list(range(place_cfg.textures_len)))
             ):
                 r = room.position
                 room_body = Sprite(
                     ROOM_SPRITES[index + index_shift],
                     p0=Vec(r.x - hi, r.y - hi),
                     p1=Vec(r.x + hi, r.y + hi),
-                    color_r=place_colors.icon_color_r,
-                    color_g=place_colors.icon_color_g,
-                    color_b=place_colors.icon_color_b,
+                    color_r=place_cfg.icon_color.r,
+                    color_g=place_cfg.icon_color.g,
+                    color_b=place_cfg.icon_color.b,
                     **kw,
                 )
                 room_rect = RoundedRectangle(
@@ -284,7 +283,7 @@ class Draw:
                     r.y,
                     s,
                     s,
-                    color=place_colors.room_color_bg,
+                    color=place_cfg.room_color_bg,
                     round=16,
                     **kw,
                 )
@@ -321,16 +320,11 @@ class Draw:
         # }
 
         skin_lightness = random()
-        if skin_lightness > 0.6:
-            activity_colors = ACTIVITY_LIGHT_COLORS
-        else:
-            activity_colors = ACTIVITY_DARK_COLORS
         skin_color = COLORS.light_skin.mix(COLORS.dark_skin, skin_lightness)
-        a = size * 0.6
         act_sprite = Sprite(
             img=ACTIVITY_SPRITES[0],
-            p0=Vec(-a, -a),
-            p1=Vec(a, a),
+            p0=Vec(-size, -size),
+            p1=Vec(size, size),
             **kw,
         )
 
@@ -339,21 +333,21 @@ class Draw:
         #     bar.width = 2 * size * value
         #     bar.visible = bar.width > 0.05
 
-        act_sprite_callbacks = [
-            act_sprite.set_color_r,
-            act_sprite.set_color_g,
-            act_sprite.set_color_b,
-        ]
-
         def act_update(activity):
-            variants_count = ACTIVITY_TEXTURE_VARIANTS[activity]
-            variant = randint(1, variants_count) - 1
+            act_cfg = ACTIVITY_CFG[human.activity]
+            variant = randint(0, act_cfg.variants - 1)
             act_sprite.set_img(ACTIVITY_SPRITES[activity * 3 + variant])
-            colors = activity_colors[activity]
-            if isinstance(colors, tuple):
-                colors = [colors]
-            for cb, color in zip(act_sprite_callbacks, colors):
-                cb(color)
+            act_size = size * act_cfg.icon_size
+            act_sprite.resize(
+                p0=Vec(-act_size, -act_size),
+                p1=Vec(act_size, act_size),
+                anchor=act_cfg.icon_shift,
+            )
+
+            icon_color = act_cfg.find_icon_color(skin_lightness)
+            act_sprite.set_color_r(icon_color.r)
+            act_sprite.set_color_g(icon_color.g)
+            act_sprite.set_color_b(icon_color.b)
 
         body = Sprite(
             HUMAN_SPRITE,

@@ -1,9 +1,9 @@
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass
 import os
 import platform
 from pathlib import Path
 
-from recomm_town.common import Color
+from recomm_town.common import Color, Vec
 from recomm_town.human import Activity
 from recomm_town.draw.utils import to_color, c, n
 from recomm_town.town.place import PlaceFunction
@@ -37,6 +37,7 @@ class PALLETE:
     l_skin = Color.from_hex("#E0CCB8")
     d_skin = Color.from_hex("#362617")
     white = Color.from_hex("#FFFFFF")
+    black = Color.from_hex("#000000")
 
 
 class COLORS:
@@ -55,131 +56,212 @@ class COLORS:
 
 
 @dataclass(frozen=True)
-class PlaceColors:
+class IconColor:
+    r: tuple[int, int, int, int] = n()
+    g: tuple[int, int, int, int] = n()
+    b: tuple[int, int, int, int] = n()
+
+
+@dataclass(frozen=True)
+class PlaceCfg:
     room_texture_id: int = 0
     textures_len: int = 1
     place_color_bg: tuple[int, int, int, int] = PALLETE.road.to_pyglet_alpha()
-    icon_size: float = 1.0
     border_color: tuple[int, int, int, int] = n()
-    icon_color_r: tuple[int, int, int, int] = n()
-    icon_color_g: tuple[int, int, int, int] = n()
-    icon_color_b: tuple[int, int, int, int] = n()
     room_color_bg: tuple[int, int, int, int] = n()
+    icon_size: float = 0.6
+    icon_color: IconColor = IconColor()
 
 
-PLACE_COLORS = {
-    "default": PlaceColors(),
-    "garden": PlaceColors(
+@dataclass(frozen=True)
+class ActCfg:
+    label: str
+    icon_size: float = 0.6
+    icon_shift: Vec = Vec(0.0, 0.0)
+    variants: int = 1
+    light_icon_color: IconColor = IconColor()
+    dashboard_color: tuple[int, int, int, int] = n()
+    dark_icon_color: IconColor | None = None
+
+    def __post_init__(self):
+        if self.dark_icon_color is None:
+            object.__setattr__(self, "dark_icon_color", self.light_icon_color)
+        if self.dashboard_color == n():
+            object.__setattr__(self, "dashboard_color", self.light_icon_color.r)
+
+    def find_icon_color(self, skin_lightness: float) -> IconColor:
+        if skin_lightness > 0.6:
+            return self.light_icon_color
+        else:
+            return self.dark_icon_color  # type: ignore
+
+
+PLACE_CFG = {
+    "default": PlaceCfg(),
+    "garden": PlaceCfg(
         room_texture_id=1,
         textures_len=2,
         place_color_bg=PALLETE.road.to_pyglet_alpha(),
-        icon_color_r=PALLETE.d_grass.to_pyglet_alpha(),
-        icon_color_g=PALLETE.l_grass.to_pyglet_alpha(),
         border_color=PALLETE.d_grass.to_pyglet_alpha(),
+        icon_size=1.0,
+        icon_color=IconColor(
+            r=PALLETE.d_grass.to_pyglet_alpha(),
+            g=PALLETE.l_grass.to_pyglet_alpha(),
+        ),
     ),
-    "museum": PlaceColors(
+    "museum": PlaceCfg(
         room_texture_id=2,
-        icon_size=0.6,
         place_color_bg=c("#D0BDE3"),
-        icon_color_g=c("#D686D4"),
-        icon_color_b=c("#CE6EC8"),
         room_color_bg=c("#7A58A0"),
         border_color=c("#6C4691"),
+        icon_color=IconColor(
+            g=c("#D686D4"),
+            b=c("#CE6EC8"),
+        ),
     ),
-    "pub": PlaceColors(
+    "pub": PlaceCfg(
         room_texture_id=3,
         textures_len=2,
-        icon_size=0.6,
         place_color_bg=c("#EFE4C8"),
         border_color=c("#ECA756"),
-        icon_color_r=c("#D68663"),
-        icon_color_g=c("#FDC362"),
-        icon_color_b=c("#FFD199"),
         room_color_bg=c("#ECA756"),
+        icon_color=IconColor(
+            r=c("#D68663"),
+            g=c("#FDC362"),
+            b=c("#FFD199"),
+        ),
     ),
-    "work": PlaceColors(
+    "work": PlaceCfg(
         place_color_bg=PALLETE.l_grey.to_pyglet_alpha(),
         room_color_bg=PALLETE.d_grey.to_pyglet_alpha(),
         border_color=PALLETE.d_grey.to_pyglet_alpha(),
     ),
-    "home": PlaceColors(
+    "home": PlaceCfg(
         room_texture_id=4,
         textures_len=1,
         place_color_bg=PALLETE.i_blue.to_pyglet_alpha(),
         room_color_bg=PALLETE.l_blue.to_pyglet_alpha(),
         border_color=PALLETE.l_blue.to_pyglet_alpha(),
-        icon_color_r=c("#DAF4FF"),
-        icon_color_g=c("#3F768C"),
-        icon_color_b=c("#F2F3ED"),
+        icon_size=0.7,
+        icon_color=IconColor(
+            r=PALLETE.d_blue.to_pyglet_alpha(),
+        ),
     ),
-    "shop": PlaceColors(
+    "shop": PlaceCfg(
         place_color_bg=PALLETE.i_purple.to_pyglet_alpha(),
         room_color_bg=PALLETE.l_purple.to_pyglet_alpha(),
         border_color=PALLETE.l_purple.to_pyglet_alpha(),
     ),
-    "entertainment": PlaceColors(
+    "entertainment": PlaceCfg(
         place_color_bg=PALLETE.l_blue.to_pyglet_alpha(),
         room_color_bg=PALLETE.d_blue.to_pyglet_alpha(),
         border_color=PALLETE.d_blue.to_pyglet_alpha(),
     ),
-    "community": PlaceColors(
+    "community": PlaceCfg(
         room_texture_id=2,
-        icon_size=0.6,
         place_color_bg=PALLETE.l_blue.to_pyglet_alpha(),
         room_color_bg=PALLETE.d_blue.to_pyglet_alpha(),
         border_color=PALLETE.d_blue.to_pyglet_alpha(),
-        icon_color_g=c("#869DD6"),
-        icon_color_b=c("#6E89CE"),
+        icon_color=IconColor(
+            g=c("#869DD6"),
+            b=c("#6E89CE"),
+        ),
     ),
 }
 
-LEVELS = ["fridge", "satiety", "money", "energy"]
-LEVEL_COLORS = {
-    "fridge": to_color("#D9DAD2"),
-    "satiety": to_color("#9CE256"),
-    "money": to_color("#F1D651"),
-    "energy": to_color("#FF5349"),
-}
+@dataclass(frozen=True)
+class LevelCfg:
+    attr: str
+    label: str
+    color: tuple[int, int, int, int]
+    texture_index: int
 
-ACTIVITY_LIGHT_COLORS = {
-    Activity.NONE: n(),
-    Activity.MOVE: PALLETE.l_red.to_pyglet_alpha(),
-    Activity.WORK: PALLETE.l_grey.to_pyglet_alpha(),
-    Activity.SHOP: PALLETE.l_grey.to_pyglet_alpha(),
-    Activity.TALK: [
-        PALLETE.l_blue.to_pyglet_alpha(),
-        c("#FFFFFF"),
-        c("#000000"),
-    ],
-    Activity.READ: PALLETE.l_yellow.to_pyglet_alpha(),
-    Activity.RADIO: PALLETE.l_yellow.to_pyglet_alpha(),
-    Activity.TV: PALLETE.l_yellow.to_pyglet_alpha(),
-    Activity.WTF: PALLETE.l_red.to_pyglet_alpha(),
-    Activity.EAT: PALLETE.l_green.to_pyglet_alpha(),
-    Activity.SLEEP: [
-        PALLETE.l_blue.to_pyglet_alpha(),
-        PALLETE.d_blue.to_pyglet_alpha(),
-    ],
-    Activity.TIME_BREAK: PALLETE.white.to_pyglet_alpha(),
-    Activity.ENJOY: PALLETE.l_blue.to_pyglet_alpha(),
-    Activity.SHARE: [
-        PALLETE.l_red.to_pyglet_alpha(),
-        c("#FFFFFF"),
-        c("#000000"),
-    ],
-    Activity.IDEA: PALLETE.l_purple.to_pyglet_alpha(),
-}
+LEVELS = [
+    LevelCfg("fridge", "Fridge", c("#D9DAD2"), 0),
+    LevelCfg("satiety", "Satiety", c("#9CE256"), 1),
+    LevelCfg("money", "Wealth", c("#F1D651"), 2),
+    LevelCfg("energy", "Energy", c("#FF5349"), 3),
+]
 
-ACTIVITY_DARK_COLORS = ACTIVITY_LIGHT_COLORS.copy()
-ACTIVITY_DARK_COLORS |= {
-    Activity.EAT: PALLETE.i_green.to_pyglet_alpha(),
-    Activity.WORK: PALLETE.white.to_pyglet_alpha(),
-    Activity.SHOP: PALLETE.white.to_pyglet_alpha(),
-    Activity.TALK: [
-        PALLETE.i_blue.to_pyglet_alpha(),
-        c("#FFFFFF"),
-        c("#000000"),
-    ]
+ACTIVITY_CFG = {
+    Activity.NONE: ActCfg(label="-"),
+    Activity.MOVE: ActCfg(
+        label="Moving",
+        light_icon_color=IconColor(PALLETE.l_red.to_pyglet_alpha()),
+    ),
+    Activity.WORK: ActCfg(
+        label="Working",
+        dashboard_color=PALLETE.l_grey.to_pyglet_alpha(),
+        light_icon_color=IconColor(PALLETE.d_grey.to_pyglet_alpha()),
+        dark_icon_color=IconColor(PALLETE.white.to_pyglet_alpha()),
+    ),
+    Activity.SHOP: ActCfg(
+        label="Shopping",
+        dashboard_color=PALLETE.l_grey.to_pyglet_alpha(),
+        light_icon_color=IconColor(PALLETE.d_grey.to_pyglet_alpha()),
+        dark_icon_color=IconColor(PALLETE.white.to_pyglet_alpha()),
+    ),
+    Activity.TALK: ActCfg(
+        label="Seeking to talk",
+        light_icon_color=IconColor(
+            r=PALLETE.l_blue.to_pyglet_alpha(),
+            g=PALLETE.white.to_pyglet_alpha(),
+            b=PALLETE.black.to_pyglet_alpha(),
+        ),
+    ),
+    Activity.READ: ActCfg(
+        label="Reading a book",
+        light_icon_color=IconColor(PALLETE.l_yellow.to_pyglet_alpha()),
+    ),
+    Activity.RADIO: ActCfg(
+        label="Listening a radio",
+        light_icon_color=IconColor(PALLETE.l_yellow.to_pyglet_alpha()),
+    ),
+    Activity.TV: ActCfg(
+        label="Watching a TV",
+        light_icon_color=IconColor(PALLETE.l_yellow.to_pyglet_alpha()),
+    ),
+    Activity.WTF: ActCfg(
+        label="Confused",
+        variants=3,
+        light_icon_color=IconColor(PALLETE.l_red.to_pyglet_alpha()),
+    ),
+    Activity.EAT: ActCfg(
+        label="Eating",
+        variants=3,
+        dashboard_color=PALLETE.l_green.to_pyglet_alpha(),
+        light_icon_color=IconColor(PALLETE.d_green.to_pyglet_alpha()),
+        dark_icon_color=IconColor(PALLETE.i_green.to_pyglet_alpha()),
+    ),
+    Activity.SLEEP: ActCfg(
+        label="Sleeping",
+        light_icon_color=IconColor(
+            r=PALLETE.l_blue.to_pyglet_alpha(),
+            g=PALLETE.d_blue.to_pyglet_alpha(),
+        ),
+    ),
+    Activity.TIME_BREAK: ActCfg(
+        label="Waiting",
+        light_icon_color=IconColor(PALLETE.white.to_pyglet_alpha()),
+    ),
+    Activity.ENJOY: ActCfg(
+        label="Enjoy",
+        variants=2,
+        light_icon_color=IconColor(PALLETE.l_blue.to_pyglet_alpha()),
+    ),
+    Activity.SHARE: ActCfg(
+        label="Talking & Sharing",
+        variants=3,
+        light_icon_color=IconColor(
+            r=PALLETE.l_red.to_pyglet_alpha(),
+            g=PALLETE.white.to_pyglet_alpha(),
+            b=PALLETE.black.to_pyglet_alpha(),
+        ),
+    ),
+    Activity.IDEA: ActCfg(
+        label="Gathering ideas",
+        light_icon_color=IconColor(PALLETE.l_purple.to_pyglet_alpha()),
+    ),
 }
 
 
@@ -225,40 +307,3 @@ class DASHBOARD_FONTS:
         anchor_x="left",
         anchor_y="top",
     )
-
-
-ACTIVITY_TEXTURE_VARIANTS = {
-    Activity.NONE: 1,
-    Activity.MOVE: 1,
-    Activity.WORK: 1,
-    Activity.SHOP: 1,
-    Activity.TALK: 1,
-    Activity.READ: 1,
-    Activity.RADIO: 1,
-    Activity.TV: 1,
-    Activity.WTF: 3,
-    Activity.EAT: 3,
-    Activity.SLEEP: 1,
-    Activity.TIME_BREAK: 1,
-    Activity.SHARE: 3,
-    Activity.ENJOY: 2,
-    Activity.IDEA: 1,
-}
-
-ACTIVITY_LABELS = {
-    Activity.NONE: "-",
-    Activity.MOVE: "Moving",
-    Activity.WORK: "Working",
-    Activity.SHOP: "Shopping",
-    Activity.TALK: "Seeking to talk",
-    Activity.READ: "Reading a book",
-    Activity.RADIO: "Listening a radio",
-    Activity.TV: "Watching a TV",
-    Activity.WTF: "Little a bit confusing",
-    Activity.EAT: "Eating",
-    Activity.SLEEP: "Sleeping",
-    Activity.TIME_BREAK: "Waiting",
-    Activity.ENJOY: "Enjoy",
-    Activity.SHARE: "Talking & Sharing",
-    Activity.IDEA: "Gatherind ideas",
-}
