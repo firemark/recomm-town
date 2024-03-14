@@ -7,7 +7,7 @@ readme = "README.md"
 license = {file = "LICENSE"}
 
 [project.optional-dependencies]
-plot = ["numpy", "matplotlib", "scipy"]
+plot = ["numpy", "matplotlib", "scikit-image"]
 
 [build-system]
 requires = ["setuptools >= 61.0"]
