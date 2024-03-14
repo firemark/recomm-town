@@ -1,6 +1,6 @@
 ---
 trivias:
-  - ./trivias.yaml
+  - ./_trivias.yaml
 
 world:
   tv:

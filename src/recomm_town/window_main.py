@@ -17,7 +17,7 @@ class StartupApp:
         self.frm = ttk.Frame(self.root, padding=10)
         self.frm.grid()
 
-        towns = list(TOWNS_PATH.glob("*.yaml"))
+        towns = [t for t in TOWNS_PATH.glob("*.yaml") if not t.name.startswith("_")]
         self.town = StringVar(value=str(towns[0]))
         self.match_time = IntVar(value=300)
         self.fullscreen = BooleanVar(value=False)

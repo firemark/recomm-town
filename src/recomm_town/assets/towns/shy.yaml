@@ -5,10 +5,11 @@ trivias:
 world:
   forgetting: 
     tick: 1.0
-    factor: 1.0
-  neighbor-range: 100.0
+    factor: 5.0
   levels:
-    warmup-time: 30.0
+    warmup-time: 60.0
+    talking: 0.2
+    neighbor-range: 50.0
     
   radio: 
     program: podcast
@@ -106,14 +107,6 @@ places:
   rooms: grid(2)
   trivias-to-learn: music
 
-- name: pub
-  look: pub
-  title: Pub Ugly Dog
-  function: ENTERTAIMENT
-  position: [0, +2000]
-  rotation: 90
-  rooms: grid(2)
-
 - name: cross
   function: CROSSROAD
   places:
@@ -163,4 +156,3 @@ connections:
     with:
     - job.programming
     - job.website
-    - pub
