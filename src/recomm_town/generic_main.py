@@ -56,6 +56,7 @@ def run(town: Path, match_time: int, fullscreen: bool, output_filename: str):
 
 
 def _serial(event_queue: Queue, event: Event):
+    return
     conn = serial.Serial(port="/dev/ttyUSB0", baudrate=9600, timeout=0.1)
     while not event.is_set():
         for line in conn.readlines():
