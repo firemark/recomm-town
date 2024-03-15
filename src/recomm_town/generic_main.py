@@ -5,7 +5,7 @@ from queue import Queue
 from threading import Thread, Event
 from time import sleep
 
-#import serial
+# import serial
 import pyglet
 
 pyglet.options["debug_gl"] = False

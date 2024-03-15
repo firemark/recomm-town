@@ -11,7 +11,7 @@ from recomm_town.program import Program
 from recomm_town.town import Town, Place, PlaceFunction, LocalRoom
 from recomm_town.town.place import Invite
 from recomm_town.world import World, WorldLevels
-from recomm_town.creator.people_factory import  AvailablePlaces, generate_people
+from recomm_town.creator.people_factory import AvailablePlaces, generate_people
 from recomm_town.creator.room_factories import RoomFactories
 
 TOWNS = Path(os.environ["ASSETS"]) / "towns"
@@ -71,8 +71,11 @@ class WorldParser:
         return AvailablePlaces.create(
             set(
                 chain.from_iterable(
-                    (p for p in self._find_places(people[place_key]))
-                    if place_key in people else []
+                    (
+                        (p for p in self._find_places(people[place_key]))
+                        if place_key in people
+                        else []
+                    )
                     for people in config["people"]
                 )
             )
@@ -126,7 +129,9 @@ class WorldParser:
 
             self.trivias[group_name] = group
 
-    def _load_place(self, place, prev_params, prefix="") -> tuple[set[Place], set[Invite]]:
+    def _load_place(
+        self, place, prev_params, prefix=""
+    ) -> tuple[set[Place], set[Invite]]:
         name = prefix + place["name"]
         prev_position = prev_params.pop("position", None)
         position = self._load_position(place.get("position"), prev_position)
@@ -161,7 +166,9 @@ class WorldParser:
             places = set()
             invites = set()
             for child in place["places"]:
-                new_places, new_invites = self._load_place(child, new_params.copy(), f"{name}.")
+                new_places, new_invites = self._load_place(
+                    child, new_params.copy(), f"{name}."
+                )
                 places |= new_places
                 invites |= new_invites
 
@@ -248,9 +255,16 @@ class WorldParser:
         place = next(iter(places))
         place.connect(*neighborhood)
 
-    def _load_people(self, config, available_workplaces: AvailablePlaces, available_comms: AvailablePlaces):
+    def _load_people(
+        self,
+        config,
+        available_workplaces: AvailablePlaces,
+        available_comms: AvailablePlaces,
+    ):
         jobs = self._find_places(config["jobs"])
-        comms = self._find_places(config["community"]) if "community" in config else set()
+        comms = (
+            self._find_places(config["community"]) if "community" in config else set()
+        )
         self.people += generate_people(
             houses=self._find_places(config["houses"]),
             available_workplaces=available_workplaces.extract(jobs),

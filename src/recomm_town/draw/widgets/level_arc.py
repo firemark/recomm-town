@@ -10,7 +10,7 @@ from recomm_town.draw.consts import (
     DASHBOARD_FONTS,
     DASHBOARD_INPUT,
     dashboard_bar_color,
-    LevelCfg
+    LevelCfg,
 )
 from recomm_town.draw.textures import LEVEL_SPRITES
 

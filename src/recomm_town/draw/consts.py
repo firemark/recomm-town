@@ -169,12 +169,14 @@ PLACE_CFG = {
     ),
 }
 
+
 @dataclass(frozen=True)
 class LevelCfg:
     attr: str
     label: str
     color: tuple[int, int, int, int]
     texture_index: int
+
 
 LEVELS = [
     LevelCfg("fridge", "Fridge", c("#D9DAD2"), 0),

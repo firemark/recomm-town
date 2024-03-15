@@ -14,6 +14,7 @@ parser.add_argument("--fullscreen", action="store_true")
 if __name__ == "__main__":
     args = parser.parse_args()
     from recomm_town.generic_main import run
+
     run(
         town=args.town,
         match_time=args.match_time,

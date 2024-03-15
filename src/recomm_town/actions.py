@@ -167,8 +167,12 @@ class RandomTalk(ActionWithStart):
 
         time_to_share = randint(2, 5)
         teach_level = self.teach_level * (0.4 + random() * 0.6)
-        teacher.replace_first_action(ShareTo(time_to_share, trivia_chunk, teach_level / 10, student))
-        student.replace_first_action(ShareFrom(time_to_share, trivia_chunk, teach_level, teacher))
+        teacher.replace_first_action(
+            ShareTo(time_to_share, trivia_chunk, teach_level / 10, student)
+        )
+        student.replace_first_action(
+            ShareFrom(time_to_share, trivia_chunk, teach_level, teacher)
+        )
         teacher.start_talk(student, trivia)
         return "STOP"
 
@@ -219,13 +223,17 @@ class Share(ActionWithStart):
 
 
 class ShareFrom(Share):
-    def __init__(self, time: float, trivia: TriviaChunk, teach_level: float, teacher: Human):
+    def __init__(
+        self, time: float, trivia: TriviaChunk, teach_level: float, teacher: Human
+    ):
         teacher_level = teacher.knowledge[trivia.trivia][trivia.id]
         super().__init__(time, teacher, trivia, level=teach_level, max=teacher_level)
 
 
 class ShareTo(Share):
-    def __init__(self, time: float, trivia: TriviaChunk, teach_level: float, student: Human):
+    def __init__(
+        self, time: float, trivia: TriviaChunk, teach_level: float, student: Human
+    ):
         super().__init__(time, student, trivia, level=teach_level, max=1.0)
         self.student = student
 

@@ -23,28 +23,47 @@ class StartupApp:
         self.fullscreen = BooleanVar(value=False)
         self.exited = False
         self._rows = 0
-        
+
         self.label_font = Font(size=12)
         self._label("Town:")
         for file in towns:
-            self._grid(ttk.Radiobutton(self.frm, text=file.stem, value=str(file), variable=self.town))
+            self._grid(
+                ttk.Radiobutton(
+                    self.frm, text=file.stem, value=str(file), variable=self.town
+                )
+            )
 
         self._sep()
 
         self.match_time_label = self._label("Match time:")
-        self._grid(ttk.Scale(self.frm, orient="horizontal", from_=1, to_=3600, variable=self.match_time, command=self.on_match_time))
+        self._grid(
+            ttk.Scale(
+                self.frm,
+                orient="horizontal",
+                from_=1,
+                to_=3600,
+                variable=self.match_time,
+                command=self.on_match_time,
+            )
+        )
         self.on_match_time(self.match_time.get())
 
         self._label("Fullscreen:")
         self._grid(ttk.Checkbutton(self.frm, variable=self.fullscreen))
 
         self._sep()
-        self._grid(ttk.Button(self.frm, text="Quit", command=self.quit), col=0, new_row=False)
+        self._grid(
+            ttk.Button(self.frm, text="Quit", command=self.quit), col=0, new_row=False
+        )
         self._grid(ttk.Button(self.frm, text="Run", command=self.run), col=1)
 
     def _label(self, label):
-        return self._grid(ttk.Label(self.frm, text=label, font=self.label_font, width=15), col=0, new_row=False)
-    
+        return self._grid(
+            ttk.Label(self.frm, text=label, font=self.label_font, width=15),
+            col=0,
+            new_row=False,
+        )
+
     def _sep(self):
         return self._grid(ttk.Separator(self.frm))
 
@@ -76,6 +95,7 @@ if __name__ == "__main__":
     app.loop()
     if not app.exited:
         from recomm_town.generic_main import run
+
         run(
             town=Path(app.town.get()),
             match_time=app.match_time.get(),

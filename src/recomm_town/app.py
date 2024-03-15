@@ -14,12 +14,12 @@ from recomm_town.human import Human
 from recomm_town.observer import Observer
 from recomm_town.shaders.human_group import HumanGroup
 
-SPECIAL_A = 0xad00000000
-SPECIAL_B = 0xac00000000
-SPECIAL_C = 0xab00000000
-SPECIAL_D = 0x7900000000 
-SPECIAL_UP = 0x7b00000000
-SPECIAL_DOWN = 0x7a00000000
+SPECIAL_A = 0xAD00000000
+SPECIAL_B = 0xAC00000000
+SPECIAL_C = 0xAB00000000
+SPECIAL_D = 0x7900000000
+SPECIAL_UP = 0x7B00000000
+SPECIAL_DOWN = 0x7A00000000
 
 
 class GuiGroup(Group):
@@ -54,13 +54,13 @@ class App(Window):
     gui_group: GuiGroup
 
     _zoom: float
-    _page: Literal['world', 'graph', 'heatmap']
+    _page: Literal["world", "graph", "heatmap"]
 
     def __init__(self, world, queue: Queue, match_time: int = 600):
         config = pyglet.gl.Config(alpha_size=8, samples=4)
         super().__init__(config=config, resizable=True)
 
-        self._page = 'world'
+        self._page = "world"
         self._page_image = None
         self._page_timer = None
 
@@ -87,10 +87,10 @@ class App(Window):
 
         self.__queue = queue
 
-        self.register_event_type('on_change_place')
-        self.register_event_type('on_change_human')
-        self.register_event_type('on_change_page')
-        self.register_event_type('on_city_zoom')
+        self.register_event_type("on_change_place")
+        self.register_event_type("on_change_human")
+        self.register_event_type("on_change_page")
+        self.register_event_type("on_city_zoom")
 
     def set_view(self, position, zoom=1.0):
         self.camera_position = position
@@ -98,7 +98,7 @@ class App(Window):
         self.recreate_view()
 
     def recreate_view(self):
-        if self._page != 'world':
+        if self._page != "world":
             return
         wh = self.width / 2
         hh = self.height / 2
@@ -161,26 +161,28 @@ class App(Window):
             self.close()
         if self.idle_action_time <= 0:
             self.idle_action_time = IDLE_TIME
-            event = choice([
-                ('on_change_place',), 
-                ('on_change_human',), 
-            ])
+            event = choice(
+                [
+                    ("on_change_place",),
+                    ("on_change_human",),
+                ]
+            )
             self.dispatch_event(*event)
 
     def on_key_press(self, symbol, modifiers):
         if symbol in (key.Q, SPECIAL_A):
-            self.dispatch_event('on_change_place')
+            self.dispatch_event("on_change_place")
         if symbol in (key.W, SPECIAL_D):
-            self.dispatch_event('on_change_human')
+            self.dispatch_event("on_change_human")
         if symbol in (key.E, SPECIAL_B):
-            self.dispatch_event('on_city_zoom')
+            self.dispatch_event("on_city_zoom")
         if symbol in (key.R, SPECIAL_C):
-            self.dispatch_event('on_change_page', self.next_page())
+            self.dispatch_event("on_change_page", self.next_page())
         if symbol == SPECIAL_UP:
-            self.camera_zoom = min(10.0, self.camera_zoom * 1.05) 
+            self.camera_zoom = min(10.0, self.camera_zoom * 1.05)
             self.recreate_view()
         if symbol == SPECIAL_DOWN:
-            self.camera_zoom = max(1.0, self.camera_zoom * 0.95) 
+            self.camera_zoom = max(1.0, self.camera_zoom * 0.95)
             self.recreate_view()
         if symbol == key.UP:
             self.move_position += Vec(0.0, +20.0)
@@ -195,38 +197,38 @@ class App(Window):
 
     def next_page(self):
         match self._page:
-            case 'world':
-                return 'graph'
-            case 'graph':
-                return 'heatmap'
-            case 'heatmap':
-                return 'world'
+            case "world":
+                return "graph"
+            case "graph":
+                return "heatmap"
+            case "heatmap":
+                return "world"
 
     def on_change_page(self, new_page):
-        self.idle_action_time = IDLE_TIME 
+        self.idle_action_time = IDLE_TIME
         old_page = self._page
         if old_page == new_page:
             return
         self._page = new_page
 
         match old_page:
-            case 'world':
+            case "world":
                 pass
-            case 'graph':
+            case "graph":
                 self._page_image = None
                 pyglet.clock.unschedule(self._load_graph_image)
-            case 'heatmap':
+            case "heatmap":
                 self._page_image = None
                 pyglet.clock.unschedule(self._load_heatmap_image)
 
         match new_page:
-            case 'world':
+            case "world":
                 self.recreate_view()
-            case 'graph':
+            case "graph":
                 self.view = Mat4()
                 self._load_graph_image()
                 pyglet.clock.schedule_interval(self._load_graph_image, 60)
-            case 'heatmap':
+            case "heatmap":
                 self.view = Mat4()
                 self._load_heatmap_image()
                 pyglet.clock.schedule_interval(self._load_heatmap_image, 60)
@@ -249,7 +251,7 @@ class App(Window):
         self._page_image = img
 
     def on_change_place(self):
-        self.dispatch_event('on_change_page', 'world')
+        self.dispatch_event("on_change_page", "world")
         self.idle_action_time = IDLE_TIME
         places = self.world.town.places
         position = places[self.place_index].position
@@ -260,7 +262,7 @@ class App(Window):
             self.place_index = 0
 
     def on_change_human(self):
-        self.dispatch_event('on_change_page', 'world')
+        self.dispatch_event("on_change_page", "world")
         self.idle_action_time = IDLE_TIME
         human = self.world.people[self.human_index]
         self._start_tracking(human)
@@ -270,7 +272,7 @@ class App(Window):
             self.human_index = 0
 
     def on_city_zoom(self):
-        self.dispatch_event('on_change_page', 'world')
+        self.dispatch_event("on_change_page", "world")
         self.idle_action_time = IDLE_TIME
         self._stop_tracking()
         self.set_view(Vec(0.0, 0.0))
@@ -325,9 +327,9 @@ class App(Window):
         self.clear()
         gl.glClearColor(0.79, 0.86, 0.70, 1.0)
         match self._page:
-            case 'world':
+            case "world":
                 self.batch.draw()
-            case 'heatmap' | 'graph':
+            case "heatmap" | "graph":
                 if self._page_image is not None:
                     self._page_image.blit(self.width // 2, self.height // 2, 0)
         gl.glFlush()
