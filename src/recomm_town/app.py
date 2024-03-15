@@ -1,5 +1,6 @@
 from math import ceil
 from queue import Empty, Queue
+from random import choice
 from typing import Literal, NamedTuple
 import pyglet
 from pyglet.gl import gl
@@ -42,6 +43,9 @@ class CellRange(NamedTuple):
     y: int
 
 
+IDLE_TIME = 120
+
+
 class App(Window):
     batch: Batch
     town_group: Group
@@ -74,6 +78,7 @@ class App(Window):
         self.human_index = 0
         self.tracked_human = None
         self.match_time = match_time
+        self.idle_action_time = IDLE_TIME
 
         self.human_observers: Observer[Human | None] = Observer()
         self.time_observers: Observer[int] = Observer()
@@ -150,9 +155,17 @@ class App(Window):
 
     def tick_second(self, dt):
         self.match_time -= 1
+        self.idle_action_time -= 1
         self.time_observers(self.match_time)
         if self.match_time <= 0:
             self.close()
+        if self.idle_action_time <= 0:
+            self.idle_action_time = IDLE_TIME
+            event = choice([
+                ('on_change_place',), 
+                ('on_change_human',), 
+            ])
+            self.dispatch_event(*event)
 
     def on_key_press(self, symbol, modifiers):
         if symbol in (key.Q, SPECIAL_A):
@@ -162,7 +175,7 @@ class App(Window):
         if symbol in (key.E, SPECIAL_B):
             self.dispatch_event('on_city_zoom')
         if symbol in (key.R, SPECIAL_C):
-            self.dispatch_event('on_change_page')
+            self.dispatch_event('on_change_page', self.next_page())
         if symbol == SPECIAL_UP:
             self.camera_zoom = min(10.0, self.camera_zoom * 1.05) 
             self.recreate_view()
@@ -180,24 +193,43 @@ class App(Window):
         else:
             return super().on_key_press(symbol, modifiers)
 
-    def on_change_page(self):
+    def next_page(self):
         match self._page:
             case 'world':
-                self.view = Mat4()
-                self._page = 'graph'
-                self._load_graph_image()
-                pyglet.clock.schedule_interval(self._load_graph_image, 60)
+                return 'graph'
             case 'graph':
-                self.view = Mat4()
-                self._page = 'heatmap'
-                self._load_heatmap_image()
-                pyglet.clock.unschedule(self._load_graph_image)
-                pyglet.clock.schedule_interval(self._load_heatmap_image, 60)
+                return 'heatmap'
             case 'heatmap':
-                self._page = 'world'
+                return 'world'
+
+    def on_change_page(self, new_page):
+        self.idle_action_time = IDLE_TIME 
+        old_page = self._page
+        if old_page == new_page:
+            return
+        self._page = new_page
+
+        match old_page:
+            case 'world':
+                pass
+            case 'graph':
+                self._page_image = None
+                pyglet.clock.unschedule(self._load_graph_image)
+            case 'heatmap':
                 self._page_image = None
                 pyglet.clock.unschedule(self._load_heatmap_image)
+
+        match new_page:
+            case 'world':
                 self.recreate_view()
+            case 'graph':
+                self.view = Mat4()
+                self._load_graph_image()
+                pyglet.clock.schedule_interval(self._load_graph_image, 60)
+            case 'heatmap':
+                self.view = Mat4()
+                self._load_heatmap_image()
+                pyglet.clock.schedule_interval(self._load_heatmap_image, 60)
 
     def _load_graph_image(self, dt=0.0):
         self._load_page_image("graph.png")
@@ -217,6 +249,8 @@ class App(Window):
         self._page_image = img
 
     def on_change_place(self):
+        self.dispatch_event('on_change_page', 'world')
+        self.idle_action_time = IDLE_TIME
         places = self.world.town.places
         position = places[self.place_index].position
         self._stop_tracking()
@@ -226,6 +260,8 @@ class App(Window):
             self.place_index = 0
 
     def on_change_human(self):
+        self.dispatch_event('on_change_page', 'world')
+        self.idle_action_time = IDLE_TIME
         human = self.world.people[self.human_index]
         self._start_tracking(human)
         self.set_view(human.position, zoom=8.0)
@@ -234,6 +270,8 @@ class App(Window):
             self.human_index = 0
 
     def on_city_zoom(self):
+        self.dispatch_event('on_change_page', 'world')
+        self.idle_action_time = IDLE_TIME
         self._stop_tracking()
         self.set_view(Vec(0.0, 0.0))
 
