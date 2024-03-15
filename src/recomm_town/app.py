@@ -53,7 +53,8 @@ class App(Window):
     _page: Literal['world', 'graph', 'heatmap']
 
     def __init__(self, world, queue: Queue, match_time: int = 600):
-        config = pyglet.gl.Config(alpha_size=8, samples=4)
+        #config = pyglet.gl.Config(alpha_size=8, samples=4)
+        config = pyglet.gl.Config(opengl_api="gl")
         super().__init__(config=config, resizable=True)
 
         self._page = 'world'
