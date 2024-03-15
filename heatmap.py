@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-import json
-
 from matplotlib import pyplot as plt
 from matplotlib.patches import Patch
-from matplotlib.colors import LinearSegmentedColormap, to_rgb
-from skimage.filters import gaussian
+from matplotlib.colors import to_rgb
+import numpy as np
+from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.transforms import offset_copy
+from scipy.ndimage import gaussian_filter
 from cycler import cycler
 import matplotlib as mpl
-import numpy as np
-
+import json
 
 def to_time(t, _):
     m = int(t / 60)
@@ -58,7 +58,7 @@ for title, filename, coords in FILES:
     for heatmap in old_heatmaps:
         heatmap /= total_heatmap
         heatmap = np.kron(heatmap, np.ones((3, 3), dtype=float))
-        heatmap = gaussian(heatmap, sigma=2)
+        heatmap = gaussian_filter(heatmap, sigma=2)
         heatmaps.append(np.flipud(heatmap))
         
     for params, (index, trivia) in zip(cycle, enumerate(highscore, start=1)):
