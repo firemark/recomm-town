@@ -40,7 +40,7 @@ class TrackHumanDraw:
                 "main": RoundedRectangle(
                     x=x,
                     y=y,
-                    round=18,
+                    round=4,
                     width=610.0,
                     height=500.0,
                     color=DASHBOARD_BG,
@@ -49,7 +49,7 @@ class TrackHumanDraw:
                 "name": RoundedRectangle(
                     x=x + 10.0,
                     y=y + 445.0,
-                    round=18,
+                    round=4,
                     width=210.0,
                     height=50.0,
                     color=DASHBOARD_FG,
@@ -58,7 +58,7 @@ class TrackHumanDraw:
                 "activity": RoundedRectangle(
                     x=x + 230.0,
                     y=y + 445.0,
-                    round=18,
+                    round=4,
                     width=370.0,
                     height=50.0,
                     color=DASHBOARD_FG,
@@ -67,7 +67,7 @@ class TrackHumanDraw:
                 "levels": RoundedRectangle(
                     x=x + 10.0,
                     y=y + 240.0,
-                    round=18,
+                    round=4,
                     width=590.0,
                     height=200.0,
                     color=DASHBOARD_FG,
@@ -76,7 +76,7 @@ class TrackHumanDraw:
                 "knowledge": RoundedRectangle(
                     x=x + 10.0,
                     y=y - 0.0,
-                    round=18,
+                    round=4,
                     width=380.0,
                     height=230.0,
                     color=DASHBOARD_FG,
@@ -85,7 +85,7 @@ class TrackHumanDraw:
                 "friends": RoundedRectangle(
                     x=x + 400.0,
                     y=y - 0.0,
-                    round=18,
+                    round=4,
                     width=200.0,
                     height=230.0,
                     color=DASHBOARD_FG,

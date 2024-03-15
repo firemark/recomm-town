@@ -30,6 +30,7 @@ from recomm_town.town.place import Place, Way
 
 from recomm_town.draw.consts import (
     DASHBOARD_BG,
+    DASHBOARD_BLACK,
     DASHBOARD_FONTS,
     DASHBOARD_WHITE,
     PALLETE,
@@ -38,6 +39,7 @@ from recomm_town.draw.consts import (
     FONT,
     COLORS,
     PLACE_LABEL_BG,
+    PLACE_LABEL_BG2,
 )
 
 Texture.default_min_filter = GL_LINEAR
@@ -103,7 +105,7 @@ class Draw:
                 y=-310.0,
                 width=650.0,
                 height=300.0,
-                round=18,
+                round=4,
                 color=DASHBOARD_BG,
                 **kw,
             ),
@@ -129,7 +131,7 @@ class Draw:
             label_bg.anchor_position = (label_bg.width // 2, label_bg.height // 2)
 
     def draw_path(self, path: dict[tuple[Place, Place], Way], group: Group):
-        kw = dict(**self.kw, group=group, width=50.0)
+        kw = dict(**self.kw, group=group, width=40.0)
         for way in path.values():
             for i in range(len(way.points) - 1):
                 a = way.points[i]
@@ -144,13 +146,13 @@ class Draw:
         for i in range(20):
             position = Vec(start.x + random() * diff.x, start.y + random() * diff.y)
             half_size = 256.0 + random() * 256.0
-            color = PALLETE.d_grass.mix(PALLETE.l_grass, 0.6 + random() * 0.4)
             self.objs.append(
                 Sprite(
                     BLOB_SPRITES[randint(0, 3)],
                     p0=position - half_size,
                     p1=position + half_size,
-                    color_r=color.to_pyglet_alpha(),
+                    color_r=PALLETE.d_grass.to_pyglet_alpha(),
+                    color_g=PALLETE.d_grass_outline.to_pyglet_alpha(),
                     **kw,
                 )
             )
@@ -160,7 +162,7 @@ class Draw:
         kw_label = dict(**self.kw, group=label_group)
         kw_font = dict(
             **self.kw_font,
-            color=DASHBOARD_WHITE,
+            color=DASHBOARD_BLACK,
             font_size=28,
             bold=True,
             group=label_group,
@@ -183,7 +185,7 @@ class Draw:
                 p.y,
                 size.x,
                 size.y,
-                round=32,
+                round=1,
                 color=place_cfg.place_color_bg,
                 **kw,
             )
@@ -194,7 +196,7 @@ class Draw:
                 x=p.x,
                 y=p.y,
                 thickness=10,
-                round=32,
+                round=1,
                 color=place_cfg.border_color,
                 rotation=-rot,
                 **kw,
@@ -232,7 +234,7 @@ class Draw:
                 x=p.x,
                 y=p.y,
                 color=PLACE_LABEL_BG,
-                round=16,
+                round=1,
                 width=100,
                 height=100,
                 **kw_label,
@@ -269,27 +271,27 @@ class Draw:
                 place.rooms, cycle(list(range(place_cfg.textures_len)))
             ):
                 r = room.position
-                room_body = Sprite(
-                    ROOM_SPRITES[index + index_shift],
-                    p0=Vec(r.x - hi, r.y - hi),
-                    p1=Vec(r.x + hi, r.y + hi),
-                    color_r=place_cfg.icon_color.r,
-                    color_g=place_cfg.icon_color.g,
-                    color_b=place_cfg.icon_color.b,
-                    **kw,
-                )
+                # room_body = Sprite(
+                #     ROOM_SPRITES[index + index_shift],
+                #     p0=Vec(r.x - hi, r.y - hi),
+                #     p1=Vec(r.x + hi, r.y + hi),
+                #     color_r=place_cfg.icon_color.r,
+                #     color_g=place_cfg.icon_color.g,
+                #     color_b=place_cfg.icon_color.b,
+                #     **kw,
+                # )
                 room_rect = RoundedRectangle(
                     r.x,
                     r.y,
                     s,
                     s,
                     color=place_cfg.room_color_bg,
-                    round=16,
+                    round=1,
                     **kw,
                 )
                 room_rect.anchor_position = h, h
                 room_rect.rotation = room.rotation
-                self.objs += [room_body, room_rect]
+                self.objs += [room_rect]
 
     def draw_people(self, window: Window, people: list[Human], people_group: Group):
         for index, human in enumerate(people):
@@ -304,7 +306,9 @@ class Draw:
             **self.kw_font,
             bold=True,
             group=group,
+            color=DASHBOARD_BLACK,
         )
+
 
         # level_bars = {
         #     level: BorderedRectangle(
@@ -357,15 +361,24 @@ class Draw:
             **kw,
         )
 
+        label_bg = RoundedRectangle(
+            x=0,
+            y=size * 1.75,
+            color=PLACE_LABEL_BG2,
+            round=1,
+            width=100,
+            height=100,
+            group=group,
+            **self.kw,
+        )
+        label = Label(human.info.name, x=0, y=size * 1.75, **kw_font)
+        label_bg.width = label.content_width + 8
+        label_bg.height = label.content_height + 8
+        label_bg.anchor_position = (label_bg.width // 2, label_bg.height // 2)
+
         self.objs += [
-            Label(  # Name
-                human.info.name,
-                x=0,
-                y=size * 1.5,
-                font_size=14,
-                color=to_color("#2D383A") + (255,),
-                **kw_font,
-            ),
+            label_bg,
+            label,
             body,
             # level_bars,
             act_sprite,

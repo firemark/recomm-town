@@ -1,12 +1,11 @@
-from dataclasses import InitVar, dataclass
 import os
 import platform
 from pathlib import Path
+from dataclasses import dataclass
 
 from recomm_town.common import Color, Vec
 from recomm_town.human import Activity
-from recomm_town.draw.utils import to_color, c, n
-from recomm_town.town.place import PlaceFunction
+from recomm_town.draw.utils import c, n
 
 
 TEXTURES = Path(os.environ["ASSETS"]) / "textures"
@@ -14,9 +13,11 @@ FONT = "Arial" if platform.system() == "Windows" else "Monospace"
 
 
 class PALLETE:
-    road = Color.from_hex("#F2F3ED")
-    l_grass = Color.from_hex("#C9DBB3")
-    d_grass = Color.from_hex("#97BFA5")
+    road = Color.from_hex("#FE8D2B")
+    gravel = Color.from_hex("#F2F3ED")
+    l_grass = Color.from_hex("#1A801A")
+    d_grass = Color.from_hex("#1A801A")
+    d_grass_outline = Color.from_hex("#0D400D")
     i_yellow = Color.from_hex("#F0EADB")
     l_yellow = Color.from_hex("#FDC362")
     d_yellow = Color.from_hex("#D68663")
@@ -33,11 +34,15 @@ class PALLETE:
     l_blue = Color.from_hex("#76CAE9")
     d_blue = Color.from_hex("#328EB3")
     l_grey = Color.from_hex("#C4C4C4")
+    ll_grey = Color.from_hex("#E4E4E4")
     d_grey = Color.from_hex("#999999")
     l_skin = Color.from_hex("#FFF5D1")
     d_skin = Color.from_hex("#6B4C2E")
     white = Color.from_hex("#FFFFFF")
     black = Color.from_hex("#000000")
+    l_brown = Color.from_hex("#D68663")
+    d_brown = Color.from_hex("#BD4F00")
+    d_navy = Color.from_hex("#0037C3")
 
 
 class COLORS:
@@ -47,7 +52,7 @@ class COLORS:
     room_b = Color.from_hex("#01A638")
     place_a = Color.from_hex("#EED9C4")
     place_b = Color.from_hex("#C0D5F0")
-    crossroad_a = PALLETE.road
+    crossroad_a = PALLETE.gravel
     crossroad_b = PALLETE.road
     way_a = PALLETE.road
     way_b = PALLETE.road
@@ -66,7 +71,7 @@ class IconColor:
 class PlaceCfg:
     room_texture_id: int = 0
     textures_len: int = 1
-    place_color_bg: tuple[int, int, int, int] = PALLETE.road.to_pyglet_alpha()
+    place_color_bg: tuple[int, int, int, int] = PALLETE.gravel.to_pyglet_alpha()
     border_color: tuple[int, int, int, int] = n()
     room_color_bg: tuple[int, int, int, int] = n()
     icon_size: float = 0.6
@@ -101,17 +106,17 @@ PLACE_CFG = {
     "garden": PlaceCfg(
         room_texture_id=1,
         textures_len=2,
-        place_color_bg=PALLETE.road.to_pyglet_alpha(),
-        border_color=PALLETE.d_grass.to_pyglet_alpha(),
+        room_color_bg=PALLETE.l_grass.to_pyglet_alpha(),
+        border_color=PALLETE.d_grey.to_pyglet_alpha(),
         icon_size=1.0,
         icon_color=IconColor(
-            r=PALLETE.d_grass.to_pyglet_alpha(),
-            g=PALLETE.l_grass.to_pyglet_alpha(),
+            r=PALLETE.d_grey.to_pyglet_alpha(),
+            g=PALLETE.l_grey.to_pyglet_alpha(),
         ),
     ),
     "museum": PlaceCfg(
         room_texture_id=2,
-        place_color_bg=c("#D0BDE3"),
+        place_color_bg=PALLETE.ll_grey.to_pyglet_alpha(),
         room_color_bg=c("#7A58A0"),
         border_color=c("#6C4691"),
         icon_color=IconColor(
@@ -122,7 +127,7 @@ PLACE_CFG = {
     "pub": PlaceCfg(
         room_texture_id=3,
         textures_len=2,
-        place_color_bg=c("#EFE4C8"),
+        place_color_bg=PALLETE.ll_grey.to_pyglet_alpha(),
         border_color=c("#ECA756"),
         room_color_bg=c("#ECA756"),
         icon_color=IconColor(
@@ -132,34 +137,34 @@ PLACE_CFG = {
         ),
     ),
     "work": PlaceCfg(
-        place_color_bg=PALLETE.l_grey.to_pyglet_alpha(),
-        room_color_bg=PALLETE.d_grey.to_pyglet_alpha(),
-        border_color=PALLETE.d_grey.to_pyglet_alpha(),
+        place_color_bg=PALLETE.ll_grey.to_pyglet_alpha(),
+        room_color_bg=PALLETE.d_navy.to_pyglet_alpha(),
+        border_color=PALLETE.d_navy.to_pyglet_alpha(),
     ),
     "home": PlaceCfg(
         room_texture_id=4,
         textures_len=1,
-        place_color_bg=PALLETE.i_blue.to_pyglet_alpha(),
+        place_color_bg=PALLETE.ll_grey.to_pyglet_alpha(),
         room_color_bg=PALLETE.l_blue.to_pyglet_alpha(),
         border_color=PALLETE.l_blue.to_pyglet_alpha(),
         icon_size=0.7,
         icon_color=IconColor(
-            r=PALLETE.d_blue.to_pyglet_alpha(),
+            r=PALLETE.ll_grey.to_pyglet_alpha(),
         ),
     ),
     "shop": PlaceCfg(
-        place_color_bg=PALLETE.i_purple.to_pyglet_alpha(),
-        room_color_bg=PALLETE.l_purple.to_pyglet_alpha(),
-        border_color=PALLETE.l_purple.to_pyglet_alpha(),
+        place_color_bg=PALLETE.ll_grey.to_pyglet_alpha(),
+        room_color_bg=PALLETE.d_brown.to_pyglet_alpha(),
+        border_color=PALLETE.d_brown.to_pyglet_alpha(),
     ),
     "entertainment": PlaceCfg(
-        place_color_bg=PALLETE.l_blue.to_pyglet_alpha(),
+        place_color_bg=PALLETE.ll_grey.to_pyglet_alpha(),
         room_color_bg=PALLETE.d_blue.to_pyglet_alpha(),
         border_color=PALLETE.d_blue.to_pyglet_alpha(),
     ),
     "community": PlaceCfg(
         room_texture_id=2,
-        place_color_bg=PALLETE.l_blue.to_pyglet_alpha(),
+        place_color_bg=PALLETE.ll_grey.to_pyglet_alpha(),
         room_color_bg=PALLETE.d_blue.to_pyglet_alpha(),
         border_color=PALLETE.d_blue.to_pyglet_alpha(),
         icon_color=IconColor(
@@ -288,15 +293,17 @@ ACTIVITY_CFG = {
 }
 
 
-PLACE_LABEL_BG = c("#00000040")
+PLACE_LABEL_BG = c("#FFFFFF40")
+PLACE_LABEL_BG2 = c("#FFFFFF80")
 DASHBOARD_BG = c("#00000072")
 DASHBOARD_FG = c("#89917E4C")
+DASHBOARD_BLACK = c("#000000")
 DASHBOARD_INPUT = c("#545454")
 DASHBOARD_WHITE = c("#F2F3ED")
 DASHBOARD_MILK = c("#E0CCB8")
 DASHBOARD_FULL = Color.from_hex("#9CE256")
-DASHBOARD_MID = Color.from_hex("#E2BB56")
-DASHBOARD_EMPTY = Color.from_hex("#E28856")
+DASHBOARD_MID = Color.from_hex("#FFCF09")
+DASHBOARD_EMPTY = Color.from_hex("#E60909")
 
 
 def dashboard_bar_color(v: float = 0.0):

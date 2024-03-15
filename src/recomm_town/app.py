@@ -325,7 +325,9 @@ class App(Window):
 
     def on_draw(self):
         self.clear()
-        gl.glClearColor(0.79, 0.86, 0.70, 1.0)
+        # 0x97BFA5
+        gl.glClearColor(0x1a / 255, 0x80 / 255, 0x1a / 255, 1.0)
+        #gl.glClearColor(0, 0, 0, 1.0)
         match self._page:
             case "world":
                 self.batch.draw()
